@@ -1,0 +1,6 @@
+{
+  "appId": "com.yourcompany.studyclub24",
+  "appName": "studyclub24",
+  "webDir": "dist",
+  "bundledWebRuntime": false
+}

@@ -1,0 +1,8 @@
+{
+  "name": "StudyClub24",
+  "description": "A universal multimodal interpretation engine for PDFs, images, diagrams, handwritten text, tables, math, graphs, and scientific content.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
