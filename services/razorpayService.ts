@@ -51,6 +51,7 @@ class RazorpayService {
   private key: string;
   private keySecret: string;
   private isProcessingPayment: boolean = false;
+  private currentOrderId: string | null = null;
 
   constructor() {
     // Add your Razorpay Key ID here
@@ -100,8 +101,9 @@ class RazorpayService {
     plan: SubscriptionPlan,
     userDetails: { name?: string; email?: string; phone?: string } = {}
   ): Promise<void> {
-    // Reset payment processing flag for new payment
+    // Reset payment processing flag and order ID for new payment
     this.isProcessingPayment = false;
+    this.currentOrderId = null;
     
     // Load Razorpay script
     const scriptLoaded = await this.loadScript();
@@ -152,6 +154,9 @@ class RazorpayService {
       }
 
       const orderData = await orderResponse.json();
+      
+      // Store current order ID to track this payment instance
+      this.currentOrderId = orderData.orderId;
 
       const options: RazorpayOptions = {
         key: this.key,
@@ -169,8 +174,8 @@ class RazorpayService {
           color: '#6366f1', // Indigo color
         },
         handler: async (response: RazorpayResponse) => {
-          // Only process if we have a valid response
-          if (response.razorpay_payment_id) {
+          // Only process if we have a valid response and it's for the current order
+          if (response.razorpay_payment_id && response.razorpay_order_id === this.currentOrderId) {
             this.handlePaymentSuccess(response, plan);
           }
         },
@@ -179,7 +184,10 @@ class RazorpayService {
       const razorpay = new window.Razorpay(options);
       
       razorpay.on('payment.failed', (response: any) => {
-        this.handlePaymentFailure(response);
+        // Only process failure if it's for the current order
+        if (response.error?.metadata?.order_id === this.currentOrderId) {
+          this.handlePaymentFailure(response);
+        }
       });
 
       razorpay.open();
@@ -276,6 +284,9 @@ class RazorpayService {
       // Show success message
       this.showNotification('success', 'Payment Successful! 🎉', `Your ${plan.name} is now active.`);
       
+      // Clear current order ID after successful processing
+      this.currentOrderId = null;
+      
       // Reload page after a delay to show the notification
       setTimeout(() => {
         window.location.reload();
@@ -285,6 +296,7 @@ class RazorpayService {
       this.showNotification('error', 'Subscription Error', `Failed to save subscription: ${error.message || 'Unknown error'}. Please contact support.`);
     } finally {
       // Reset flag after processing is complete or failed
+      this.isProcessingPayment = false;
       this.isProcessingPayment = false;
     }
   }
