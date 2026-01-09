@@ -176,7 +176,10 @@ class RazorpayService {
   // Verify payment on backend
   private async verifyPaymentOnBackend(response: RazorpayResponse): Promise<boolean> {
     try {
+      console.log('Verifying payment on backend...');
       const API_URL = import.meta.env.VITE_API_URL || (window.location.hostname === 'localhost' ? 'http://localhost:3001' : window.location.origin);
+      console.log('API URL:', API_URL);
+      
       const verifyResponse = await fetch(`${API_URL}/api/verify-payment`, {
         method: 'POST',
         headers: {
@@ -190,7 +193,8 @@ class RazorpayService {
       });
 
       const result = await verifyResponse.json();
-      return result.verified;
+      console.log('Backend verification result:', result);
+      return result.verified === true;
     } catch (error) {
       console.error('Backend verification failed:', error);
       return false;
@@ -199,21 +203,9 @@ class RazorpayService {
 
   // Verify Razorpay signature
   private verifySignature(orderId: string, paymentId: string, signature: string): boolean {
-    // Skip verification if no key secret (free plan)
-    if (!this.keySecret || orderId === 'free_order') {
-      return true;
-    }
-
-    try {
-      const generatedSignature = CryptoJS.HmacSHA256(
-        `${orderId}|${paymentId}`,
-        this.keySecret
-      ).toString();
-
-      return generatedSignature === signature;
-    } catch (error) {
-      return false;
-    }
+    // Skip frontend verification - rely on backend only
+    console.log('Skipping frontend signature verification');
+    return true;
   }
 
   // Handle successful payment
@@ -226,17 +218,16 @@ class RazorpayService {
         return;
       }
 
-      // Verify payment signature
-      const isValidSignature = this.verifySignature(
-        response.razorpay_order_id,
-        response.razorpay_payment_id,
-        response.razorpay_signature
-      );
+      // Verify payment on backend first
+      const isBackendVerified = await this.verifyPaymentOnBackend(response);
 
-      if (!isValidSignature && plan.id !== 'free') {
+      if (!isBackendVerified && plan.id !== 'free') {
+        console.error('Backend verification failed');
         alert('Payment verification failed. Please contact support.');
         return;
       }
+
+      console.log('Payment verified successfully');
 
       // Prepare subscription data
       const subscriptionData: SubscriptionData = {
