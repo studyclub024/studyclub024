@@ -278,6 +278,20 @@ class RazorpayService {
       // Store subscription in Firestore
       await db.collection('subscriptions').doc(currentUser.uid).set(subscriptionData);
 
+      // Update user profile with new plan
+      const expiryDate = new Date(subscriptionData.expiryDate);
+      const expiryStr = expiryDate.toLocaleDateString(undefined, { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+      
+      await db.collection('users').doc(currentUser.uid).update({
+        subscriptionPlanId: plan.id,
+        planExpiry: expiryStr,
+        'stats.lastActiveDate': Date.now()
+      });
+
       // Keep a copy in localStorage for quick access (not as source of truth)
       localStorage.setItem('subscriptionPlanId', plan.id);
 
@@ -287,10 +301,7 @@ class RazorpayService {
       // Clear current order ID after successful processing
       this.currentOrderId = null;
       
-      // Reload page after a delay to show the notification
-      setTimeout(() => {
-        window.location.reload();
-      }, 2000);
+      // No page reload - let Firestore listener update the UI automatically
     } catch (error: any) {
       console.error('Error saving subscription:', error);
       this.showNotification('error', 'Subscription Error', `Failed to save subscription: ${error.message || 'Unknown error'}. Please contact support.`);
