@@ -43,6 +43,7 @@ interface SubscriptionData {
 declare global {
   interface Window {
     Razorpay: any;
+    showNotification?: (type: 'success' | 'error' | 'warning', title: string, message: string) => void;
   }
 }
 
@@ -59,6 +60,15 @@ class RazorpayService {
     // NOTE: In production, signature verification MUST be done on backend
     // This is for demo purposes only - never expose key_secret in frontend
     this.keySecret = import.meta.env.VITE_RAZORPAY_KEY_SECRET || '';
+  }
+
+  private showNotification(type: 'success' | 'error' | 'warning', title: string, message: string) {
+    if (window.showNotification) {
+      window.showNotification(type, title, message);
+    } else {
+      // Fallback to alert if notification system not loaded
+      alert(`${title}\n\n${message}`);
+    }
   }
 
   // Load Razorpay script dynamically
@@ -93,7 +103,7 @@ class RazorpayService {
     const scriptLoaded = await this.loadScript();
     
     if (!scriptLoaded) {
-      alert('Failed to load Razorpay SDK. Please check your internet connection.');
+      this.showNotification('error', 'Connection Error', 'Failed to load Razorpay SDK. Please check your internet connection.');
       return;
     }
 
@@ -113,7 +123,7 @@ class RazorpayService {
     try {
       const currentUser = auth.currentUser;
       if (!currentUser) {
-        alert('Please log in to continue with payment.');
+        this.showNotification('warning', 'Login Required', 'Please log in to continue with payment.');
         return;
       }
 
@@ -169,7 +179,7 @@ class RazorpayService {
 
       razorpay.open();
     } catch (error: any) {
-      alert(`Error initializing payment: ${error.message}`);
+      this.showNotification('error', 'Payment Error', `Error initializing payment: ${error.message}`);
     }
   }
 
@@ -214,7 +224,7 @@ class RazorpayService {
       const currentUser = auth.currentUser;
       
       if (!currentUser) {
-        alert('User not authenticated. Please log in and try again.');
+        this.showNotification('error', 'Authentication Error', 'Please log in and try again.');
         return;
       }
 
@@ -223,7 +233,7 @@ class RazorpayService {
 
       if (!isBackendVerified && plan.id !== 'free') {
         console.error('Backend verification failed');
-        alert('Payment verification failed. Please contact support.');
+        this.showNotification('error', 'Verification Failed', 'Payment verification failed. Please contact support.');
         return;
       }
 
@@ -251,20 +261,20 @@ class RazorpayService {
       localStorage.setItem('subscriptionPlanId', plan.id);
 
       // Show success message
-      alert(`🎉 Payment successful! Your ${plan.name} is now active.`);
+      this.showNotification('success', 'Payment Successful! 🎉', `Your ${plan.name} is now active.`);
       
       // Reload page to reflect subscription changes
       window.location.reload();
     } catch (error: any) {
       console.error('Error saving subscription:', error);
-      alert(`Failed to save subscription: ${error.message || 'Unknown error'}. Please contact support.`);
+      this.showNotification('error', 'Subscription Error', `Failed to save subscription: ${error.message || 'Unknown error'}. Please contact support.`);
     }
   }
 
   // Handle payment failure
   private handlePaymentFailure(response: any) {
     const errorMsg = response.error?.description || 'Payment failed. Please try again.';
-    alert(`Payment Failed: ${errorMsg}`);
+    this.showNotification('error', 'Payment Failed', errorMsg);
   }
 
   // Calculate expiry date based on plan
@@ -357,7 +367,7 @@ class RazorpayService {
       const currentUser = auth.currentUser;
       
       if (!currentUser) {
-        alert('User not authenticated.');
+        this.showNotification('error', 'Authentication Error', 'User not authenticated.');
         return;
       }
 
@@ -367,10 +377,10 @@ class RazorpayService {
       });
 
       localStorage.removeItem('subscriptionPlanId');
-      alert('Subscription cancelled. You are now on the free plan.');
+      this.showNotification('success', 'Subscription Cancelled', 'You are now on the free plan.');
       window.location.reload();
     } catch (error) {
-      alert('Failed to cancel subscription. Please try again.');
+      this.showNotification('error', 'Cancellation Failed', 'Failed to cancel subscription. Please try again.');
     }
   }
 }

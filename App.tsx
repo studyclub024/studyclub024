@@ -17,6 +17,7 @@ import ProfileView from './components/Profile/ProfileView';
 import CoursesPage from './components/Courses/CoursesPage';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import SubscriptionScreen from './components/Subscription/SubscriptionScreen';
+import NotificationModal from './components/common/NotificationModal';
 import { StudyMode, StudyContent, SavedMaterial, FlashcardTheme, UserProfile, StudyHistoryItem, AchievementBadge, SubscriptionPlan } from './types';
 import { generateStudyMaterial, extractTextFromMedia, processUrlInput, detectEquations, transcribeAudio } from './services/geminiService';
 import { GoogleGenAI, LiveServerMessage, Modality, Blob as GenAIBlob } from '@google/genai';
@@ -148,6 +149,9 @@ const App: React.FC = () => {
   const [activeInputTool, setActiveInputTool] = useState<InputToolType>('text');
   // Legal pages state (privacy/terms/contact)
   const [legalPage, setLegalPage] = useState<'privacy' | 'terms' | 'contact' | null>(null);
+
+  // Notification modal state
+  const [notification, setNotification] = useState<{ type: 'success' | 'error' | 'warning'; title: string; message: string } | null>(null);
 
   const [urlValue, setUrlValue] = useState('');
   
@@ -1348,6 +1352,18 @@ const App: React.FC = () => {
               onClose={() => setShowUpgradeModal(false)}
           />
       )}
+
+      {/* Notification Modal */}
+      {notification && (
+        <NotificationModal
+          isOpen={true}
+          onClose={() => setNotification(null)}
+          type={notification.type}
+          title={notification.title}
+          message={notification.message}
+        />
+      )}
+
       <Footer onOpenLegal={(s) => setLegalPage(s)} />
     </div>
   );
