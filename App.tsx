@@ -593,6 +593,20 @@ const App: React.FC = () => {
         mode 
       };
       setStudyHistory(prev => [historyItem, ...prev].slice(0, 50));
+      
+      // Clear input fields after successful generation
+      if (activeTab === 'equations') {
+        if (mathInputMode === 'content') {
+          setTabInputs(prev => ({ ...prev, equations: '' }));
+          setDetectedEquations([]);
+          setSelectedEquationIndex(null);
+        } else {
+          setEquationManualText('');
+        }
+      } else {
+        setTabInputs(prev => ({ ...prev, [activeTab]: '' }));
+        if (activeTab === 'exams') setSelectedExam(null);
+      }
     } catch (err: any) { 
         setError(err.message); 
         setShowResultView(false);
