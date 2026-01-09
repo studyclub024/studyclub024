@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { GraduationCap, Rocket, ArrowRight, Layers, Calculator, Languages, Brain, Globe, Shield, Zap, Star, Trophy, Crown, Check, FileText, Loader2, X } from 'lucide-react';
 import ModeSelector from './Input/ModeSelector';
 import Footer from './Layout/Footer';
@@ -21,11 +21,12 @@ const FeatureCard: React.FC<{
   desc: string;
   color?: string;
   bg?: string;
-}> = ({ icon: Icon, title, desc, color = 'text-indigo-600', bg = 'bg-indigo-50' }) => (
+  descColor?: string;
+}> = ({ icon: Icon, title, desc, color = 'text-indigo-600', bg = 'bg-indigo-50', descColor = 'text-gray-600' }) => (
   <div className={`rounded-2xl p-6 ${bg} shadow-sm border border-gray-50`}>
     <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-4 ${color} bg-white/60`}> <Icon size={20} /> </div>
     <h4 className="font-black text-lg mb-2">{title}</h4>
-    <p className="text-sm text-gray-600">{desc}</p>
+    <p className={`text-sm ${descColor}`}>{desc}</p>
   </div>
 );
 
@@ -43,7 +44,6 @@ const Homepage: React.FC<HomepageProps> = ({ onOpenAuth, onGetStarted, onOpenUpg
 
   const handleGetStarted = () => {
     if (onGetStarted) onGetStarted();
-    else if (onOpenAuth) onOpenAuth();
     else alert('Get started clicked');
   };
 
@@ -54,6 +54,28 @@ const Homepage: React.FC<HomepageProps> = ({ onOpenAuth, onGetStarted, onOpenUpg
   const [previewText, setPreviewText] = useState('');
   const [previewFileName, setPreviewFileName] = useState<string | null>(null);
   const [previewUsedOnce, setPreviewUsedOnce] = useState(false);
+
+  // About section reveal
+  const aboutRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (!aboutRef.current) return;
+    const items = Array.from(aboutRef.current.querySelectorAll('.reveal-item')) as HTMLElement[];
+    if (!items.length) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        const el = entry.target as HTMLElement;
+        if (entry.isIntersecting) {
+          el.classList.add('translate-y-0', 'opacity-100');
+          el.classList.remove('translate-y-6', 'opacity-0');
+        }
+      });
+    }, { threshold: 0.2 });
+
+    items.forEach((it) => observer.observe(it));
+    return () => observer.disconnect();
+  }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -119,9 +141,10 @@ const Homepage: React.FC<HomepageProps> = ({ onOpenAuth, onGetStarted, onOpenUpg
           </div>
 
           <div className="hidden md:flex items-center gap-10">
-            <a href="#features" onClick={(e) => scrollToSection(e, 'features')} className="text-sm font-black uppercase tracking-wide text-gray-500 hover:text-indigo-600 transition-all">Tools</a>
+            <a href="#about" onClick={(e) => scrollToSection(e, 'about')} className="text-sm font-black uppercase tracking-wide text-gray-500 hover:text-indigo-600 transition-all">About</a>
+            <a href="#features" onClick={(e) => scrollToSection(e, 'features')} className="text-sm font-black uppercase tracking-wide text-gray-500 hover:text-indigo-600 transition-all">Our Features</a>
             <a href="#pricing" onClick={(e) => scrollToSection(e, 'pricing')} className="text-sm font-black uppercase tracking-wide text-gray-500 hover:text-indigo-600 transition-all">Pricing</a>
-            <a href="#impact" onClick={(e) => scrollToSection(e, 'impact')} className="text-sm font-black uppercase tracking-wide text-gray-500 hover:text-indigo-600 transition-all">Impact</a>
+            <a href="#impact" onClick={(e) => scrollToSection(e, 'impact')} className="text-sm font-black uppercase tracking-wide text-gray-500 hover:text-indigo-600 transition-all">Feedbacks</a>
           </div>
 
           <div className="flex items-center gap-4">
@@ -139,7 +162,7 @@ const Homepage: React.FC<HomepageProps> = ({ onOpenAuth, onGetStarted, onOpenUpg
 
       {/* Hero */}
       <section className="pt-28 pb-16 px-6">
-        <div className="container mx-auto max-w-6xl text-center">
+        <div className="container mx-auto px-6 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-indigo-50 text-indigo-600 rounded-full text-xs font-bold uppercase tracking-wide mb-6">
             <Rocket size={14} /> The Next Evolution in Learning
           </div>
@@ -150,8 +173,7 @@ const Homepage: React.FC<HomepageProps> = ({ onOpenAuth, onGetStarted, onOpenUpg
               <p className="mt-6 text-gray-600 max-w-xl">Universal AI-powered engine to turn PDFs, images, handwriting and notes into interactive, exam-ready study protocols.</p>
 
               <div className="mt-8 flex items-center gap-4">
-                <button onClick={handleGetStarted} className="inline-flex items-center gap-3 px-6 py-3 bg-indigo-600 text-white rounded-lg font-bold shadow-lg hover:scale-105 transition-transform">Start Learning <ArrowRight size={18} /></button>
-                <button className="px-6 py-3 rounded-lg border border-gray-200 bg-white text-gray-700 font-semibold">Watch Demo</button>
+                <button onClick={handleLogin} className="inline-flex items-center gap-3 px-6 py-3 bg-indigo-600 text-white rounded-lg font-bold shadow-lg hover:scale-105 transition-transform">Start Learning <ArrowRight size={18} /></button>
               </div>
 
               <div className="mt-8 grid grid-cols-2 gap-4 text-sm text-gray-600">
@@ -214,50 +236,125 @@ const Homepage: React.FC<HomepageProps> = ({ onOpenAuth, onGetStarted, onOpenUpg
         </div>
       </section>
 
-      {/* Result Protocols */}
-      <section id="features" className="py-16 bg-white">
-        <div className="container mx-auto px-6 max-w-7xl">
-          <div className="mb-6">
-            <h3 className="text-xl font-black mb-2">Select Intelligence Protocol</h3>
-            <p className="text-gray-500 text-sm">Pick a protocol to transform your material into the exact study output you need — fully powered by StudyClub24.</p>
-          </div>
+      {/* About */}
+      <section id="about" ref={aboutRef} className="py-16 bg-white overflow-hidden">
+        <div className="container mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
 
-          <div className="mb-8">
-            <ModeSelector
-              selectedMode={null}
-              onSelectMode={(mode) => {
-                if (onOpenSelectMode) onOpenSelectMode(mode);
-                else {
-                  if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('selectMode', { detail: mode }));
-                }
-              }}
-              disabled={false}
-              loadingMode={null}
-              cachedModes={[]}
-              cols={3}
-              config={((): any => {
-                const order = [
-                  StudyMode.FLASHCARDS,
-                  StudyMode.NOTES,
-                  StudyMode.QUIZ,
-                  StudyMode.PLAN,
-                  StudyMode.SUMMARY,
-                  StudyMode.ESSAY,
-                  StudyMode.ELI5,
-                  StudyMode.DESCRIBE
-                ];
-                const cfg: Record<string, any> = {};
-                order.forEach((k) => { if ((MODE_CONFIG as any)[k]) cfg[k] = (MODE_CONFIG as any)[k]; });
-                return cfg;
-              })()}
-            />
+            {/* Left: big headline + stats */}
+            <div className="text-left">
+              <div className="overflow-hidden">
+                <div className="reveal-item transform translate-y-6 opacity-0 transition-all duration-700 ease-out">
+                  <h2 className="text-4xl md:text-6xl font-black leading-tight text-gray-900">We help students <span className="text-indigo-600">study smarter</span> and perform better.</h2>
+                </div>
+              </div>
+
+              <div className="mt-6 overflow-hidden">
+                <div className="reveal-item transform translate-y-6 opacity-0 transition-all duration-700 ease-out">
+                  <p className="text-gray-600 max-w-xl">StudyClub24 converts your notes, PDFs and images into compact, exam-ready study protocols — summaries, flashcards, quizzes and custom study plans — powered by AI to save time and boost retention.</p>
+                </div>
+              </div>
+
+              <div className="mt-8 grid grid-cols-3 gap-6">
+                <div className="reveal-item transform translate-y-6 opacity-0 transition-all duration-700 ease-out">
+                  <div className="text-3xl font-black text-gray-900">50K+</div>
+                  <div className="text-xs text-gray-500 uppercase">Active Students</div>
+                </div>
+                <div className="reveal-item transform translate-y-6 opacity-0 transition-all duration-700 ease-out">
+                  <div className="text-3xl font-black text-gray-900">1M+</div>
+                  <div className="text-xs text-gray-500 uppercase">Modules Created</div>
+                </div>
+                <div className="reveal-item transform translate-y-6 opacity-0 transition-all duration-700 ease-out">
+                  <div className="text-3xl font-black text-gray-900">4.8</div>
+                  <div className="text-xs text-gray-500 uppercase">Avg Rating</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right: feature cards (compact) */}
+            <div>
+              <div className="reveal-item transform translate-y-6 opacity-0 transition-all duration-700 ease-out">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <FeatureCard icon={Brain} title="AI-Powered" desc="Adaptive explanations & summaries" color="text-indigo-600" bg="bg-indigo-50" />
+                  <FeatureCard icon={Globe} title="Global Community" desc="Collaborate with peers and tutors" color="text-indigo-600" bg="bg-indigo-50" />
+                  <FeatureCard icon={Layers} title="Versatile Formats" desc="PDFs, images, notes & handwriting" color="text-indigo-600" bg="bg-indigo-50" />
+                  <FeatureCard icon={Calculator} title="Practice Tools" desc="Quizzes and timed practice" color="text-indigo-600" bg="bg-indigo-50" />
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* Result Protocols */}
+      <section id="features" className="py-16">
+        <div className="container mx-auto px-6">
+          <div className="bg-gradient-to-r from-[#06102a] via-[#11214a] to-[#3b1260] rounded-2xl p-8 md:p-12 text-white overflow-hidden">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+
+              {/* Left image/illustration */}
+              <div className="rounded-2xl overflow-hidden flex items-center justify-center">
+                <div className="relative w-full rounded-2xl bg-gradient-to-br from-indigo-800 via-blue-700 to-pink-600 p-8 md:p-12 flex items-center justify-center" style={{ minHeight: 340 }}>
+                  {/* Decorative ring + graduate illustration */}
+                  <div className="relative flex items-center justify-center">
+                    <div className="w-56 h-56 md:w-72 md:h-72 rounded-full bg-white/6 flex items-center justify-center">
+                      <div className="text-6xl md:text-8xl">🎓</div>
+                    </div>
+                    <div className="absolute -left-12 -bottom-8 w-40 h-40 rounded-full bg-white/4 blur-3xl" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Right content */}
+              <div>
+                <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-300 mb-3">Our Features</h2>
+                <h3 className="text-3xl md:text-4xl font-black mb-4">Study tools that help you learn faster</h3>
+                <p className="text-gray-200 mb-6">Pick a protocol to transform your material into the exact study output you need — fully powered by StudyClub24. StudyClub24 helps students study smarter by turning notes, PDFs and images into concise, exam-ready study protocols powered by AI.</p>
+
+                <div className="mb-8">
+                  <ModeSelector
+                    selectedMode={null}
+                    onSelectMode={(mode) => {
+                      if (onOpenSelectMode) onOpenSelectMode(mode);
+                      else { if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('selectMode', { detail: mode })); }
+                    }}
+                    disabled={false}
+                    loadingMode={null}
+                    cachedModes={[]}
+                    cols={2}
+                    config={((): any => {
+                      const order = [
+                        StudyMode.FLASHCARDS,
+                        StudyMode.NOTES,
+                        StudyMode.QUIZ,
+                        StudyMode.PLAN,
+                        StudyMode.SUMMARY,
+                        StudyMode.ESSAY,
+                        StudyMode.ELI5,
+                        StudyMode.DESCRIBE
+                      ];
+                      const cfg: Record<string, any> = {};
+                      order.forEach((k) => { if ((MODE_CONFIG as any)[k]) cfg[k] = (MODE_CONFIG as any)[k]; });
+                      return cfg;
+                    })()}
+                  />
+                </div>
+
+                <div className="mt-6 flex items-center gap-4">
+                  <button onClick={() => { if (onGetStarted) onGetStarted(); }} className="px-6 py-3 bg-white text-indigo-800 rounded-full font-bold">Try it now</button>
+                  <button onClick={handleGoToPricing} className="px-6 py-3 border border-white text-white rounded-full">Start free trial</button>
+                </div>
+              </div>
+
+            </div>
           </div>
         </div>
       </section>
 
       {/* Pricing (shared with Subscription modal) */}
       <section id="pricing" className="py-16 bg-white">
-        <div className="container mx-auto px-6 max-w-7xl">
+        <div className="container mx-auto px-6">
           <div className="text-center mb-12">
             <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-600">The Membership</h2>
             <h3 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight">Flexible Plans for Every Learner</h3>
@@ -342,9 +439,14 @@ const Homepage: React.FC<HomepageProps> = ({ onOpenAuth, onGetStarted, onOpenUpg
         </div>
       </section>
 
-      {/* Impact */}
+      {/* Feedbacks */}
       <section id="impact" className="py-16 bg-white">
-        <div className="container mx-auto px-6 max-w-3xl text-center">
+        <div className="container mx-auto px-6 text-center">
+          <div className="mb-6">
+            <h3 className="text-xl font-black mb-2">Feedbacks</h3>
+            <p className="text-gray-500 text-sm">What students are saying about StudyClub24</p>
+          </div>
+
           <div className="flex justify-center gap-2 text-yellow-400 mb-6"><Star fill="currentColor" /><Star fill="currentColor" /><Star fill="currentColor" /></div>
           <p className="text-xl font-black italic">"StudyClub24 changed how I prepare for exams. It explains the logic behind every step."</p>
           <div className="mt-8">
