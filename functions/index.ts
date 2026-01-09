@@ -1,20 +1,25 @@
 /**
- * Firebase Cloud Function to check and update expired subscriptions
- * Runs daily at midnight UTC
+ * Firebase Cloud Functions for StudyClub24
  * 
  * To deploy:
  * 1. Install Firebase CLI: npm install -g firebase-tools
  * 2. Login: firebase login
- * 3. Initialize functions: firebase init functions
- * 4. Deploy: firebase deploy --only functions
+ * 3. Deploy: firebase deploy --only functions
  */
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
+import * as crypto from 'crypto';
 
 // Initialize Firebase Admin
 admin.initializeApp();
 const db = admin.firestore();
+
+// Razorpay configuration
+const getRazorpayConfig = () => ({
+  key_id: process.env.RAZORPAY_KEY_ID || '',
+  key_secret: process.env.RAZORPAY_KEY_SECRET || '',
+});
 
 /**
  * Scheduled function to check for expired subscriptions
@@ -146,6 +151,134 @@ export const onSubscriptionCreated = functions.firestore
 
     return null;
   });
+
+/**
+ * HTTP Function: Create Razorpay Order
+ */
+export const createOrder = functions.https.onRequest(async (req, res) => {
+  // Set CORS headers
+  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'Content-Type');
+  
+  if (req.method === 'OPTIONS') {
+    res.status(200).send('');
+    return;
+  }
+
+  if (req.method !== 'POST') {
+    res.status(405).json({ error: 'Method not allowed' });
+    return;
+  }
+
+  try {
+    const { amount, planId, userId } = req.body;
+
+    console.log('Create order request:', { amount, planId, userId });
+
+    if (!amount || !planId || !userId) {
+      res.status(400).json({
+        error: 'Missing required fields: amount, planId, userId'
+      });
+      return;
+    }
+
+    const Razorpay = require('razorpay');
+    const razorpay = new Razorpay(getRazorpayConfig());
+
+    const shortUserId = userId.substring(0, 8);
+    const timestamp = Date.now().toString();
+    const receipt = `rcpt_${timestamp}_${shortUserId}`.substring(0, 40);
+
+    const options = {
+      amount: amount * 100,
+      currency: 'INR',
+      receipt: receipt,
+      notes: { planId, userId },
+    };
+
+    console.log('Creating Razorpay order with options:', options);
+    const order = await razorpay.orders.create(options);
+    console.log('Order created successfully:', order.id);
+
+    res.json({
+      orderId: order.id,
+      amount: order.amount,
+      currency: order.currency,
+    });
+  } catch (error: any) {
+    console.error('Error creating order:', error);
+    res.status(500).json({
+      error: 'Failed to create order',
+      message: error.message,
+    });
+  }
+});
+
+/**
+ * HTTP Function: Verify Razorpay Payment
+ */
+export const verifyPayment = functions.https.onRequest(async (req, res) => {
+  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'Content-Type');
+  
+  if (req.method === 'OPTIONS') {
+    res.status(200).send('');
+    return;
+  }
+
+  if (req.method !== 'POST') {
+    res.status(405).json({ error: 'Method not allowed' });
+    return;
+  }
+
+  try {
+    const { orderId, paymentId, signature } = req.body;
+
+    if (!orderId || !paymentId || !signature) {
+      res.status(400).json({
+        error: 'Missing required fields: orderId, paymentId, signature'
+      });
+      return;
+    }
+
+    const generatedSignature = crypto
+      .createHmac('sha256', getRazorpayConfig().key_secret)
+      .update(`${orderId}|${paymentId}`)
+      .digest('hex');
+
+    if (generatedSignature === signature) {
+      res.json({
+        verified: true,
+        message: 'Payment verified successfully'
+      });
+    } else {
+      res.status(400).json({
+        verified: false,
+        error: 'Invalid signature'
+      });
+    }
+  } catch (error: any) {
+    console.error('Error verifying payment:', error);
+    res.status(500).json({
+      error: 'Failed to verify payment',
+      message: error.message
+    });
+  }
+});
+
+/**
+ * HTTP Function: Health Check
+ */
+export const health = functions.https.onRequest(async (req, res) => {
+  res.set('Access-Control-Allow-Origin', '*');
+  res.json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    service: 'StudyClub24 API'
+  });
+});
 
 /**
  * Function triggered when a subscription is updated

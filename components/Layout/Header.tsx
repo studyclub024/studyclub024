@@ -48,7 +48,7 @@ const Header: React.FC<Props> = ({ isDarkMode, onToggleDarkMode, onProfileClick,
 
   const [isChatOpen, setIsChatOpen] = useState(false);
 
-  const isMonthlyOrAbove = ['monthly', 'monthly-pro', 'yearly', 'yearly-pro'].includes(planId);
+  const hasCoursesAccess = ['crash-course', 'focused-prep', 'study-pro'].includes(planId);
 
   // Expose chat toggler to the nested ChatButton component by window (small pragmatic approach)
   (window as any)._stc_setChatOpen = (v: boolean) => setIsChatOpen(v);
@@ -151,7 +151,7 @@ const Header: React.FC<Props> = ({ isDarkMode, onToggleDarkMode, onProfileClick,
           </div>
 
           <div className="flex items-center gap-2">
-            {isMonthlyOrAbove && (
+            {hasCoursesAccess && (
               <button 
                 onClick={onCoursesClick}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl font-bold text-[10px] uppercase tracking-widest transition-all border shadow-sm ${

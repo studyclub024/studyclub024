@@ -17,6 +17,7 @@ import ProfileView from './components/Profile/ProfileView';
 import CoursesPage from './components/Courses/CoursesPage';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import SubscriptionScreen from './components/Subscription/SubscriptionScreen';
+import NotificationModal from './components/common/NotificationModal';
 import { StudyMode, StudyContent, SavedMaterial, FlashcardTheme, UserProfile, StudyHistoryItem, AchievementBadge, SubscriptionPlan } from './types';
 import { generateStudyMaterial, extractTextFromMedia, processUrlInput, detectEquations, transcribeAudio } from './services/geminiService';
 import { GoogleGenAI, LiveServerMessage, Modality, Blob as GenAIBlob } from '@google/genai';
@@ -149,6 +150,9 @@ const App: React.FC = () => {
   // Legal pages state (privacy/terms/contact)
   const [legalPage, setLegalPage] = useState<'privacy' | 'terms' | 'contact' | null>(null);
 
+  // Notification modal state
+  const [notification, setNotification] = useState<{ type: 'success' | 'error' | 'warning'; title: string; message: string } | null>(null);
+
   const [urlValue, setUrlValue] = useState('');
   
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -165,28 +169,37 @@ const App: React.FC = () => {
   // Premium Gating Functions
   const userPlan = userProfile?.subscriptionPlanId || 'free';
   const isFree = userPlan === 'free';
-  const isWeekly = userPlan === 'weekly';
-  const isMonthlyOrAbove = ['monthly', 'monthly-pro', 'yearly', 'yearly-pro'].includes(userPlan);
-  const isPro = ['monthly-pro', 'yearly-pro'].includes(userPlan);
+  const isCrashCourse = userPlan === 'crash-course';
+  const isInstantHelp = userPlan === 'instant-help';
+  const isFocusedPrep = userPlan === 'focused-prep';
+  const isStudyPro = userPlan === 'study-pro';
+  const hasVoiceAccess = isInstantHelp || isFocusedPrep || isStudyPro;
 
-  const canUseFeature = (feature: 'themes' | 'save' | 'english' | 'sharing' | 'tts' | 'regen'): boolean => {
-    if (isPro) return true;
+  const canUseFeature = (feature: 'themes' | 'save' | 'english' | 'sharing' | 'tts' | 'regen' | 'courses' | 'flashcards' | 'summaries' | 'test' | 'studyplan'): boolean => {
+    if (isStudyPro) return true;
+    
     switch (feature) {
-      case 'regen': return !isFree;
+      case 'courses': return isCrashCourse || isFocusedPrep || isStudyPro;
+      case 'flashcards':
+      case 'summaries':
+      case 'test': return isInstantHelp || isFocusedPrep || isStudyPro;
+      case 'studyplan': return isInstantHelp || isFocusedPrep || isStudyPro;
       case 'themes':
+      case 'english': return isFocusedPrep || isStudyPro;
       case 'save':
-      case 'english':
-      case 'sharing':
-      case 'tts': return isMonthlyOrAbove;
+      case 'sharing': return isStudyPro;
+      case 'tts': return isInstantHelp || isFocusedPrep || isStudyPro;
+      case 'regen': return !isFree && !isCrashCourse;
       default: return false;
     }
   };
 
   const getInputLimits = () => {
-    if (isPro) return Infinity;
-    if (isFree) return 1; // 1 total
-    if (isWeekly) return 5; // per day
-    return 10; // monthly/yearly
+    if (isStudyPro) return Infinity;
+    if (isFree || isCrashCourse) return 0; // No notes upload
+    if (isInstantHelp) return 5; // 5 per day
+    if (isFocusedPrep) return 10; // 10 per day
+    return 0;
   };
 
   const checkLimitBeforeSubmit = (): { allowed: boolean; reason?: string } => {
@@ -194,16 +207,26 @@ const App: React.FC = () => {
     const dailyGen = userProfile?.stats.dailyGenerations || 0;
     const limit = getInputLimits();
 
-    if (isFree && totalGen >= 1) {
-      return { allowed: false, reason: "Your Free trial limit (1 generation total) has been reached. Upgrade to keep learning." };
+    if ((isFree || isCrashCourse) && limit === 0) {
+      return { allowed: false, reason: "Notes upload not available on your plan. Upgrade to unlock." };
     }
     
-    if (!isPro && !isFree && dailyGen >= limit) {
-      return { allowed: false, reason: `You've reached your daily limit of ${limit} inputs. Upgrade to Pro for unlimited access.` };
+    if (!isStudyPro && limit > 0 && dailyGen >= limit) {
+      return { allowed: false, reason: `You've reached your daily limit of ${limit} notes upload. Upgrade to Study Pro for unlimited access.` };
     }
 
     return { allowed: true };
   };
+
+  // Expose notification function to razorpayService
+  useEffect(() => {
+    window.showNotification = (type, title, message) => {
+      setNotification({ type, title, message });
+    };
+    return () => {
+      delete window.showNotification;
+    };
+  }, []);
 
   useEffect(() => {
     if (isDarkMode) {
@@ -571,6 +594,20 @@ const App: React.FC = () => {
         mode 
       };
       setStudyHistory(prev => [historyItem, ...prev].slice(0, 50));
+      
+      // Clear input fields after successful generation
+      if (activeTab === 'equations') {
+        if (mathInputMode === 'content') {
+          setTabInputs(prev => ({ ...prev, equations: '' }));
+          setDetectedEquations([]);
+          setSelectedEquationIndex(null);
+        } else {
+          setEquationManualText('');
+        }
+      } else {
+        setTabInputs(prev => ({ ...prev, [activeTab]: '' }));
+        if (activeTab === 'exams') setSelectedExam(null);
+      }
     } catch (err: any) { 
         setError(err.message); 
         setShowResultView(false);
@@ -1089,13 +1126,13 @@ const App: React.FC = () => {
                       
                       <button 
                         onClick={() => {
-                          if (isMonthlyOrAbove) toggleVoiceRecording();
+                          if (hasVoiceAccess) toggleVoiceRecording();
                           else setShowUpgradeModal(true);
                         }} 
                         className={`flex-1 md:flex-none flex items-center justify-center gap-2 md:gap-3 px-4 md:px-8 py-3 md:py-4 rounded-xl text-[10px] md:text-sm font-black uppercase tracking-widest transition-all ${isRecording ? 'bg-red-500 text-white shadow-xl shadow-red-200 scale-105' : 'bg-white dark:bg-slate-700 text-pink-600 dark:text-pink-400 border-2 border-pink-100 dark:border-pink-500/20 hover:border-pink-300 active:scale-95'}`}
                         aria-label={isRecording ? "Stop voice recording" : "Start voice recording"}
                       >
-                        {isRecording ? <StopCircle size={18} /> : (isMonthlyOrAbove ? <Mic size={18} /> : <Lock size={18} />)} {isRecording ? 'Stop' : 'Voice'}
+                        {isRecording ? <StopCircle size={18} /> : (hasVoiceAccess ? <Mic size={18} /> : <Lock size={18} />)} {isRecording ? 'Stop' : 'Voice'}
                       </button>
 
                       <button onClick={() => imageInputRef.current?.click()} className="flex-1 md:flex-none flex items-center justify-center gap-2 md:gap-3 px-4 md:px-8 py-3 md:py-4 theme-bg text-white rounded-xl text-[10px] md:text-sm font-black uppercase tracking-widest transition-all hover:opacity-90 active:scale-95" aria-label="Scan image for text"><Camera size={18} /> Scan</button>
@@ -1297,11 +1334,12 @@ const App: React.FC = () => {
                      const now = new Date();
                      let daysToAdd = 0;
                      switch(plan.id) {
-                       case 'weekly': daysToAdd = 7; break;
-                       case 'monthly':
-                       case 'monthly-pro': daysToAdd = 30; break;
-                       case 'yearly':
-                       case 'yearly-pro': daysToAdd = 365; break;
+                       case 'crash-course':
+                       case 'instant-help':
+                       case 'focused-prep':
+                       case 'study-pro': 
+                         daysToAdd = 30; 
+                         break;
                        default: daysToAdd = 365; 
                      }
                      
@@ -1339,6 +1377,18 @@ const App: React.FC = () => {
               onClose={() => setShowUpgradeModal(false)}
           />
       )}
+
+      {/* Notification Modal */}
+      {notification && (
+        <NotificationModal
+          isOpen={true}
+          onClose={() => setNotification(null)}
+          type={notification.type}
+          title={notification.title}
+          message={notification.message}
+        />
+      )}
+
       <Footer onOpenLegal={(s) => setLegalPage(s)} />
     </div>
   );

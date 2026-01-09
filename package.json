@@ -16,7 +16,12 @@
     "android:add": "npx cap add android",
     "android:open": "npx cap open android",
     "android:copy": "npx cap copy android",
-    "android:build": "npm run build && npx cap copy android && npx cap open android"
+    "android:build": "npm run build && npx cap copy android && npx cap open android",
+    "firebase:deploy": "npm run build && firebase deploy",
+    "firebase:deploy:hosting": "npm run build && firebase deploy --only hosting",
+    "firebase:deploy:functions": "cd functions && npm install && cd .. && firebase deploy --only functions",
+    "firebase:emulators": "npm run build && firebase emulators:start",
+    "firebase:logs": "firebase functions:log"
   },
   "dependencies": {
     "@capacitor/android": "^8.0.0",
