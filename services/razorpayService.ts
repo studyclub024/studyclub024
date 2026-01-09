@@ -120,7 +120,7 @@ class RazorpayService {
       const amount = this.getPriceInPaise(plan.price);
 
       // Create order on backend
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const API_URL = import.meta.env.VITE_API_URL || (window.location.hostname === 'localhost' ? 'http://localhost:3001' : window.location.origin);
       const orderResponse = await fetch(`${API_URL}/api/create-order`, {
         method: 'POST',
         headers: {
@@ -176,7 +176,7 @@ class RazorpayService {
   // Verify payment on backend
   private async verifyPaymentOnBackend(response: RazorpayResponse): Promise<boolean> {
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const API_URL = import.meta.env.VITE_API_URL || (window.location.hostname === 'localhost' ? 'http://localhost:3001' : window.location.origin);
       const verifyResponse = await fetch(`${API_URL}/api/verify-payment`, {
         method: 'POST',
         headers: {
