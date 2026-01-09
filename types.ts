@@ -31,7 +31,7 @@ export enum FlashcardTheme {
 }
 
 export interface SubscriptionPlan {
-  id: 'free' | 'weekly' | 'monthly' | 'monthly-pro' | 'yearly' | 'yearly-pro';
+  id: 'free' | 'crash-course' | 'instant-help' | 'focused-prep' | 'study-pro';
   name: string;
   price: string;
   period: string;
@@ -392,7 +392,7 @@ export interface UserProfile {
   displayName: string;
   email?: string;
   planExpiry?: string;
-  subscriptionPlanId: 'free' | 'weekly' | 'monthly' | 'monthly-pro' | 'yearly' | 'yearly-pro';
+  subscriptionPlanId: 'free' | 'crash-course' | 'instant-help' | 'focused-prep' | 'study-pro';
   photoURL?: string;
   preferences: {
     flashcardTheme: FlashcardTheme;

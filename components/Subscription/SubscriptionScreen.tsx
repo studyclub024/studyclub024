@@ -7,58 +7,40 @@ import { auth } from '../../firebaseConfig';
 
 export const PLANS: SubscriptionPlan[] = [
   {
-    id: 'free',
-    name: 'Free Plan',
-    price: '₹0',
-    period: 'Forever',
-    description: 'Perfect for first-time users to trial the engine.',
-    features: ['1 Input Total', 'Generate Results Once per Format', 'Basic AI Models', 'Ad-Supported'],
-    gradient: 'from-slate-400 to-slate-500'
-  },
-  {
-    id: 'weekly',
-    name: 'Weekly Plan',
-    price: '₹45',
-    period: 'Week',
-    description: 'Light daily usage, completely ad-free.',
-    features: ['5 Inputs Per Day', 'Generate Results Multiple Times', 'No Ads', 'Instant Processing'],
+    id: 'crash-course',
+    name: 'Crash Course Plan',
+    price: '₹30',
+    period: 'Month',
+    description: 'Less Than a Chocolate',
+    features: ['Course & Question Paper', 'No Notes Upload', 'No Flashcards', 'No Summaries', 'No Test', 'No Study Plan'],
     gradient: 'from-blue-400 to-indigo-500'
   },
   {
-    id: 'monthly',
-    name: 'Monthly Plan',
-    price: '₹99',
+    id: 'instant-help',
+    name: 'Instant Help',
+    price: '₹150',
     period: 'Month',
-    description: 'Best value for regular students and learners.',
+    description: 'Less than a cup of tea',
     isPopular: true,
-    features: ['10 Inputs Per Day', 'Flashcard Themes Enabled', 'Save Results Locally', 'English Learning Tab', 'Leaderboard Sharing', 'Text-to-Speech (TTS)'],
+    features: ['5 Notes Upload/day', 'Unlimited Flashcards', 'Unlimited Summaries', 'Unlimited Test', 'Study Plan'],
     gradient: 'from-violet-500 to-fuchsia-500'
   },
   {
-    id: 'monthly-pro',
-    name: 'Monthly Pro',
-    price: '₹150',
+    id: 'focused-prep',
+    name: 'Focused Prep',
+    price: '₹210',
     period: 'Month',
-    description: 'Unlimited power for high-stakes exam prep.',
-    features: ['Unlimited Inputs', 'All Themes Unlocked', 'Advanced Analysis', 'Everything in Monthly'],
+    description: 'Less than Lays Packet',
+    features: ['Course & Question Paper', '10 Notes Upload/day', 'Unlimited Flashcards', 'Unlimited Summaries', 'Unlimited Test', 'Study Plan', 'Language Learning', 'Theme For Fun Learning'],
     gradient: 'from-fuchsia-500 to-rose-500'
   },
   {
-    id: 'yearly',
-    name: 'Yearly Plan',
-    price: '₹360',
-    period: 'Year',
-    description: 'Affordable long-term plan for consistent success.',
-    features: ['10 Inputs Per Day', 'All Themes Unlocked', 'Full Academic Access', 'Everything in Monthly'],
-    gradient: 'from-rose-500 to-orange-500'
-  },
-  {
-    id: 'yearly-pro',
-    name: 'Yearly Pro',
-    price: '₹999',
-    period: 'Year',
-    description: 'The ultimate academic benchmark. King of prep.',
-    features: ['Unlimited Inputs', 'All Themes Unlocked', 'Priority Access', 'Everything in Monthly Pro'],
+    id: 'study-pro',
+    name: 'Study Pro ⭐',
+    price: '₹599',
+    period: 'Month',
+    description: 'Less than a Cafe outing',
+    features: ['Course & Question Paper', 'Unlimited Notes Upload', 'Unlimited Flashcards', 'Unlimited Summaries', 'Unlimited Test', 'Study Plan', 'Save Flashcards', 'Share Flashcards', 'Language Learning', 'Theme For Fun Learning'],
     gradient: 'from-amber-400 to-yellow-600'
   }
 ];

@@ -165,28 +165,36 @@ const App: React.FC = () => {
   // Premium Gating Functions
   const userPlan = userProfile?.subscriptionPlanId || 'free';
   const isFree = userPlan === 'free';
-  const isWeekly = userPlan === 'weekly';
-  const isMonthlyOrAbove = ['monthly', 'monthly-pro', 'yearly', 'yearly-pro'].includes(userPlan);
-  const isPro = ['monthly-pro', 'yearly-pro'].includes(userPlan);
+  const isCrashCourse = userPlan === 'crash-course';
+  const isInstantHelp = userPlan === 'instant-help';
+  const isFocusedPrep = userPlan === 'focused-prep';
+  const isStudyPro = userPlan === 'study-pro';
 
-  const canUseFeature = (feature: 'themes' | 'save' | 'english' | 'sharing' | 'tts' | 'regen'): boolean => {
-    if (isPro) return true;
+  const canUseFeature = (feature: 'themes' | 'save' | 'english' | 'sharing' | 'tts' | 'regen' | 'courses' | 'flashcards' | 'summaries' | 'test' | 'studyplan'): boolean => {
+    if (isStudyPro) return true;
+    
     switch (feature) {
-      case 'regen': return !isFree;
+      case 'courses': return isCrashCourse || isFocusedPrep || isStudyPro;
+      case 'flashcards':
+      case 'summaries':
+      case 'test': return isInstantHelp || isFocusedPrep || isStudyPro;
+      case 'studyplan': return isInstantHelp || isFocusedPrep || isStudyPro;
       case 'themes':
+      case 'english': return isFocusedPrep || isStudyPro;
       case 'save':
-      case 'english':
-      case 'sharing':
-      case 'tts': return isMonthlyOrAbove;
+      case 'sharing': return isStudyPro;
+      case 'tts': return isInstantHelp || isFocusedPrep || isStudyPro;
+      case 'regen': return !isFree && !isCrashCourse;
       default: return false;
     }
   };
 
   const getInputLimits = () => {
-    if (isPro) return Infinity;
-    if (isFree) return 1; // 1 total
-    if (isWeekly) return 5; // per day
-    return 10; // monthly/yearly
+    if (isStudyPro) return Infinity;
+    if (isFree || isCrashCourse) return 0; // No notes upload
+    if (isInstantHelp) return 5; // 5 per day
+    if (isFocusedPrep) return 10; // 10 per day
+    return 0;
   };
 
   const checkLimitBeforeSubmit = (): { allowed: boolean; reason?: string } => {
@@ -194,12 +202,12 @@ const App: React.FC = () => {
     const dailyGen = userProfile?.stats.dailyGenerations || 0;
     const limit = getInputLimits();
 
-    if (isFree && totalGen >= 1) {
-      return { allowed: false, reason: "Your Free trial limit (1 generation total) has been reached. Upgrade to keep learning." };
+    if ((isFree || isCrashCourse) && limit === 0) {
+      return { allowed: false, reason: "Notes upload not available on your plan. Upgrade to unlock." };
     }
     
-    if (!isPro && !isFree && dailyGen >= limit) {
-      return { allowed: false, reason: `You've reached your daily limit of ${limit} inputs. Upgrade to Pro for unlimited access.` };
+    if (!isStudyPro && limit > 0 && dailyGen >= limit) {
+      return { allowed: false, reason: `You've reached your daily limit of ${limit} notes upload. Upgrade to Study Pro for unlimited access.` };
     }
 
     return { allowed: true };
@@ -1297,11 +1305,12 @@ const App: React.FC = () => {
                      const now = new Date();
                      let daysToAdd = 0;
                      switch(plan.id) {
-                       case 'weekly': daysToAdd = 7; break;
-                       case 'monthly':
-                       case 'monthly-pro': daysToAdd = 30; break;
-                       case 'yearly':
-                       case 'yearly-pro': daysToAdd = 365; break;
+                       case 'crash-course':
+                       case 'instant-help':
+                       case 'focused-prep':
+                       case 'study-pro': 
+                         daysToAdd = 30; 
+                         break;
                        default: daysToAdd = 365; 
                      }
                      

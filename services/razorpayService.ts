@@ -281,16 +281,11 @@ class RazorpayService {
     const now = new Date();
     
     switch (planId) {
-      case 'weekly':
-        now.setDate(now.getDate() + 7);
-        break;
-      case 'monthly':
-      case 'monthly-pro':
-        now.setMonth(now.getMonth() + 1);
-        break;
-      case 'yearly':
-      case 'yearly-pro':
-        now.setFullYear(now.getFullYear() + 1);
+      case 'crash-course':
+      case 'instant-help':
+      case 'focused-prep':
+      case 'study-pro':
+        now.setMonth(now.getMonth() + 1); // All plans are monthly
         break;
       default:
         // Free plan - never expires
