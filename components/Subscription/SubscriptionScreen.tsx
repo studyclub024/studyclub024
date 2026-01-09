@@ -1,7 +1,9 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { SubscriptionPlan } from '../../types';
-import { Check, Zap, Star, Shield, Trophy, Crown, ArrowRight, X } from 'lucide-react';
+import { Check, Zap, Star, Shield, Trophy, Crown, ArrowRight, X, Loader } from 'lucide-react';
+import razorpayService from '../../services/razorpayService';
+import { auth } from '../../firebaseConfig';
 
 export const PLANS: SubscriptionPlan[] = [
   {
@@ -67,6 +69,33 @@ interface Props {
 }
 
 const SubscriptionScreen: React.FC<Props> = ({ onSelect, onClose }) => {
+  const [loading, setLoading] = useState<string | null>(null);
+
+  const handleSelectPlan = async (plan: SubscriptionPlan) => {
+    setLoading(plan.id);
+    
+    try {
+      // Get user details from Firebase auth if available
+      const user = auth.currentUser;
+      const userDetails = {
+        name: user?.displayName || undefined,
+        email: user?.email || undefined,
+        phone: user?.phoneNumber || undefined,
+      };
+
+      // Initiate Razorpay payment
+      await razorpayService.initiatePayment(plan, userDetails);
+      
+      // Call the onSelect callback
+      onSelect(plan);
+    } catch (error) {
+      console.error('Payment error:', error);
+      alert('Something went wrong. Please try again.');
+    } finally {
+      setLoading(null);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-[1000] bg-[#F8F9FC] dark:bg-slate-950 overflow-y-auto py-16 px-4 animate-fade-in">
       {onClose && (
@@ -134,14 +163,25 @@ const SubscriptionScreen: React.FC<Props> = ({ onSelect, onClose }) => {
               </div>
 
               <button 
-                onClick={() => onSelect(plan)}
+                onClick={() => handleSelectPlan(plan)}
+                disabled={loading === plan.id}
                 className={`w-full py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 group/btn ${
                   plan.isPopular 
-                    ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-100 hover:bg-indigo-700' 
-                    : 'bg-gray-50 dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white'
+                    ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-100 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed' 
+                    : 'bg-gray-50 dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed'
                 }`}
               >
-                Upgrade Now <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
+                {loading === plan.id ? (
+                  <>
+                    <Loader size={14} className="animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    {plan.id === 'free' ? 'Select Free' : 'Upgrade Now'} 
+                    <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
+                  </>
+                )}
               </button>
             </div>
           ))}

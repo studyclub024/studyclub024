@@ -1,5 +1,9 @@
 
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import 'katex/dist/katex.min.css';
 
 interface Props {
   children: string;
@@ -8,68 +12,29 @@ interface Props {
 }
 
 const LatexRenderer: React.FC<Props> = ({ children, className, inline = false }) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!containerRef.current || !children) return;
-    
-    let content = children;
-    
-    // Clean up potential markdown blocks if the model wrapped them unnecessarily
-    content = content.replace(/^```latex\n?/, '').replace(/\n?```$/, '');
-    
-    // Smart Math Guard: Detect mathematical symbols and structures typical of WolframAlpha/Symbolic engines
-    // Improved regex to catch integrals, sums, limits, Greek letters, and complex algebraic structures
-    const mathPattern = /([a-zA-Z0-9]+[\^][0-9]+)|([a-zA-Z]\s*=\s*[a-zA-Z0-9\s\-+*/^()]+)|(\\[a-zA-Z]+)|([=+\-*/]{2,})|([0-9]+\/[0-9]+)|([\(\[].*[\)\]])/;
-    const hasDelimiters = content.includes('$') || content.includes('\\(') || content.includes('\\[');
-    
-    if (mathPattern.test(content) && !hasDelimiters) {
-      // If it looks like math but isn't delimited, wrap it for KaTeX
-      content = inline ? `$${content}$` : `$$${content}$$`;
-    }
-
-    containerRef.current.textContent = content;
-
-    const win = window as any;
-    const renderMath = () => {
-      if (win.katex && win.renderMathInElement) {
-        try {
-          win.renderMathInElement(containerRef.current, {
-            delimiters: [
-              { left: '$$', right: '$$', display: true },
-              { left: '$', right: '$', display: false },
-              { left: '\\(', right: '\\)', display: false },
-              { left: '\\[', right: '\\]', display: true }
-            ],
-            throwOnError: false,
-            errorColor: '#ef4444',
-            strict: false,
-            trust: true,
-            macros: {
-              "\\degree": "^{\\circ}",
-              "\\R": "\\mathbb{R}",
-              "\\N": "\\mathbb{N}"
-            }
-          });
-        } catch (e) {
-          console.warn("KaTeX Rendering Error:", e);
-        }
-      }
-    };
-
-    renderMath();
-    
-    // Fallback/Retry for dynamic loading or slow script execution
-    const timer = setTimeout(renderMath, 250);
-    return () => clearTimeout(timer);
-  }, [children, inline]);
-
+  if (!children) return null;
+  
+  let content = children;
+  
+  // Clean up potential markdown blocks
+  content = content.replace(/^```latex\n?/, '').replace(/\n?```$/, '');
+  
   const Tag = inline ? 'span' : 'div';
+  
   return (
-    <Tag 
-      ref={containerRef} 
-      className={`${className} ${!inline ? 'overflow-x-auto min-h-[1.5em] py-1' : 'inline-block'}`} 
-    />
+    <Tag className={`${className || ''} ${!inline ? 'overflow-x-auto' : 'inline-block'}`}>
+      <ReactMarkdown
+        remarkPlugins={[remarkMath]}
+        rehypePlugins={[rehypeKatex]}
+        components={{
+          p: ({ children }) => <span className="inline">{children}</span>,
+          strong: ({ children }) => <strong className="font-bold">{children}</strong>,
+          em: ({ children }) => <em className="italic">{children}</em>,
+        }}
+      >
+        {content}
+      </ReactMarkdown>
+    </Tag>
   );
 };
 
