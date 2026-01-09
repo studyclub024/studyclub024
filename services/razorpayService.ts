@@ -263,8 +263,10 @@ class RazorpayService {
       // Show success message
       this.showNotification('success', 'Payment Successful! 🎉', `Your ${plan.name} is now active.`);
       
-      // Reload page to reflect subscription changes
-      window.location.reload();
+      // Reload page after a delay to show the notification
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
     } catch (error: any) {
       console.error('Error saving subscription:', error);
       this.showNotification('error', 'Subscription Error', `Failed to save subscription: ${error.message || 'Unknown error'}. Please contact support.`);
