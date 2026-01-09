@@ -17,6 +17,14 @@ dist-ssr
 .env.*
 !.env.example
 server/.env
+functions/.env
+
+# Firebase (using Vercel only)
+.firebase
+firebase-debug.log
+firebase.json
+.firebaserc
+.firebaseignore
 
 # Editor directories and files
 .vscode/*
