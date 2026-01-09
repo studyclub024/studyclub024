@@ -135,8 +135,11 @@ class RazorpayService {
 
       const amount = this.getPriceInPaise(plan.price);
 
-      // Create order on backend
-      const API_URL = import.meta.env.VITE_API_URL || (window.location.hostname === 'localhost' ? 'http://localhost:3001' : window.location.origin);
+      // Create order on backend (Firebase Functions or localhost)
+      const API_URL = import.meta.env.VITE_API_URL || 
+        (window.location.hostname === 'localhost' 
+          ? 'http://localhost:5001/my-website-map-470209/us-central1' 
+          : window.location.origin);
       const orderResponse = await fetch(`${API_URL}/api/create-order`, {
         method: 'POST',
         headers: {
@@ -200,7 +203,10 @@ class RazorpayService {
   private async verifyPaymentOnBackend(response: RazorpayResponse): Promise<boolean> {
     try {
       console.log('Verifying payment on backend...');
-      const API_URL = import.meta.env.VITE_API_URL || (window.location.hostname === 'localhost' ? 'http://localhost:3001' : window.location.origin);
+      const API_URL = import.meta.env.VITE_API_URL || 
+        (window.location.hostname === 'localhost' 
+          ? 'http://localhost:5001/my-website-map-470209/us-central1' 
+          : window.location.origin);
       console.log('API URL:', API_URL);
       
       const verifyResponse = await fetch(`${API_URL}/api/verify-payment`, {
