@@ -50,6 +50,7 @@ declare global {
 class RazorpayService {
   private key: string;
   private keySecret: string;
+  private isProcessingPayment: boolean = false;
 
   constructor() {
     // Add your Razorpay Key ID here
@@ -99,6 +100,9 @@ class RazorpayService {
     plan: SubscriptionPlan,
     userDetails: { name?: string; email?: string; phone?: string } = {}
   ): Promise<void> {
+    // Reset payment processing flag for new payment
+    this.isProcessingPayment = false;
+    
     // Load Razorpay script
     const scriptLoaded = await this.loadScript();
     
@@ -165,9 +169,10 @@ class RazorpayService {
           color: '#6366f1', // Indigo color
         },
         handler: async (response: RazorpayResponse) => {
-          // Verify payment on backend before processing
-          await this.verifyPaymentOnBackend(response);
-          this.handlePaymentSuccess(response, plan);
+          // Only process if we have a valid response
+          if (response.razorpay_payment_id) {
+            this.handlePaymentSuccess(response, plan);
+          }
         },
       };
 
@@ -220,6 +225,14 @@ class RazorpayService {
 
   // Handle successful payment
   private async handlePaymentSuccess(response: RazorpayResponse, plan: SubscriptionPlan) {
+    // Prevent double processing
+    if (this.isProcessingPayment) {
+      console.log('Payment already being processed, skipping...');
+      return;
+    }
+    
+    this.isProcessingPayment = true;
+    
     try {
       const currentUser = auth.currentUser;
       
@@ -270,11 +283,20 @@ class RazorpayService {
     } catch (error: any) {
       console.error('Error saving subscription:', error);
       this.showNotification('error', 'Subscription Error', `Failed to save subscription: ${error.message || 'Unknown error'}. Please contact support.`);
+    } finally {
+      // Reset flag after processing is complete or failed
+      this.isProcessingPayment = false;
     }
   }
 
   // Handle payment failure
   private handlePaymentFailure(response: any) {
+    // Only show failure if not already processing a successful payment
+    if (this.isProcessingPayment) {
+      console.log('Success already being processed, skipping failure notification');
+      return;
+    }
+    
     const errorMsg = response.error?.description || 'Payment failed. Please try again.';
     this.showNotification('error', 'Payment Failed', errorMsg);
   }

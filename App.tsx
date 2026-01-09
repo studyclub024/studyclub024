@@ -173,6 +173,7 @@ const App: React.FC = () => {
   const isInstantHelp = userPlan === 'instant-help';
   const isFocusedPrep = userPlan === 'focused-prep';
   const isStudyPro = userPlan === 'study-pro';
+  const hasVoiceAccess = isInstantHelp || isFocusedPrep || isStudyPro;
 
   const canUseFeature = (feature: 'themes' | 'save' | 'english' | 'sharing' | 'tts' | 'regen' | 'courses' | 'flashcards' | 'summaries' | 'test' | 'studyplan'): boolean => {
     if (isStudyPro) return true;
@@ -1125,13 +1126,13 @@ const App: React.FC = () => {
                       
                       <button 
                         onClick={() => {
-                          if (isMonthlyOrAbove) toggleVoiceRecording();
+                          if (hasVoiceAccess) toggleVoiceRecording();
                           else setShowUpgradeModal(true);
                         }} 
                         className={`flex-1 md:flex-none flex items-center justify-center gap-2 md:gap-3 px-4 md:px-8 py-3 md:py-4 rounded-xl text-[10px] md:text-sm font-black uppercase tracking-widest transition-all ${isRecording ? 'bg-red-500 text-white shadow-xl shadow-red-200 scale-105' : 'bg-white dark:bg-slate-700 text-pink-600 dark:text-pink-400 border-2 border-pink-100 dark:border-pink-500/20 hover:border-pink-300 active:scale-95'}`}
                         aria-label={isRecording ? "Stop voice recording" : "Start voice recording"}
                       >
-                        {isRecording ? <StopCircle size={18} /> : (isMonthlyOrAbove ? <Mic size={18} /> : <Lock size={18} />)} {isRecording ? 'Stop' : 'Voice'}
+                        {isRecording ? <StopCircle size={18} /> : (hasVoiceAccess ? <Mic size={18} /> : <Lock size={18} />)} {isRecording ? 'Stop' : 'Voice'}
                       </button>
 
                       <button onClick={() => imageInputRef.current?.click()} className="flex-1 md:flex-none flex items-center justify-center gap-2 md:gap-3 px-4 md:px-8 py-3 md:py-4 theme-bg text-white rounded-xl text-[10px] md:text-sm font-black uppercase tracking-widest transition-all hover:opacity-90 active:scale-95" aria-label="Scan image for text"><Camera size={18} /> Scan</button>
