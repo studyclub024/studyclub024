@@ -264,8 +264,9 @@ class RazorpayService {
       
       // Reload page to reflect subscription changes
       window.location.reload();
-    } catch (error) {
-      alert('Failed to save subscription. Please contact support.');
+    } catch (error: any) {
+      console.error('Error saving subscription:', error);
+      alert(`Failed to save subscription: ${error.message || 'Unknown error'}. Please contact support.`);
     }
   }
 
