@@ -217,6 +217,16 @@ const App: React.FC = () => {
     return { allowed: true };
   };
 
+  // Expose notification function to razorpayService
+  useEffect(() => {
+    window.showNotification = (type, title, message) => {
+      setNotification({ type, title, message });
+    };
+    return () => {
+      delete window.showNotification;
+    };
+  }, []);
+
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
