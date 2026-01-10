@@ -14,42 +14,16 @@ import DescribeDisplay from '../Display/DescribeDisplay';
 import ErrorBoundary from '../common/ErrorBoundary';
 import { getTopicComponentById } from './TopicPages';
 
-interface CourseItem {
-  id: string;
-  category: string;
-  class: string;
-  subject: string;
-  label: string;
-  isPremium: boolean;
-  difficulty: 'Beginner' | 'Intermediate' | 'Expert';
-  content: StudyContent;
-}
+// Generate filter options dynamically from topic library
+const getAllCategories = (topics: Topic[]) => {
+  const set = new Set(topics.map(t => t.category));
+  return Array.from(set);
+};
 
-// Data generator based on the previous hierarchical structure, flattened for Card UI
-const CATEGORIES = ['NCERT Solutions', 'CBSE', 'JEE Main', 'JEE Advanced', 'NEET', 'ICSE & State Boards'];
-const CLASSES = ['12', '11', '10', '9', '8'];
-const SUBJECTS = ['Physics', 'Chemistry', 'Maths', 'Biology', 'Accountancy', 'Economics', 'English'];
-
-const FLATTENED_COURSES: CourseItem[] = [
-  // Physics 12
-  { id: '12-phy-ncert', category: 'NCERT Solutions', class: '12', subject: 'Physics', label: 'Electrostatics & Current', isPremium: true, difficulty: 'Expert', content: { mode: 'notes', title: 'Electrostatics Master', sections: [{ heading: 'Coulomb\'s Law', bullets: ['Force between charges', '$F = k \frac{q_1q_2}{r^2}$'] }] } as any },
-  // Chemistry 12
-  { id: '12-chem-ncert', category: 'NCERT Solutions', class: '12', subject: 'Chemistry', label: 'Organic: Haloalkanes', isPremium: true, difficulty: 'Intermediate', content: { mode: 'notes', title: 'Haloalkanes Overview', sections: [{ heading: 'Nomenclature', bullets: ['IUPAC naming rules', 'Classification of halides'] }] } as any },
-  // Maths 12
-  { id: '12-math-ncert', category: 'NCERT Solutions', class: '12', subject: 'Maths', label: 'Calculus: Integration', isPremium: true, difficulty: 'Expert', content: { mode: 'math', equation: '\\int x^n dx', method_used: 'Power Rule', final_answer: '\\frac{x^{n+1}}{n+1} + C', steps: [] } as any },
-  // Biology 12
-  { id: '12-bio-ncert', category: 'NCERT Solutions', class: '12', subject: 'Biology', label: 'Genetics & Evolution', isPremium: false, difficulty: 'Intermediate', content: { mode: 'eli5', topic: 'Mendelian Genetics', sections: [{ heading: 'Law of Segregation', content: 'Each individual has two alleles for each gene.' }] } as any },
-  // JEE Main Physics
-  { id: 'jee-phy-1', category: 'JEE Main', class: '12', subject: 'Physics', label: 'Rotational Dynamics', isPremium: true, difficulty: 'Expert', content: { mode: 'notes', title: 'Angular Momentum', sections: [{ heading: 'Torque', bullets: ['$\tau = r \times F$', 'Moment of Inertia calculations'] }] } as any },
-  // NEET Bio
-  { id: 'neet-bio-1', category: 'NEET', class: '11', subject: 'Biology', label: 'Plant Physiology', isPremium: false, difficulty: 'Intermediate', content: { mode: 'summary', bullets: ['Photosynthesis in higher plants', 'C3 vs C4 pathways', 'Krebs Cycle breakdown'] } as any },
-  // CBSE 10 Math
-  { id: '10-math-cbse', category: 'CBSE', class: '10', subject: 'Maths', label: 'Quadratic Equations', isPremium: false, difficulty: 'Beginner', content: { mode: 'math', equation: 'ax^2 + bx + c = 0', method_used: 'Quadratic Formula', final_answer: 'x = \\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}', steps: [] } as any },
-  // English 10
-  { id: '10-eng-ncert', category: 'NCERT Solutions', class: '10', subject: 'English', label: 'Tenses Masterclass', isPremium: false, difficulty: 'Beginner', content: { mode: 'notes', title: 'Tenses', sections: [{ heading: 'Present Continuous', bullets: ['Action happening now', 'Is/Am/Are + V-ing'] }] } as any },
-];
-
-const DIFFICULTIES = ['Beginner', 'Intermediate', 'Expert'];
+const getAllCourses = (topics: Topic[]) => {
+  const set = new Set(topics.map(t => t.course));
+  return Array.from(set);
+};
 
 const CoursesPage: React.FC = () => {
   // legacy selectedCourse removed; topic navigation uses `selectedTopicId`
@@ -65,37 +39,42 @@ const CoursesPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [catFilter, setCatFilter] = useState('');
   const [classFilter, setClassFilter] = useState('');
-  const [subjectFilter, setSubjectFilter] = useState('');
-  const [diffFilter, setDiffFilter] = useState('');
+  
+  // Get dynamic filter options
+  const allCategories = useMemo(() => getAllCategories(topicLibrary), [topicLibrary]);
+  const allCourses = useMemo(() => getAllCourses(topicLibrary), [topicLibrary]);
 
-  const filteredCourses = useMemo(() => {
-    return FLATTENED_COURSES.filter(course => {
-      const matchesSearch = course.label.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                           course.subject.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCat = !catFilter || course.category === catFilter;
-      const matchesClass = !classFilter || course.class === classFilter;
-      const matchesSubject = !subjectFilter || course.subject === subjectFilter;
-      const matchesDiff = !diffFilter || course.difficulty === diffFilter;
-      return matchesSearch && matchesCat && matchesClass && matchesSubject && matchesDiff;
+  // Filter topics based on search and filters
+  const filteredTopics = useMemo(() => {
+    return topicLibrary.filter(topic => {
+      const matchesSearch = !searchQuery || 
+        topic.label.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        topic.course.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        topic.category.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      const matchesCat = !catFilter || topic.category === catFilter;
+      const matchesCourse = !classFilter || topic.course === classFilter;
+      
+      return matchesSearch && matchesCat && matchesCourse;
     });
-  }, [searchQuery, catFilter, classFilter, subjectFilter, diffFilter]);
+  }, [topicLibrary, searchQuery, catFilter, classFilter]);
 
-  // Derived lists from topicLibrary (moved above conditional returns so hooks order stays stable)
+  // Derived lists from filteredTopics (so filters and search work together)
   const categories = useMemo(() => {
-    const set = new Set(topicLibrary.map(t => t.category));
+    const set = new Set(filteredTopics.map(t => t.category));
     return Array.from(set);
-  }, [topicLibrary]);
+  }, [filteredTopics]);
 
   const subCourses = useMemo(() => {
     if (!selectedCategory) return [];
-    const set = new Set(topicLibrary.filter(t => t.category === selectedCategory).map(t => t.course));
+    const set = new Set(filteredTopics.filter(t => t.category === selectedCategory).map(t => t.course));
     return Array.from(set);
-  }, [topicLibrary, selectedCategory]);
+  }, [filteredTopics, selectedCategory]);
 
   const topicsForCourse = useMemo(() => {
     if (!selectedCourse || !selectedCategory) return [];
-    return topicLibrary.filter(t => t.category === selectedCategory && t.course === selectedCourse);
-  }, [topicLibrary, selectedCategory, selectedCourse]);
+    return filteredTopics.filter(t => t.category === selectedCategory && t.course === selectedCourse);
+  }, [filteredTopics, selectedCategory, selectedCourse]);
 
   const renderContent = (content: StudyContent) => {
     switch (content.mode) {
@@ -243,15 +222,13 @@ const CoursesPage: React.FC = () => {
         </div>
         
         <div className="flex flex-wrap gap-4 flex-1">
-           <FilterSelect label="Exam/Category" value={catFilter} onChange={setCatFilter} options={CATEGORIES} />
-           <FilterSelect label="Class" value={classFilter} onChange={setClassFilter} options={CLASSES} />
-           <FilterSelect label="Subject" value={subjectFilter} onChange={setSubjectFilter} options={SUBJECTS} />
-           <FilterSelect label="Difficulty" value={diffFilter} onChange={setDiffFilter} options={DIFFICULTIES} />
+           <FilterSelect label="Exam/Category" value={catFilter} onChange={setCatFilter} options={allCategories} />
+           <FilterSelect label="Course" value={classFilter} onChange={setClassFilter} options={allCourses} />
         </div>
 
-        {(catFilter || classFilter || subjectFilter || diffFilter) && (
+        {(catFilter || classFilter) && (
           <button 
-            onClick={() => { setCatFilter(''); setClassFilter(''); setSubjectFilter(''); setDiffFilter(''); }}
+            onClick={() => { setCatFilter(''); setClassFilter(''); }}
             className="text-pink-600 font-black text-[10px] uppercase tracking-widest hover:underline"
           >
             Reset
