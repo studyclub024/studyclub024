@@ -1,25 +1,91 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SubscriptionPlan } from '../../types';
 import { Check, Zap, Star, Shield, Trophy, Crown, ArrowRight, X, Loader } from 'lucide-react';
 import razorpayService from '../../services/razorpayService';
 import { auth } from '../../firebaseConfig';
 
+// All features comparison list
+const ALL_FEATURES = [
+  'Course & Question Paper',
+  'Notes Upload',
+  'Unlimited Flashcards',
+  'Unlimited Summaries',
+  'Unlimited Test',
+  'Study Plan',
+  'Save Flashcards',
+  'Share Flashcards',
+  'Language Learning',
+  'Theme For Fun Learning'
+];
+
+// Feature details map for each plan
+const PLAN_FEATURES_MAP: Record<string, Record<string, boolean>> = {
+  'crash-course': {
+    'Course & Question Paper': true,
+    'Notes Upload': false,
+    'Unlimited Flashcards': false,
+    'Unlimited Summaries': false,
+    'Unlimited Test': false,
+    'Study Plan': false,
+    'Save Flashcards': false,
+    'Share Flashcards': false,
+    'Language Learning': false,
+    'Theme For Fun Learning': false,
+  },
+  'instant-help': {
+    'Course & Question Paper': false,
+    'Notes Upload': true,
+    'Unlimited Flashcards': true,
+    'Unlimited Summaries': true,
+    'Unlimited Test': true,
+    'Study Plan': true,
+    'Save Flashcards': false,
+    'Share Flashcards': false,
+    'Language Learning': false,
+    'Theme For Fun Learning': false,
+  },
+  'focused-prep': {
+    'Course & Question Paper': true,
+    'Notes Upload': true,
+    'Unlimited Flashcards': true,
+    'Unlimited Summaries': true,
+    'Unlimited Test': true,
+    'Study Plan': true,
+    'Save Flashcards': false,
+    'Share Flashcards': false,
+    'Language Learning': true,
+    'Theme For Fun Learning': true,
+  },
+  'study-pro': {
+    'Course & Question Paper': true,
+    'Notes Upload': true,
+    'Unlimited Flashcards': true,
+    'Unlimited Summaries': true,
+    'Unlimited Test': true,
+    'Study Plan': true,
+    'Save Flashcards': true,
+    'Share Flashcards': true,
+    'Language Learning': true,
+    'Theme For Fun Learning': true,
+  },
+};
+
 export const PLANS: SubscriptionPlan[] = [
   {
     id: 'crash-course',
     name: 'Crash Course Plan',
-    price: '₹30',
-    period: 'Month',
+    price: '₹0.99',
+    period: 'day Billed Monthly',
     description: 'Less Than a Chocolate',
-    features: ['Course & Question Paper', 'No Notes Upload', 'No Flashcards', 'No Summaries', 'No Test', 'No Study Plan'],
+    features: ['Course & Question Paper'],
     gradient: 'from-blue-400 to-indigo-500'
   },
   {
     id: 'instant-help',
-    name: 'Instant Help',
-    price: '₹150',
-    period: 'Month',
+    name: 'Instant help',
+    price: '₹5',
+    period: 'day Billed Monthly',
     description: 'Less than a cup of tea',
     isPopular: true,
     features: ['5 Notes Upload/day', 'Unlimited Flashcards', 'Unlimited Summaries', 'Unlimited Test', 'Study Plan'],
@@ -28,8 +94,8 @@ export const PLANS: SubscriptionPlan[] = [
   {
     id: 'focused-prep',
     name: 'Focused Prep',
-    price: '₹210',
-    period: 'Month',
+    price: '₹7',
+    period: 'day Billed Monthly',
     description: 'Less than Lays Packet',
     features: ['Course & Question Paper', '10 Notes Upload/day', 'Unlimited Flashcards', 'Unlimited Summaries', 'Unlimited Test', 'Study Plan', 'Language Learning', 'Theme For Fun Learning'],
     gradient: 'from-fuchsia-500 to-rose-500'
@@ -38,7 +104,7 @@ export const PLANS: SubscriptionPlan[] = [
     id: 'study-pro',
     name: 'Study Pro ⭐',
     price: '₹599',
-    period: 'Month',
+    period: 'Month Billed Monthly',
     description: 'Less than a Cafe outing',
     features: ['Course & Question Paper', 'Unlimited Notes Upload', 'Unlimited Flashcards', 'Unlimited Summaries', 'Unlimited Test', 'Study Plan', 'Save Flashcards', 'Share Flashcards', 'Language Learning', 'Theme For Fun Learning'],
     gradient: 'from-amber-400 to-yellow-600'
@@ -48,12 +114,23 @@ export const PLANS: SubscriptionPlan[] = [
 interface Props {
   onSelect: (plan: SubscriptionPlan) => void;
   onClose?: () => void;
+  isLoggedIn?: boolean;
+  onOpenAuth?: () => void;
 }
 
-const SubscriptionScreen: React.FC<Props> = ({ onSelect, onClose }) => {
+const SubscriptionScreen: React.FC<Props> = ({ onSelect, onClose, isLoggedIn = false, onOpenAuth }) => {
   const [loading, setLoading] = useState<string | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
 
   const handleSelectPlan = async (plan: SubscriptionPlan) => {
+    if (!isLoggedIn) {
+      // User not logged in, store the plan and open auth
+      setSelectedPlan(plan.id);
+      if (onOpenAuth) onOpenAuth();
+      return;
+    }
+
+    // User is logged in, proceed with payment
     setLoading(plan.id);
     
     try {
@@ -78,6 +155,36 @@ const SubscriptionScreen: React.FC<Props> = ({ onSelect, onClose }) => {
     }
   };
 
+  // Trigger payment flow after successful login
+  useEffect(() => {
+    if (isLoggedIn && selectedPlan) {
+      const plan = PLANS.find(p => p.id === selectedPlan);
+      if (plan) {
+        // Delay slightly to ensure state is updated
+        const timer = setTimeout(async () => {
+          setLoading(selectedPlan);
+          try {
+            const user = auth.currentUser;
+            const userDetails = {
+              name: user?.displayName || undefined,
+              email: user?.email || undefined,
+              phone: user?.phoneNumber || undefined,
+            };
+            await razorpayService.initiatePayment(plan, userDetails);
+            onSelect(plan);
+          } catch (error) {
+            console.error('Payment error:', error);
+            alert('Something went wrong. Please try again.');
+          } finally {
+            setLoading(null);
+            setSelectedPlan(null);
+          }
+        }, 300);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [isLoggedIn, selectedPlan]);
+
   return (
     <div className="fixed inset-0 z-[1000] bg-[#F8F9FC] dark:bg-slate-950 overflow-y-auto py-16 px-4 animate-fade-in">
       {onClose && (
@@ -98,7 +205,7 @@ const SubscriptionScreen: React.FC<Props> = ({ onSelect, onClose }) => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {PLANS.map((plan, idx) => (
             <div 
               key={plan.id}
@@ -167,6 +274,88 @@ const SubscriptionScreen: React.FC<Props> = ({ onSelect, onClose }) => {
               </button>
             </div>
           ))}
+        </div>
+
+        {/* Feature Comparison Table */}
+        <div className="mt-20 mb-16">
+          <h2 className="text-3xl font-black text-gray-900 dark:text-white text-center mb-12">
+            Detailed Feature Comparison
+          </h2>
+          
+          <div className="overflow-x-auto rounded-3xl border border-gray-200 dark:border-white/10 bg-white dark:bg-slate-900">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-200 dark:border-white/10">
+                  <th className="px-6 py-6 text-left text-sm font-black text-gray-900 dark:text-white bg-gray-50 dark:bg-slate-800/50 min-w-[250px]">
+                    Feature / Plan
+                  </th>
+                  {PLANS.map((plan) => (
+                    <th key={plan.id} className="px-6 py-6 text-center text-xs font-black text-gray-900 dark:text-white bg-gray-50 dark:bg-slate-800/50 min-w-[150px]">
+                      <div className="text-sm">{plan.name}</div>
+                      <div className="text-lg mt-2">{plan.price}<span className="text-xs">/{plan.period}</span></div>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {ALL_FEATURES.map((feature, idx) => (
+                  <tr key={idx} className="border-b border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-slate-800/30 transition-colors">
+                    <td className="px-6 py-4 text-sm font-bold text-gray-700 dark:text-gray-300">
+                      {feature}
+                    </td>
+                    {PLANS.map((plan) => (
+                      <td key={plan.id} className="px-6 py-4 text-center">
+                        {PLAN_FEATURES_MAP[plan.id][feature] ? (
+                          <div className="flex justify-center">
+                            <div className="w-6 h-6 rounded-full bg-green-50 dark:bg-green-900/20 flex items-center justify-center">
+                              <Check size={16} className="text-green-600 dark:text-green-400" strokeWidth={3} />
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex justify-center">
+                            <div className="w-6 h-6 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center">
+                              <X size={16} className="text-red-600 dark:text-red-400" strokeWidth={3} />
+                            </div>
+                          </div>
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+                {/* Upgrade Now Buttons Row */}
+                <tr className="bg-gray-50 dark:bg-slate-800/50">
+                  <td className="px-6 py-6 text-sm font-black text-gray-900 dark:text-white">
+                    Choose Plan
+                  </td>
+                  {PLANS.map((plan) => (
+                    <td key={plan.id} className="px-6 py-4 text-center">
+                      <button 
+                        onClick={() => handleSelectPlan(plan)}
+                        disabled={loading === plan.id}
+                        className={`w-full px-4 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 group/btn ${
+                          plan.isPopular 
+                            ? 'bg-indigo-600 text-white shadow-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed' 
+                            : 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-700 hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed'
+                        }`}
+                      >
+                        {loading === plan.id ? (
+                          <>
+                            <Loader size={12} className="animate-spin" />
+                            Processing...
+                          </>
+                        ) : (
+                          <>
+                            Upgrade Now
+                            <ArrowRight size={12} className="group-hover/btn:translate-x-1 transition-transform" />
+                          </>
+                        )}
+                      </button>
+                    </td>
+                  ))}
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <div className="mt-20 text-center space-y-6">
