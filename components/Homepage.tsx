@@ -268,17 +268,6 @@ flashcards, summaries, quizzes, tests, study plans, and more.
               <div className="mt-8 flex items-center gap-4">
                 <button onClick={handleLogin} className="inline-flex items-center gap-3 px-6 py-3 bg-indigo-600 text-white rounded-lg font-bold shadow-lg hover:scale-105 transition-transform">Start Studying for Free <ArrowRight size={18} /></button>
               </div>
-
-              <div className="mt-8 grid grid-cols-2 gap-4 text-sm text-gray-600">
-                <div>
-                  <div className="font-extrabold text-xl">50K+</div>
-                  <div className="uppercase text-xs tracking-wide">Active Students</div>
-                </div>
-                <div>
-                  <div className="font-extrabold text-xl">1M+</div>
-                  <div className="uppercase text-xs tracking-wide">Modules Created</div>
-                </div>
-              </div>
             </div>
 
             <div className="bg-white rounded-2xl p-6 shadow-xl">
@@ -329,16 +318,48 @@ flashcards, summaries, quizzes, tests, study plans, and more.
         </div>
       </section>
 
-      {/* About */}
-      <section id="about" ref={aboutRef} className="py-16 bg-gradient-to-b from-white to-gray-50 overflow-hidden">
+      {/* About - Our Story */}
+      <section id="about" ref={aboutRef} className="py-20 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 overflow-hidden">
         <div className="container mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-4">What This Tool Does</h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">Everything you need to study smarter and perform better</p>
+          
+          {/* Story Content - Full Width */}
+          <div className="max-w-6xl mx-auto text-center">
+            <p className="text-sm font-black uppercase tracking-[0.3em] text-orange-500 mb-4">How It Started</p>
+            <h2 className="text-4xl md:text-6xl font-black text-gray-900 leading-tight mb-8">
+              Our Dream is <span className="text-indigo-600">Better Learning</span> For Every Student
+            </h2>
+            <div className="space-y-4 text-lg text-gray-700 leading-relaxed text-left mb-8">
+              <p>This platform began with Shreya, a student who struggled with long notes, heavy syllabus, and the constant pressure to keep up. Studying felt confusing, revision felt endless, and no matter how much time she put in, clarity always felt missing.</p>
+              <p>Instead of accepting this as "normal student life", she asked a simple question: <span className="font-bold text-gray-900">Why does studying have to be this hard?</span></p>
+              <p>Shreya started researching better ways to learn, organize information, and revise effectively. She built a small tool for herself that could turn long notes into simpler formats, help her plan what to study next, and make learning feel lighter.</p>
+              <p className="font-semibold text-gray-900">When it started helping her, she shared it with others. And it helped them too.</p>
+              <p className="font-bold text-xl text-gray-900">That's when Study Club became something for every student who's ever felt stuck while studying.</p>
+            </div>
+
+            {/* Quote - Simple */}
+            <div className="mt-12 pt-8 border-t-2 border-indigo-200">
+              <p className="text-xl md:text-2xl italic text-gray-700 mb-4">
+                "I didn't build this to be perfect. I built it because I needed something that made studying feel less stressful."
+              </p>
+              <p className="text-base font-bold text-gray-900">— Shreya, Student & Founder</p>
+            </div>
           </div>
 
-          {/* Features Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+        </div>
+      </section>
+
+      {/* What This Tool Does Section */}
+      <section className="py-16 bg-gradient-to-b from-white to-gray-50">
+        <div className="container mx-auto px-6">
+          <div className="max-w-6xl mx-auto">
+            {/* What This Tool Does */}
+            <div className="text-center mb-16">
+              <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-4">What This Tool Does</h2>
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto">Everything you need to study smarter and perform better</p>
+            </div>
+
+            {/* Features Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
             {/* Easy Notes */}
             <div className="bg-white rounded-2xl p-8 shadow-md hover:shadow-lg transition-shadow">
               <div className="w-12 h-12 rounded-lg bg-indigo-50 flex items-center justify-center mb-4">
@@ -524,6 +545,7 @@ flashcards, summaries, quizzes, tests, study plans, and more.
               </ul>
               <p className="text-xs text-gray-500 mt-4 italic">Because learning should feel fun too.</p>
             </div>
+          </div>
           </div>
         </div>
       </section>
@@ -750,6 +772,128 @@ flashcards, summaries, quizzes, tests, study plans, and more.
         </div>
       </section>
 
+      {/* Why We Exist, By Students For Students, The Promise */}
+      <section className="py-20 bg-gradient-to-b from-gray-50 to-white">
+        <div className="container mx-auto px-6">
+          {/* Section Header */}
+          <div className="text-center mb-16">
+            <p className="text-xs font-black uppercase tracking-[0.3em] text-gray-400 mb-4">OUR VALUES</p>
+            <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-4">Building the future of learning.</h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">Made by students who understand the struggle. Designed for everyone who wants to learn better.</p>
+          </div>
+
+          {/* Three Staggered Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            
+            {/* Card 01 - Why We Exist */}
+            <div className="relative">
+              <div className="bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-shadow">
+                {/* Image/Icon Area */}
+                <div className="relative bg-gradient-to-br from-indigo-100 to-indigo-50 h-64 flex items-center justify-center">
+                  <div className="text-7xl">🎯</div>
+                  {/* Number Badge */}
+                  <div className="absolute bottom-4 left-4 bg-gradient-to-br from-indigo-50 to-white rounded-2xl px-4 py-2">
+                    <span className="text-2xl font-black text-gray-900">01</span>
+                  </div>
+                </div>
+                {/* Content */}
+                <div className="p-8">
+                  <h3 className="text-2xl font-black text-gray-900 mb-4">Why We Exist</h3>
+                  <p className="text-sm text-gray-600 mb-4 leading-relaxed">We exist because studying shouldn't feel overwhelming. Students don't fail because they don't work hard—they struggle because they don't have the right structure and tools.</p>
+                  <div className="space-y-2 mb-4">
+                    <p className="text-xs font-bold text-indigo-600 uppercase tracking-wide">Our goal is to make learning:</p>
+                    <div className="flex flex-wrap gap-2">
+                      <span className="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-semibold">Clear</span>
+                      <span className="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-semibold">Organized</span>
+                      <span className="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-semibold">Less stressful</span>
+                      <span className="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-semibold">Enjoyable</span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-500 italic border-t pt-4">So students can focus on understanding, not just memorizing.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 02 - By Students, For Students (Center - Larger/Lower) */}
+            <div className="relative md:mt-12">
+              <div className="bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-shadow">
+                {/* Image/Icon Area */}
+                <div className="relative bg-gradient-to-br from-purple-100 to-purple-50 h-72 flex items-center justify-center">
+                  <div className="text-8xl">👥</div>
+                  {/* Number Badge */}
+                  <div className="absolute bottom-4 left-4 bg-gradient-to-br from-purple-50 to-white rounded-2xl px-4 py-2">
+                    <span className="text-2xl font-black text-gray-900">02</span>
+                  </div>
+                </div>
+                {/* Content */}
+                <div className="p-8">
+                  <h3 className="text-2xl font-black text-gray-900 mb-4">By Students, For Students</h3>
+                  <p className="text-sm text-gray-600 mb-4 leading-relaxed">This platform is built by students, shaped by real experiences. Every feature comes from real struggles we've all faced.</p>
+                  <div className="space-y-2 mb-4">
+                    <ul className="space-y-2">
+                      <li className="flex items-start gap-2 text-sm text-gray-700">
+                        <Check size={16} className="text-purple-600 flex-shrink-0 mt-0.5" />
+                        <span>Too much content</span>
+                      </li>
+                      <li className="flex items-start gap-2 text-sm text-gray-700">
+                        <Check size={16} className="text-purple-600 flex-shrink-0 mt-0.5" />
+                        <span>Too little time</span>
+                      </li>
+                      <li className="flex items-start gap-2 text-sm text-gray-700">
+                        <Check size={16} className="text-purple-600 flex-shrink-0 mt-0.5" />
+                        <span>No clear study direction</span>
+                      </li>
+                    </ul>
+                  </div>
+                  <p className="text-xs text-gray-500 italic border-t pt-4">We build only what genuinely helps students learn better, nothing extra, nothing complicated.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 03 - The Promise */}
+            <div className="relative">
+              <div className="bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-shadow">
+                {/* Image/Icon Area */}
+                <div className="relative bg-gradient-to-br from-pink-100 to-pink-50 h-64 flex items-center justify-center">
+                  <div className="text-7xl">🤝</div>
+                  {/* Number Badge */}
+                  <div className="absolute bottom-4 left-4 bg-gradient-to-br from-pink-50 to-white rounded-2xl px-4 py-2">
+                    <span className="text-2xl font-black text-gray-900">03</span>
+                  </div>
+                </div>
+                {/* Content */}
+                <div className="p-8">
+                  <h3 className="text-2xl font-black text-gray-900 mb-4">The Promise</h3>
+                  <p className="text-sm text-gray-600 mb-4 leading-relaxed">We promise to always keep this platform focused on what matters most—your learning journey.</p>
+                  <div className="space-y-2 mb-4">
+                    <ul className="space-y-2">
+                      <li className="flex items-start gap-2 text-sm text-gray-700">
+                        <Check size={16} className="text-pink-600 flex-shrink-0 mt-0.5" />
+                        <span className="font-semibold">Student-first</span>
+                      </li>
+                      <li className="flex items-start gap-2 text-sm text-gray-700">
+                        <Check size={16} className="text-pink-600 flex-shrink-0 mt-0.5" />
+                        <span className="font-semibold">Easy to use</span>
+                      </li>
+                      <li className="flex items-start gap-2 text-sm text-gray-700">
+                        <Check size={16} className="text-pink-600 flex-shrink-0 mt-0.5" />
+                        <span className="font-semibold">Free to start</span>
+                      </li>
+                      <li className="flex items-start gap-2 text-sm text-gray-700">
+                        <Check size={16} className="text-pink-600 flex-shrink-0 mt-0.5" />
+                        <span className="font-semibold">Focused on real learning</span>
+                      </li>
+                    </ul>
+                  </div>
+                  <p className="text-xs text-gray-500 italic border-t pt-4">Because better study tools should be accessible to everyone.</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
       {/* Feedbacks */}
       <section id="impact" className="py-16 bg-white">
         <div className="container mx-auto px-6 text-center">
@@ -777,7 +921,7 @@ flashcards, summaries, quizzes, tests, study plans, and more.
         <div className="container mx-auto px-6 text-center">
           <h2 className="text-3xl font-black mb-2">Our goal is simple</h2>
           <p className="mb-6 text-gray-100">No paywalls to start, No barriers to learning, Make studying easier and accessible for everyone.</p>
-          <button onClick={handleGetStarted} className="px-8 py-3 bg-white text-indigo-700 rounded-full font-bold">Start Free Protocol</button>
+          <button onClick={handleLogin} className="px-8 py-3 bg-white text-indigo-700 rounded-full font-bold">Start Free Protocol</button>
         </div>
       </section>
 
