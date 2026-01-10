@@ -330,52 +330,200 @@ flashcards, summaries, quizzes, tests, study plans, and more.
       </section>
 
       {/* About */}
-      <section id="about" ref={aboutRef} className="py-16 bg-white overflow-hidden">
+      <section id="about" ref={aboutRef} className="py-16 bg-gradient-to-b from-white to-gray-50 overflow-hidden">
         <div className="container mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-4">What This Tool Does</h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">Everything you need to study smarter and perform better</p>
+          </div>
 
-            {/* Left: big headline + stats */}
-            <div className="text-left">
-              <div className="overflow-hidden">
-                <div className="reveal-item transform translate-y-6 opacity-0 transition-all duration-700 ease-out">
-                  <h2 className="text-4xl md:text-6xl font-black leading-tight text-gray-900">We help students <span className="text-indigo-600">study smarter</span> and perform better.</h2>
-                </div>
+          {/* Features Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+            {/* Easy Notes */}
+            <div className="bg-white rounded-2xl p-8 shadow-md hover:shadow-lg transition-shadow">
+              <div className="w-12 h-12 rounded-lg bg-indigo-50 flex items-center justify-center mb-4">
+                <FileText size={24} className="text-indigo-600" />
               </div>
-
-              <div className="mt-6 overflow-hidden">
-                <div className="reveal-item transform translate-y-6 opacity-0 transition-all duration-700 ease-out">
-                  <p className="text-gray-600 max-w-xl">StudyClub24 converts your notes, PDFs and images into compact, exam-ready study protocols — summaries, flashcards, quizzes and custom study plans — powered by AI to save time and boost retention.</p>
-                </div>
-              </div>
-
-              <div className="mt-8 grid grid-cols-3 gap-6">
-                <div className="reveal-item transform translate-y-6 opacity-0 transition-all duration-700 ease-out">
-                  <div className="text-3xl font-black text-gray-900">50K+</div>
-                  <div className="text-xs text-gray-500 uppercase">Active Students</div>
-                </div>
-                <div className="reveal-item transform translate-y-6 opacity-0 transition-all duration-700 ease-out">
-                  <div className="text-3xl font-black text-gray-900">1M+</div>
-                  <div className="text-xs text-gray-500 uppercase">Modules Created</div>
-                </div>
-                <div className="reveal-item transform translate-y-6 opacity-0 transition-all duration-700 ease-out">
-                  <div className="text-3xl font-black text-gray-900">4.8</div>
-                  <div className="text-xs text-gray-500 uppercase">Avg Rating</div>
-                </div>
-              </div>
+              <h3 className="text-xl font-black text-gray-900 mb-3">Easy Notes</h3>
+              <p className="text-gray-600 mb-4">Upload a PDF or click a photo of handwritten notes.</p>
+              <p className="text-sm font-bold text-gray-700 mb-2">We turn long, messy content into:</p>
+              <ul className="space-y-2 text-sm text-gray-600">
+                <li className="flex items-start gap-2">
+                  <Check size={16} className="text-green-600 flex-shrink-0 mt-0.5" />
+                  <span>Clean summaries</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check size={16} className="text-green-600 flex-shrink-0 mt-0.5" />
+                  <span>Flashcards</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check size={16} className="text-green-600 flex-shrink-0 mt-0.5" />
+                  <span>Quick revision notes</span>
+                </li>
+              </ul>
+              <p className="text-xs text-gray-500 mt-4 italic">No rewriting. No extra effort.</p>
             </div>
 
-            {/* Right: feature cards (compact) */}
-            <div>
-              <div className="reveal-item transform translate-y-6 opacity-0 transition-all duration-700 ease-out">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <FeatureCard icon={Brain} title="AI-Powered" desc="Adaptive explanations & summaries" color="text-indigo-600" bg="bg-indigo-50" />
-                  <FeatureCard icon={Globe} title="Global Community" desc="Collaborate with peers and tutors" color="text-indigo-600" bg="bg-indigo-50" />
-                  <FeatureCard icon={Layers} title="Versatile Formats" desc="PDFs, images, notes & handwriting" color="text-indigo-600" bg="bg-indigo-50" />
-                  <FeatureCard icon={Calculator} title="Practice Tools" desc="Quizzes and timed practice" color="text-indigo-600" bg="bg-indigo-50" />
-                </div>
+            {/* Study Roadmap */}
+            <div className="bg-white rounded-2xl p-8 shadow-md hover:shadow-lg transition-shadow">
+              <div className="w-12 h-12 rounded-lg bg-purple-50 flex items-center justify-center mb-4">
+                <Layers size={24} className="text-purple-600" />
               </div>
+              <h3 className="text-xl font-black text-gray-900 mb-3">Study Roadmap</h3>
+              <p className="text-gray-600 mb-4">Never ask "What should I study today?" again.</p>
+              <p className="text-sm font-bold text-gray-700 mb-2">Get a clear study path that:</p>
+              <ul className="space-y-2 text-sm text-gray-600">
+                <li className="flex items-start gap-2">
+                  <Check size={16} className="text-green-600 flex-shrink-0 mt-0.5" />
+                  <span>Breaks the syllabus into steps</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check size={16} className="text-green-600 flex-shrink-0 mt-0.5" />
+                  <span>Helps with revision planning</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check size={16} className="text-green-600 flex-shrink-0 mt-0.5" />
+                  <span>Keeps you focused before exams</span>
+                </li>
+              </ul>
+              <p className="text-xs text-gray-500 mt-4 italic">One subject at a time. One step at a time.</p>
             </div>
 
+            {/* Crash Courses */}
+            <div className="bg-white rounded-2xl p-8 shadow-md hover:shadow-lg transition-shadow">
+              <div className="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center mb-4">
+                <Rocket size={24} className="text-blue-600" />
+              </div>
+              <h3 className="text-xl font-black text-gray-900 mb-3">Crash Courses</h3>
+              <p className="text-gray-600 mb-4">Short on time? We've got you.</p>
+              <p className="text-sm font-bold text-gray-700 mb-2">Ready-to-use crash courses designed for:</p>
+              <ul className="space-y-2 text-sm text-gray-600">
+                <li className="flex items-start gap-2">
+                  <Check size={16} className="text-green-600 flex-shrink-0 mt-0.5" />
+                  <span>Fast understanding</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check size={16} className="text-green-600 flex-shrink-0 mt-0.5" />
+                  <span>Quick revision</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check size={16} className="text-green-600 flex-shrink-0 mt-0.5" />
+                  <span>Exam-focused preparation</span>
+                </li>
+              </ul>
+              <p className="text-xs text-gray-500 mt-4 italic">Perfect for last-minute confidence boosts.</p>
+            </div>
+
+            {/* Solve Math's */}
+            <div className="bg-white rounded-2xl p-8 shadow-md hover:shadow-lg transition-shadow">
+              <div className="w-12 h-12 rounded-lg bg-green-50 flex items-center justify-center mb-4">
+                <Calculator size={24} className="text-green-600" />
+              </div>
+              <h3 className="text-xl font-black text-gray-900 mb-3">Solve Math's</h3>
+              <p className="text-gray-600 mb-4">Just type your equation.</p>
+              <p className="text-sm font-bold text-gray-700 mb-2">We don't just give answers.</p>
+              <ul className="space-y-2 text-sm text-gray-600">
+                <li className="flex items-start gap-2">
+                  <Check size={16} className="text-green-600 flex-shrink-0 mt-0.5" />
+                  <span>Explain how and why, step by step</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check size={16} className="text-green-600 flex-shrink-0 mt-0.5" />
+                  <span>Visual problem breakdown</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check size={16} className="text-green-600 flex-shrink-0 mt-0.5" />
+                  <span>Multiple approaches</span>
+                </li>
+              </ul>
+              <p className="text-xs text-gray-500 mt-4 italic">So maths actually makes sense.</p>
+            </div>
+
+            {/* Learn English */}
+            <div className="bg-white rounded-2xl p-8 shadow-md hover:shadow-lg transition-shadow">
+              <div className="w-12 h-12 rounded-lg bg-orange-50 flex items-center justify-center mb-4">
+                <Languages size={24} className="text-orange-600" />
+              </div>
+              <h3 className="text-xl font-black text-gray-900 mb-3">Learn English</h3>
+              <p className="text-gray-600 mb-4">Improve your English without pressure.</p>
+              <ul className="space-y-2 text-sm text-gray-600">
+                <li className="flex items-start gap-2">
+                  <Check size={16} className="text-green-600 flex-shrink-0 mt-0.5" />
+                  <span>Vocabulary building</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check size={16} className="text-green-600 flex-shrink-0 mt-0.5" />
+                  <span>Sentence construction</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check size={16} className="text-green-600 flex-shrink-0 mt-0.5" />
+                  <span>Better understanding</span>
+                </li>
+              </ul>
+              <p className="text-xs text-gray-500 mt-4 italic">Simple. Practical. No boring lessons.</p>
+            </div>
+
+            {/* Competitive Exams */}
+            <div className="bg-white rounded-2xl p-8 shadow-md hover:shadow-lg transition-shadow">
+              <div className="w-12 h-12 rounded-lg bg-red-50 flex items-center justify-center mb-4">
+                <Trophy size={24} className="text-red-600" />
+              </div>
+              <h3 className="text-xl font-black text-gray-900 mb-3">Competitive Exams</h3>
+              <p className="text-gray-600 mb-4">Built keeping Indian education in mind.</p>
+              <ul className="space-y-2 text-sm text-gray-600">
+                <li className="flex items-start gap-2">
+                  <Check size={16} className="text-green-600 flex-shrink-0 mt-0.5" />
+                  <span>Board exams</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check size={16} className="text-green-600 flex-shrink-0 mt-0.5" />
+                  <span>Competitive exams</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check size={16} className="text-green-600 flex-shrink-0 mt-0.5" />
+                  <span>Heavy syllabus, limited time</span>
+                </li>
+              </ul>
+              <p className="text-xs text-gray-500 mt-4 italic">Structured learning that actually helps.</p>
+            </div>
+          </div>
+
+          {/* Video Lectures & Themes Row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Video Lectures */}
+            <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl p-8 border-2 border-indigo-200">
+              <div className="w-12 h-12 rounded-lg bg-indigo-100 flex items-center justify-center mb-4">
+                <Brain size={24} className="text-indigo-600" />
+              </div>
+              <h3 className="text-xl font-black text-gray-900 mb-3">Video Lectures (Coming Soon)</h3>
+              <p className="text-gray-700 mb-3">Soon, your notes won't just be text.</p>
+              <p className="text-gray-600">They'll turn into video-style explanations so you can watch, listen, and revise anytime.</p>
+            </div>
+
+            {/* Student Favourite */}
+            <div className="bg-gradient-to-br from-pink-50 to-rose-50 rounded-2xl p-8 border-2 border-pink-200">
+              <div className="w-12 h-12 rounded-lg bg-pink-100 flex items-center justify-center mb-4">
+                <Star size={24} className="text-pink-600" fill="currentColor" />
+              </div>
+              <h3 className="text-xl font-black text-gray-900 mb-3">Student Favourite 💙</h3>
+              <p className="text-gray-700 mb-3">Who said studying has to be boring?</p>
+              <p className="text-sm font-bold text-gray-700 mb-2">Choose study themes like:</p>
+              <ul className="space-y-2 text-sm text-gray-600">
+                <li className="flex items-start gap-2">
+                  <Check size={14} className="text-pink-600 flex-shrink-0 mt-0.5" />
+                  <span>Game of Thrones</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check size={14} className="text-pink-600 flex-shrink-0 mt-0.5" />
+                  <span>Money Heist</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check size={14} className="text-pink-600 flex-shrink-0 mt-0.5" />
+                  <span>Lord of the Rings & More coming soon</span>
+                </li>
+              </ul>
+              <p className="text-xs text-gray-500 mt-4 italic">Because learning should feel fun too.</p>
+            </div>
           </div>
         </div>
       </section>
@@ -402,8 +550,8 @@ flashcards, summaries, quizzes, tests, study plans, and more.
               {/* Right content */}
               <div>
                 <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-300 mb-3">Our Features</h2>
-                <h3 className="text-3xl md:text-4xl font-black mb-4">Study tools that help you learn faster</h3>
-                <p className="text-gray-200 mb-6">Pick a protocol to transform your material into the exact study output you need — fully powered by StudyClub24. StudyClub24 helps students study smarter by turning notes, PDFs and images into concise, exam-ready study protocols powered by AI.</p>
+                <h3 className="text-3xl md:text-4xl font-black mb-4">WHAT THIS TOOL DOES (Simple, Friendly)</h3>
+                <p className="text-gray-200 mb-6">Flashcards, Study Notes, Tests, Study Plans, Lesson Summary, Essay, Logical Explanations, & Explain the topic like you are 5 year old.</p>
 
                 <div className="mb-8">
                   <ModeSelector
@@ -606,8 +754,8 @@ flashcards, summaries, quizzes, tests, study plans, and more.
       <section id="impact" className="py-16 bg-white">
         <div className="container mx-auto px-6 text-center">
           <div className="mb-6">
-            <h3 className="text-xl font-black mb-2">Feedbacks</h3>
-            <p className="text-gray-500 text-sm">What students are saying about StudyClub24</p>
+            <h3 className="text-xl font-black mb-2">Study Club is Free for Every Student</h3>
+            <p className="text-gray-500 text-sm">Feedback</p>
           </div>
 
           <div className="flex justify-center gap-2 text-yellow-400 mb-6"><Star fill="currentColor" /><Star fill="currentColor" /><Star fill="currentColor" /></div>
@@ -627,8 +775,8 @@ flashcards, summaries, quizzes, tests, study plans, and more.
       {/* CTA */}
       <section className="py-16 bg-gradient-to-r from-indigo-700 to-pink-500 text-white">
         <div className="container mx-auto px-6 text-center">
-          <h2 className="text-3xl font-black mb-2">Ready to evolve?</h2>
-          <p className="mb-6 text-gray-100">Join thousands of students leveraging AI to unlock their academic potential.</p>
+          <h2 className="text-3xl font-black mb-2">Our goal is simple</h2>
+          <p className="mb-6 text-gray-100">No paywalls to start, No barriers to learning, Make studying easier and accessible for everyone.</p>
           <button onClick={handleGetStarted} className="px-8 py-3 bg-white text-indigo-700 rounded-full font-bold">Start Free Protocol</button>
         </div>
       </section>
