@@ -377,11 +377,10 @@ const Homepage: React.FC<HomepageProps> = ({ onOpenAuth, onGetStarted, onOpenUpg
                 <div className="mb-6">
                   <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${plan.gradient} flex items-center justify-center text-white mb-6 shadow-lg group-hover:rotate-6 transition-transform`}>
                     {plan.id === 'free' && <Zap size={24} />}
-                    {plan.id === 'weekly' && <Star size={24} />}
-                    {plan.id === 'monthly' && <Shield size={24} />}
-                    {plan.id === 'monthly-pro' && <Trophy size={24} />}
-                    {plan.id === 'yearly' && <Star size={24} />}
-                    {plan.id === 'yearly-pro' && <Crown size={24} />}
+                    {plan.id === 'crash-course' && <Star size={24} />}
+                    {plan.id === 'instant-help' && <Shield size={24} />}
+                    {plan.id === 'focused-prep' && <Trophy size={24} />}
+                    {plan.id === 'study-pro' && <Crown size={24} />}
                   </div>
                   <h3 className="text-xl font-black text-gray-900 mb-2">{plan.name}</h3>
                   <p className="text-xs text-gray-400 font-medium leading-relaxed min-h-[3rem]">{plan.description}</p>
