@@ -16,7 +16,7 @@ const SimpleTextDisplay: React.FC<Props> = ({ data }) => {
           <>
             <div className="flex items-center gap-2 mb-6 text-indigo-600">
                 <List size={24} />
-                <h2 className="text-2xl font-bold text-gray-800">Key Points Summary</h2>
+                <h2 className="text-lg md:text-2xl font-bold text-gray-800">Key Points Summary</h2>
             </div>
             <ul className="space-y-4">
               {data.bullets.map((point, idx) => (
@@ -40,8 +40,8 @@ const SimpleTextDisplay: React.FC<Props> = ({ data }) => {
                 <FileText size={24} />
                 <span className="uppercase tracking-widest text-xs font-bold">Generated Essay</span>
             </div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-8">{data.title}</h2>
-            <div className="whitespace-pre-wrap text-gray-700 leading-8 font-serif text-lg">
+            <h2 className="text-xl md:text-3xl font-bold text-gray-900 mb-4 md:mb-8">{data.title}</h2>
+            <div className="whitespace-pre-wrap text-gray-700 leading-6 md:leading-8 font-serif text-sm md:text-lg">
                 <LatexRenderer>{data.essay}</LatexRenderer>
             </div>
           </div>

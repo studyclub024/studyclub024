@@ -262,11 +262,11 @@ const quizData: QuizResponse = {
 }
 
 const Topic_12_phy_ncert: React.FC = () => {
-  const [selectedMode, setSelectedMode] = useState<StudyMode>(StudyMode.NOTES)
+  const [selectedMode, setSelectedMode] = useState<string>('notes')
 
   const renderContent = () => {
     switch (selectedMode) {
-      case StudyMode.FLASHCARDS:
+      case 'flashcards':
         return (
           <FlashcardDisplay 
             data={flashcardsData}
@@ -274,39 +274,54 @@ const Topic_12_phy_ncert: React.FC = () => {
             onOpenUpgrade={() => {}}
           />
         )
-      case StudyMode.NOTES:
+      case 'notes':
         return <NotesDisplay data={notesData} />
-      case StudyMode.QUIZ:
+      case 'quiz':
         return <QuizDisplay data={quizData} />
+      case 'plan':
+        return <div className="text-white text-center py-10">Study Plan coming soon...</div>
+      case 'summary':
+        return <div className="text-white text-center py-10">Summary coming soon...</div>
+      case 'essay':
+        return <div className="text-white text-center py-10">Essay coming soon...</div>
+      case 'eli5':
+        return <div className="text-white text-center py-10">Explain Like I'm 5 coming soon...</div>
+      case 'describe':
+        return <div className="text-white text-center py-10">Describe coming soon...</div>
       default:
         return <NotesDisplay data={notesData} />
     }
   }
 
-  const modes = [
-    { id: StudyMode.NOTES, icon: BookOpen, label: 'Study Notes', color: 'from-blue-500 to-cyan-500' },
-    { id: StudyMode.FLASHCARDS, icon: Brain, label: 'Flashcards', color: 'from-purple-500 to-pink-500' },
-    { id: StudyMode.QUIZ, icon: FileText, label: 'Practice Quiz', color: 'from-green-500 to-emerald-500' },
+  const allModes = [
+    { id: 'flashcards', icon: Brain, label: 'Flashcards', description: 'Pre-generated flashcards' },
+    { id: 'notes', icon: BookOpen, label: 'Study Notes', description: 'Pre-generated study notes' },
+    { id: 'quiz', icon: FileText, label: 'Quiz Me', description: 'Pre-generated quiz me' },
+    { id: 'plan', icon: Zap, label: 'Study Plan', description: 'Pre-generated study plan' },
+    { id: 'summary', icon: FileText, label: 'Summary', description: 'Pre-generated summary' },
+    { id: 'essay', icon: FileText, label: 'Essay', description: 'Pre-generated essay' },
+    { id: 'eli5', icon: Brain, label: "Explain Like I'm 5", description: "Pre-generated explain like i'm 5" },
+    { id: 'describe', icon: BookOpen, label: 'Describe', description: 'Pre-generated describe' },
   ]
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-8 px-6 shadow-2xl">
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 md:py-8 px-4 md:px-6 shadow-2xl">
         <div className="container mx-auto max-w-5xl">
-          <div className="flex items-center gap-3 mb-2">
-            <Zap className="w-10 h-10" />
-            <h1 className="text-4xl font-bold">Physics Class 12</h1>
+          <div className="flex items-center gap-2 md:gap-3 mb-1 md:mb-2">
+            <Zap className="w-6 h-6 md:w-10 md:h-10" />
+            <h1 className="text-2xl md:text-4xl font-bold">Physics Class 12</h1>
           </div>
-          <h2 className="text-2xl font-semibold ml-13 opacity-90">Electrostatics & Current Electricity</h2>
-          <p className="mt-3 text-blue-100 ml-13">CBSE NCERT | Chapter 1 & 2</p>
+          <h2 className="text-lg md:text-2xl font-semibold ml-8 md:ml-13 opacity-90">Electrostatics & Current Electricity</h2>
+          <p className="mt-2 md:mt-3 text-sm md:text-base text-blue-100 ml-8 md:ml-13">CBSE NCERT | Chapter 1 & 2</p>
         </div>
       </div>
 
       {/* Mode Selector */}
-      <div className="container mx-auto max-w-5xl px-6 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          {modes.map((mode) => {
+      <div className="container mx-auto max-w-5xl px-3 md:px-6 py-4 md:py-8">
+        <div className="grid grid-cols-4 md:grid-cols-4 gap-2 md:gap-4 mb-6 md:mb-8">
+          {allModes.map((mode) => {
             const Icon = mode.icon
             const isActive = selectedMode === mode.id
             return (
@@ -314,27 +329,27 @@ const Topic_12_phy_ncert: React.FC = () => {
                 key={mode.id}
                 onClick={() => setSelectedMode(mode.id)}
                 className={`
-                  relative p-6 rounded-xl transition-all duration-300 transform
+                  relative p-2 md:p-4 rounded-lg md:rounded-xl transition-all duration-200
                   ${isActive 
-                    ? `bg-gradient-to-r ${mode.color} text-white shadow-2xl scale-105` 
-                    : 'bg-white/10 text-white hover:bg-white/20 hover:scale-102'
+                    ? 'bg-white text-gray-900 shadow-lg scale-100' 
+                    : 'bg-white/10 text-white hover:bg-white/20'
                   }
                 `}
               >
-                <div className="flex flex-col items-center gap-3">
-                  <Icon className={`w-8 h-8 ${isActive ? 'animate-pulse' : ''}`} />
-                  <span className="font-semibold text-lg">{mode.label}</span>
+                <div className="flex flex-col items-center gap-0.5 md:gap-2">
+                  <Icon className={`w-4 h-4 md:w-6 md:h-6 ${isActive ? 'text-blue-600' : ''}`} />
+                  <span className="font-semibold text-[9px] md:text-sm text-center leading-tight">{mode.label}</span>
+                  <span className={`text-[10px] md:text-xs hidden md:block ${isActive ? 'text-gray-600' : 'text-gray-400'}`}>
+                    {mode.description}
+                  </span>
                 </div>
-                {isActive && (
-                  <div className="absolute inset-0 rounded-xl border-2 border-white/50 pointer-events-none" />
-                )}
               </button>
             )
           })}
         </div>
 
         {/* Content Area */}
-        <div className="bg-white/5 backdrop-blur-lg rounded-2xl shadow-2xl p-8 border border-white/10">
+        <div className="bg-white/5 backdrop-blur-lg rounded-xl md:rounded-2xl shadow-2xl p-3 md:p-8 border border-white/10">
           {renderContent()}
         </div>
       </div>
