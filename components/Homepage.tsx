@@ -1,9 +1,10 @@
-
-import React, { useState, useEffect } from 'react';
-import { SubscriptionPlan } from '../../types';
-import { Check, Zap, Star, Shield, Trophy, Crown, ArrowRight, X, Loader } from 'lucide-react';
-import razorpayService from '../../services/razorpayService';
-import { auth } from '../../firebaseConfig';
+import React, { useState, useRef, useEffect } from 'react';
+import { GraduationCap, Rocket, ArrowRight, Layers, Calculator, Languages, Brain, Globe, Shield, Zap, Star, Trophy, Crown, Check, FileText, Loader2, X } from 'lucide-react';
+import ModeSelector from './Input/ModeSelector';
+import Footer from './Layout/Footer';
+import { PLANS } from './Subscription/SubscriptionScreen';
+import { MODE_CONFIG } from '../constants';
+import { StudyMode } from '../types';
 
 // All features comparison list
 const ALL_FEATURES = [
@@ -71,315 +72,570 @@ const PLAN_FEATURES_MAP: Record<string, Record<string, boolean>> = {
   },
 };
 
-export const PLANS: SubscriptionPlan[] = [
-  {
-    id: 'crash-course',
-    name: 'Crash Course Plan',
-    price: '₹0.99',
-    period: 'day Billed Monthly',
-    description: 'Less Than a Chocolate',
-    features: ['Course & Question Paper'],
-    gradient: 'from-blue-400 to-indigo-500'
-  },
-  {
-    id: 'instant-help',
-    name: 'Instant help',
-    price: '₹5',
-    period: 'day Billed Monthly',
-    description: 'Less than a cup of tea',
-    isPopular: true,
-    features: ['5 Notes Upload/day', 'Unlimited Flashcards', 'Unlimited Summaries', 'Unlimited Test', 'Study Plan'],
-    gradient: 'from-violet-500 to-fuchsia-500'
-  },
-  {
-    id: 'focused-prep',
-    name: 'Focused Prep',
-    price: '₹7',
-    period: 'day Billed Monthly',
-    description: 'Less than Lays Packet',
-    features: ['Course & Question Paper', '10 Notes Upload/day', 'Unlimited Flashcards', 'Unlimited Summaries', 'Unlimited Test', 'Study Plan', 'Language Learning', 'Theme For Fun Learning'],
-    gradient: 'from-fuchsia-500 to-rose-500'
-  },
-  {
-    id: 'study-pro',
-    name: 'Study Pro ⭐',
-    price: '₹599',
-    period: 'Month Billed Monthly',
-    description: 'Less than a Cafe outing',
-    features: ['Course & Question Paper', 'Unlimited Notes Upload', 'Unlimited Flashcards', 'Unlimited Summaries', 'Unlimited Test', 'Study Plan', 'Save Flashcards', 'Share Flashcards', 'Language Learning', 'Theme For Fun Learning'],
-    gradient: 'from-amber-400 to-yellow-600'
-  }
-];
-
-interface Props {
-  onSelect: (plan: SubscriptionPlan) => void;
-  onClose?: () => void;
-  isLoggedIn?: boolean;
+type HomepageProps = {
   onOpenAuth?: () => void;
-}
+  onGetStarted?: () => void;
+  onOpenUpgrade?: () => void;
+  onOpenSelectMode?: (mode: string) => void;
+  isLoggedIn?: boolean;
+  onOpenLegal?: (section: 'privacy' | 'terms' | 'contact') => void;
+};
 
-const SubscriptionScreen: React.FC<Props> = ({ onSelect, onClose, isLoggedIn = false, onOpenAuth }) => {
-  const [loading, setLoading] = useState<string | null>(null);
+const FeatureCard: React.FC<{
+  icon: React.ElementType;
+  title: string;
+  desc: string;
+  color?: string;
+  bg?: string;
+  descColor?: string;
+}> = ({ icon: Icon, title, desc, color = 'text-indigo-600', bg = 'bg-indigo-50', descColor = 'text-gray-600' }) => (
+  <div className={`rounded-2xl p-6 ${bg} shadow-sm border border-gray-50`}>
+    <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-4 ${color} bg-white/60`}> <Icon size={20} /> </div>
+    <h4 className="font-black text-lg mb-2">{title}</h4>
+    <p className={`text-sm ${descColor}`}>{desc}</p>
+  </div>
+);
+
+const scrollToSection = (e: React.MouseEvent, id: string) => {
+  e.preventDefault();
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+
+const Homepage: React.FC<HomepageProps> = ({ onOpenAuth, onGetStarted, onOpenUpgrade, onOpenSelectMode, isLoggedIn = false, onOpenLegal }) => {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
 
-  const handleSelectPlan = async (plan: SubscriptionPlan) => {
+  const handleLogin = () => {
+    if (onOpenAuth) onOpenAuth();
+    else alert('Open auth modal');
+  };
+
+  const handleGetStarted = () => {
+    if (onGetStarted) onGetStarted();
+    else alert('Get started clicked');
+  };
+
+  const handleUpgradePlan = (planId: string) => {
     if (!isLoggedIn) {
-      // User not logged in, store the plan and open auth
-      setSelectedPlan(plan.id);
+      // Store the plan and open auth
+      setSelectedPlan(planId);
       if (onOpenAuth) onOpenAuth();
-      return;
-    }
-
-    // User is logged in, proceed with payment
-    setLoading(plan.id);
-    
-    try {
-      // Get user details from Firebase auth if available
-      const user = auth.currentUser;
-      const userDetails = {
-        name: user?.displayName || undefined,
-        email: user?.email || undefined,
-        phone: user?.phoneNumber || undefined,
-      };
-
-      // Initiate Razorpay payment
-      await razorpayService.initiatePayment(plan, userDetails);
-      
-      // Call the onSelect callback
-      onSelect(plan);
-    } catch (error) {
-      console.error('Payment error:', error);
-      alert('Something went wrong. Please try again.');
-    } finally {
-      setLoading(null);
+    } else {
+      // User is logged in, proceed with upgrade
+      if (onOpenUpgrade) onOpenUpgrade();
     }
   };
 
-  // Trigger payment flow after successful login
+  // After successful login, trigger the upgrade flow
   useEffect(() => {
     if (isLoggedIn && selectedPlan) {
-      const plan = PLANS.find(p => p.id === selectedPlan);
-      if (plan) {
-        // Delay slightly to ensure state is updated
-        const timer = setTimeout(async () => {
-          setLoading(selectedPlan);
-          try {
-            const user = auth.currentUser;
-            const userDetails = {
-              name: user?.displayName || undefined,
-              email: user?.email || undefined,
-              phone: user?.phoneNumber || undefined,
-            };
-            await razorpayService.initiatePayment(plan, userDetails);
-            onSelect(plan);
-          } catch (error) {
-            console.error('Payment error:', error);
-            alert('Something went wrong. Please try again.');
-          } finally {
-            setLoading(null);
-            setSelectedPlan(null);
-          }
-        }, 300);
-        return () => clearTimeout(timer);
-      }
+      // Open upgrade modal with the selected plan
+      if (onOpenUpgrade) onOpenUpgrade();
+      setSelectedPlan(null);
     }
-  }, [isLoggedIn, selectedPlan]);
+  }, [isLoggedIn, selectedPlan, onOpenUpgrade]);
+
+  // Smart Preview state & handlers
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewStatus, setPreviewStatus] = useState<'idle' | 'uploading' | 'done'>('idle');
+  const [previewText, setPreviewText] = useState('');
+  const [previewFileName, setPreviewFileName] = useState<string | null>(null);
+  const [previewUsedOnce, setPreviewUsedOnce] = useState(false);
+
+  // About section reveal
+  const aboutRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (!aboutRef.current) return;
+    const items = Array.from(aboutRef.current.querySelectorAll('.reveal-item')) as HTMLElement[];
+    if (!items.length) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        const el = entry.target as HTMLElement;
+        if (entry.isIntersecting) {
+          el.classList.add('translate-y-0', 'opacity-100');
+          el.classList.remove('translate-y-6', 'opacity-0');
+        }
+      });
+    }, { threshold: 0.2 });
+
+    items.forEach((it) => observer.observe(it));
+    return () => observer.disconnect();
+  }, []);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (previewUsedOnce) {
+      // Redirect users to pricing after first free preview
+      handleGoToPricing();
+      return;
+    }
+
+    setPreviewFileName(file.name);
+    setPreviewOpen(true);
+    setPreviewStatus('uploading');
+
+    // Simulate upload + processing
+    setTimeout(() => {
+      const summary = `1-minute summary for ${file.name}\n\nKey points:\n- Overview of the document\n- Important concepts and examples\n- Suggested practice questions`;
+      setPreviewText(summary);
+      setPreviewStatus('done');
+      setPreviewUsedOnce(true);
+    }, 1200 + Math.random() * 1200);
+  };
+
+  const handleDemo = () => {
+    if (previewUsedOnce) {
+      handleGoToPricing();
+      return;
+    }
+    setPreviewFileName('Demo Sample');
+    setPreviewText('Demo 1-minute summary\n\nKey points:\n- This is a demo preview that highlights the main concepts.\n- Practice the example problems shown.\n- Review the summary to revise quickly.');
+    setPreviewStatus('done');
+    setPreviewOpen(true);
+    setPreviewUsedOnce(true);
+  };
+
+  const handleStartUpload = () => {
+    if (previewUsedOnce) {
+      handleGoToPricing();
+      return;
+    }
+    fileInputRef.current?.click();
+  };
+
+  const handleGoToPricing = () => {
+    // Close preview, scroll to pricing section, and trigger upgrade flow
+    setPreviewOpen(false);
+    const el = document.getElementById('pricing');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (typeof window !== 'undefined' && !(typeof onOpenUpgrade === 'function')) window.dispatchEvent(new CustomEvent('openUpgrade'));
+    if (onOpenUpgrade) onOpenUpgrade();
+  };
 
   return (
-    <div className="fixed inset-0 z-[1000] bg-[#F8F9FC] dark:bg-slate-950 overflow-y-auto py-16 px-4 animate-fade-in">
-      {onClose && (
-        <button 
-          onClick={onClose}
-          className="fixed top-6 right-6 p-3 bg-white dark:bg-slate-900 border border-gray-100 dark:border-white/5 rounded-2xl shadow-lg hover:shadow-xl text-gray-400 hover:text-gray-900 transition-all z-[1001]"
-        >
-          <X size={24} />
-        </button>
-      )}
-      <div className="max-w-7xl mx-auto relative">
-        <div className="text-center mb-16 space-y-4">
-          <h1 className="text-4xl md:text-6xl font-black text-gray-900 dark:text-white tracking-tight">
-            Elevate Your <span className="text-indigo-600 dark:text-indigo-400">Intelligence</span>
-          </h1>
-          <p className="text-gray-500 dark:text-slate-400 font-medium text-lg max-w-2xl mx-auto">
-            Choose the protocol that matches your academic ambition. Unlock the full power of StudyClub24 today.
-          </p>
-        </div>
+    <div className="min-h-screen bg-[#F8F9FC] font-sans overflow-x-hidden selection:bg-indigo-100 selection:text-indigo-900">
+      {/* Navigation */}
+      <nav className="fixed top-0 w-full z-[1000] bg-white/80 backdrop-blur-xl border-b border-gray-100 py-4">
+        <div className="container mx-auto px-6 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="bg-indigo-600 p-2 rounded-xl text-white shadow-lg shadow-indigo-200">
+              <GraduationCap size={20} />
+            </div>
+            <span className="text-xl font-black tracking-tight text-gray-900">StudyClub24</span>
+          </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {PLANS.map((plan, idx) => (
-            <div 
-              key={plan.id}
-              className={`relative flex flex-col bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border-2 transition-all hover:scale-[1.02] group ${plan.isPopular ? 'border-indigo-600 shadow-2xl shadow-indigo-100 dark:shadow-none ring-4 ring-indigo-50 dark:ring-indigo-900/10' : 'border-gray-50 dark:border-white/5 shadow-xl shadow-gray-100 dark:shadow-none hover:border-indigo-200'}`}
-              style={{ animationDelay: `${idx * 100}ms` }}
-            >
-              {plan.isPopular && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-indigo-600 text-white px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg">
-                  Best Value
+          <div className="hidden md:flex items-center gap-10">
+            <a href="#about" onClick={(e) => scrollToSection(e, 'about')} className="text-sm font-black uppercase tracking-wide text-gray-500 hover:text-indigo-600 transition-all">About</a>
+            <a href="#features" onClick={(e) => scrollToSection(e, 'features')} className="text-sm font-black uppercase tracking-wide text-gray-500 hover:text-indigo-600 transition-all">Our Features</a>
+            <a href="#pricing" onClick={(e) => scrollToSection(e, 'pricing')} className="text-sm font-black uppercase tracking-wide text-gray-500 hover:text-indigo-600 transition-all">Pricing</a>
+            <a href="#impact" onClick={(e) => scrollToSection(e, 'impact')} className="text-sm font-black uppercase tracking-wide text-gray-500 hover:text-indigo-600 transition-all">Feedbacks</a>
+          </div>
+
+          <div className="flex items-center gap-4">
+            {!isLoggedIn ? (
+              <>
+                <button onClick={handleLogin} className="px-4 py-2 text-sm font-semibold text-gray-700 hover:text-indigo-600 transition-colors">Login</button>
+                <button onClick={handleGetStarted} className="px-4 py-2 bg-indigo-600 text-white rounded-full text-sm font-bold shadow-md hover:bg-indigo-700 transition-all">Sign up</button>
+              </>
+            ) : (
+              <button onClick={handleGetStarted} className="px-4 py-2 bg-indigo-600 text-white rounded-full text-sm font-bold shadow-md hover:bg-indigo-700 transition-all">Workspace</button>
+            )}
+          </div>
+        </div>
+      </nav>
+
+      {/* Hero */}
+      <section className="pt-28 pb-16 px-6">
+        <div className="container mx-auto px-6 text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-indigo-50 text-indigo-600 rounded-full text-xs font-bold uppercase tracking-wide mb-6">
+            <Rocket size={14} /> The Next Evolution in Learning
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div className="text-left">
+              <h1 className="text-4xl md:text-6xl font-extrabold text-gray-900 leading-tight">Built by a <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-pink-600">Student.</span>For Students.</h1>
+              <p className="mt-6 text-gray-600 max-w-xl">Long notes. Heavy syllabus. Zero clarity.
+This tool was created to fix that.
+Upload your notes or click a picture, and we help you turn them into:
+flashcards, summaries, quizzes, tests, study plans, and more.
+<scrong>Study better. Stress less. And enjoy learning.</scrong>
+</p>
+
+              <div className="mt-8 flex items-center gap-4">
+                <button onClick={handleLogin} className="inline-flex items-center gap-3 px-6 py-3 bg-indigo-600 text-white rounded-lg font-bold shadow-lg hover:scale-105 transition-transform">Start Studying for Free <ArrowRight size={18} /></button>
+              </div>
+
+              <div className="mt-8 grid grid-cols-2 gap-4 text-sm text-gray-600">
+                <div>
+                  <div className="font-extrabold text-xl">50K+</div>
+                  <div className="uppercase text-xs tracking-wide">Active Students</div>
+                </div>
+                <div>
+                  <div className="font-extrabold text-xl">1M+</div>
+                  <div className="uppercase text-xs tracking-wide">Modules Created</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl p-6 shadow-xl">
+              <h3 className="font-black mb-4">Try a Smart Preview</h3>
+              <div className="text-sm text-gray-600">Upload a study guide and get a 1-minute summary — optimized for quick revision.</div>
+              <div className="mt-6 flex gap-3">
+                <button onClick={handleStartUpload} className="flex-1 py-3 bg-indigo-50 rounded-md font-bold text-indigo-700 inline-flex items-center justify-center gap-3">
+                  <FileText size={16} /> Upload PDF
+                </button>
+                <button onClick={handleDemo} className="py-3 px-4 rounded-md border">Demo</button>
+                <input ref={fileInputRef} type="file" accept=".pdf,.txt,.docx" onChange={handleFileChange} className="hidden" />
+              </div>
+
+              {/* Preview Modal */}
+              {previewOpen && (
+                <div role="dialog" aria-modal="true" className="fixed inset-0 z-[2000] flex items-center justify-center">
+                  <div className="fixed inset-0 bg-black/40" onClick={() => setPreviewOpen(false)} />
+                  <div className="bg-white rounded-2xl shadow-2xl p-6 relative z-10 w-[min(880px,90%)]">
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <h4 className="text-lg font-black">Smart Preview {previewFileName ? `— ${previewFileName}` : ''}</h4>
+                        <p className="text-sm text-gray-500 mt-1">{previewStatus === 'uploading' ? 'Generating 1-minute summary...' : 'Preview generated'}</p>
+                      </div>
+                      <button onClick={() => setPreviewOpen(false)} className="text-gray-400 hover:text-gray-700"><X /></button>
+                    </div>
+
+                    <div className="min-h-[160px]">
+                      {previewStatus === 'uploading' ? (
+                        <div className="flex items-center gap-4">
+                          <Loader2 className="animate-spin" />
+                          <div className="text-gray-600">Processing your file — this usually takes a few seconds.</div>
+                        </div>
+                      ) : (
+                        <div className="prose max-w-none text-gray-700 whitespace-pre-wrap">
+                          {previewText || 'No summary available.'}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="mt-6 flex items-center justify-center">
+                      <button onClick={handleGoToPricing} className="px-6 py-3 rounded-full bg-indigo-600 text-white font-bold">Explore Plans</button>
+                    </div>
+                  </div>
                 </div>
               )}
-
-              <div className="mb-6">
-                <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${plan.gradient} flex items-center justify-center text-white mb-6 shadow-lg group-hover:rotate-6 transition-transform`}>
-                  {plan.id === 'free' && <Zap size={24} />}
-                  {plan.id === 'weekly' && <Star size={24} />}
-                  {plan.id === 'monthly' && <Shield size={24} />}
-                  {plan.id === 'monthly-pro' && <Trophy size={24} />}
-                  {plan.id === 'yearly' && <Star size={24} />}
-                  {plan.id === 'yearly-pro' && <Crown size={24} />}
-                </div>
-                <h3 className="text-xl font-black text-gray-900 dark:text-white mb-2">{plan.name}</h3>
-                <p className="text-xs text-gray-400 dark:text-slate-500 font-medium leading-relaxed min-h-[3rem]">
-                  {plan.description}
-                </p>
-              </div>
-
-              <div className="mb-8">
-                <div className="flex items-baseline gap-1">
-                  <span className="text-3xl font-black text-gray-900 dark:text-white">{plan.price}</span>
-                  <span className="text-gray-400 font-bold text-sm">/{plan.period}</span>
-                </div>
-              </div>
-
-              <div className="flex-1 space-y-4 mb-8">
-                {plan.features.map((feature, fIdx) => (
-                  <div key={fIdx} className="flex gap-3">
-                    <div className="flex-shrink-0 w-5 h-5 rounded-full bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center">
-                      <Check size={12} className="text-indigo-600 dark:text-indigo-400" strokeWidth={3} />
-                    </div>
-                    <span className="text-xs font-bold text-gray-600 dark:text-slate-300 leading-tight">{feature}</span>
-                  </div>
-                ))}
-              </div>
-
-              <button 
-                onClick={() => handleSelectPlan(plan)}
-                disabled={loading === plan.id}
-                className={`w-full py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 group/btn ${
-                  plan.isPopular 
-                    ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-100 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed' 
-                    : 'bg-gray-50 dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed'
-                }`}
-              >
-                {loading === plan.id ? (
-                  <>
-                    <Loader size={14} className="animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    {plan.id === 'free' ? 'Select Free' : 'Upgrade Now'} 
-                    <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
-                  </>
-                )}
-              </button>
             </div>
-          ))}
+          </div>
         </div>
+      </section>
 
-        {/* Feature Comparison Table */}
-        <div className="mt-20 mb-16">
-          <h2 className="text-3xl font-black text-gray-900 dark:text-white text-center mb-12">
-            Detailed Feature Comparison
-          </h2>
-          
-          <div className="overflow-x-auto rounded-3xl border border-gray-200 dark:border-white/10 bg-white dark:bg-slate-900">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200 dark:border-white/10">
-                  <th className="px-6 py-6 text-left text-sm font-black text-gray-900 dark:text-white bg-gray-50 dark:bg-slate-800/50 min-w-[250px]">
-                    Feature / Plan
-                  </th>
-                  {PLANS.map((plan) => (
-                    <th key={plan.id} className="px-6 py-6 text-center text-xs font-black text-gray-900 dark:text-white bg-gray-50 dark:bg-slate-800/50 min-w-[150px]">
-                      <div className="text-sm">{plan.name}</div>
-                      <div className="text-lg mt-2">{plan.price}<span className="text-xs">/{plan.period}</span></div>
-                    </th>
+      {/* About */}
+      <section id="about" ref={aboutRef} className="py-16 bg-white overflow-hidden">
+        <div className="container mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+
+            {/* Left: big headline + stats */}
+            <div className="text-left">
+              <div className="overflow-hidden">
+                <div className="reveal-item transform translate-y-6 opacity-0 transition-all duration-700 ease-out">
+                  <h2 className="text-4xl md:text-6xl font-black leading-tight text-gray-900">We help students <span className="text-indigo-600">study smarter</span> and perform better.</h2>
+                </div>
+              </div>
+
+              <div className="mt-6 overflow-hidden">
+                <div className="reveal-item transform translate-y-6 opacity-0 transition-all duration-700 ease-out">
+                  <p className="text-gray-600 max-w-xl">StudyClub24 converts your notes, PDFs and images into compact, exam-ready study protocols — summaries, flashcards, quizzes and custom study plans — powered by AI to save time and boost retention.</p>
+                </div>
+              </div>
+
+              <div className="mt-8 grid grid-cols-3 gap-6">
+                <div className="reveal-item transform translate-y-6 opacity-0 transition-all duration-700 ease-out">
+                  <div className="text-3xl font-black text-gray-900">50K+</div>
+                  <div className="text-xs text-gray-500 uppercase">Active Students</div>
+                </div>
+                <div className="reveal-item transform translate-y-6 opacity-0 transition-all duration-700 ease-out">
+                  <div className="text-3xl font-black text-gray-900">1M+</div>
+                  <div className="text-xs text-gray-500 uppercase">Modules Created</div>
+                </div>
+                <div className="reveal-item transform translate-y-6 opacity-0 transition-all duration-700 ease-out">
+                  <div className="text-3xl font-black text-gray-900">4.8</div>
+                  <div className="text-xs text-gray-500 uppercase">Avg Rating</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right: feature cards (compact) */}
+            <div>
+              <div className="reveal-item transform translate-y-6 opacity-0 transition-all duration-700 ease-out">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <FeatureCard icon={Brain} title="AI-Powered" desc="Adaptive explanations & summaries" color="text-indigo-600" bg="bg-indigo-50" />
+                  <FeatureCard icon={Globe} title="Global Community" desc="Collaborate with peers and tutors" color="text-indigo-600" bg="bg-indigo-50" />
+                  <FeatureCard icon={Layers} title="Versatile Formats" desc="PDFs, images, notes & handwriting" color="text-indigo-600" bg="bg-indigo-50" />
+                  <FeatureCard icon={Calculator} title="Practice Tools" desc="Quizzes and timed practice" color="text-indigo-600" bg="bg-indigo-50" />
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* Result Protocols */}
+      <section id="features" className="py-16">
+        <div className="container mx-auto px-6">
+          <div className="bg-gradient-to-r from-[#06102a] via-[#11214a] to-[#3b1260] rounded-2xl p-8 md:p-12 text-white overflow-hidden">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+
+              {/* Left image/illustration */}
+              <div className="rounded-2xl overflow-hidden flex items-center justify-center">
+                <div className="relative w-full rounded-2xl bg-gradient-to-br from-indigo-800 via-blue-700 to-pink-600 p-8 md:p-12 flex items-center justify-center" style={{ minHeight: 340 }}>
+                  {/* Decorative ring + graduate illustration */}
+                  <div className="relative flex items-center justify-center">
+                    <div className="w-56 h-56 md:w-72 md:h-72 rounded-full bg-white/6 flex items-center justify-center">
+                      <div className="text-6xl md:text-8xl">🎓</div>
+                    </div>
+                    <div className="absolute -left-12 -bottom-8 w-40 h-40 rounded-full bg-white/4 blur-3xl" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Right content */}
+              <div>
+                <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-300 mb-3">Our Features</h2>
+                <h3 className="text-3xl md:text-4xl font-black mb-4">Study tools that help you learn faster</h3>
+                <p className="text-gray-200 mb-6">Pick a protocol to transform your material into the exact study output you need — fully powered by StudyClub24. StudyClub24 helps students study smarter by turning notes, PDFs and images into concise, exam-ready study protocols powered by AI.</p>
+
+                <div className="mb-8">
+                  <ModeSelector
+                    selectedMode={null}
+                    onSelectMode={(mode) => {
+                      if (onOpenSelectMode) onOpenSelectMode(mode);
+                      else { if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('selectMode', { detail: mode })); }
+                    }}
+                    disabled={false}
+                    loadingMode={null}
+                    cachedModes={[]}
+                    cols={2}
+                    config={((): any => {
+                      const order = [
+                        StudyMode.FLASHCARDS,
+                        StudyMode.NOTES,
+                        StudyMode.QUIZ,
+                        StudyMode.PLAN,
+                        StudyMode.SUMMARY,
+                        StudyMode.ESSAY,
+                        StudyMode.ELI5,
+                        StudyMode.DESCRIBE
+                      ];
+                      const cfg: Record<string, any> = {};
+                      order.forEach((k) => { if ((MODE_CONFIG as any)[k]) cfg[k] = (MODE_CONFIG as any)[k]; });
+                      return cfg;
+                    })()}
+                  />
+                </div>
+
+                <div className="mt-6 flex items-center gap-4">
+                  <button onClick={() => { if (onGetStarted) onGetStarted(); }} className="px-6 py-3 bg-white text-indigo-800 rounded-full font-bold">Try it now</button>
+                  <button onClick={handleGoToPricing} className="px-6 py-3 border border-white text-white rounded-full">Start free trial</button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing (shared with Subscription modal) */}
+      <section id="pricing" className="py-16 bg-white">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-12">
+            <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-600">The Membership</h2>
+            <h3 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight">Flexible Plans for Every Learner</h3>
+            <p className="text-gray-500 font-medium max-w-2xl mx-auto">Choose the protocol that matches your academic ambition. Unlock the full power of StudyClub24 today.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {PLANS.map((plan, idx) => (
+              <div 
+                key={plan.id}
+                className={`relative flex flex-col bg-white rounded-[2.5rem] p-8 border-2 transition-all hover:scale-[1.02] group ${plan.isPopular ? 'border-indigo-600 shadow-2xl shadow-indigo-100 ring-4 ring-indigo-50' : 'border-gray-50 shadow-xl shadow-gray-100 hover:border-indigo-200'}`}
+                style={{ animationDelay: `${idx * 80}ms` }}
+              >
+                {plan.isPopular && (
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-indigo-600 text-white px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg">
+                    Best Value
+                  </div>
+                )}
+
+                <div className="mb-6">
+                  <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${plan.gradient} flex items-center justify-center text-white mb-6 shadow-lg group-hover:rotate-6 transition-transform`}>
+                    {plan.id === 'free' && <Zap size={24} />}
+                    {plan.id === 'weekly' && <Star size={24} />}
+                    {plan.id === 'monthly' && <Shield size={24} />}
+                    {plan.id === 'monthly-pro' && <Trophy size={24} />}
+                    {plan.id === 'yearly' && <Star size={24} />}
+                    {plan.id === 'yearly-pro' && <Crown size={24} />}
+                  </div>
+                  <h3 className="text-xl font-black text-gray-900 mb-2">{plan.name}</h3>
+                  <p className="text-xs text-gray-400 font-medium leading-relaxed min-h-[3rem]">{plan.description}</p>
+                </div>
+
+                <div className="mb-8">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-3xl font-black text-gray-900">{plan.price}</span>
+                    <span className="text-gray-400 font-bold text-sm">/{plan.period}</span>
+                  </div>
+                </div>
+
+                <div className="flex-1 space-y-4 mb-8">
+                  {plan.features.map((feature, fIdx) => (
+                    <div key={fIdx} className="flex gap-3">
+                      <div className="flex-shrink-0 w-5 h-5 rounded-full bg-indigo-50 flex items-center justify-center">
+                        <Check size={12} className="text-indigo-600" strokeWidth={3} />
+                      </div>
+                      <span className="text-xs font-bold text-gray-600 leading-tight">{feature}</span>
+                    </div>
                   ))}
-                </tr>
-              </thead>
-              <tbody>
-                {ALL_FEATURES.map((feature, idx) => (
-                  <tr key={idx} className="border-b border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-slate-800/30 transition-colors">
-                    <td className="px-6 py-4 text-sm font-bold text-gray-700 dark:text-gray-300">
-                      {feature}
+                </div>
+
+                <button 
+                  onClick={() => handleUpgradePlan(plan.id)}
+                  className={`w-full py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 group/btn ${
+                    plan.isPopular 
+                      ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-100 hover:bg-indigo-700' 
+                      : 'bg-gray-50 text-indigo-600 hover:bg-indigo-600 hover:text-white'
+                  }`}
+                >
+                  Upgrade Now <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* Feature Comparison Table */}
+          <div className="mt-20 mb-16">
+            <h3 className="text-2xl font-black text-gray-900 text-center mb-12">Detailed Feature Comparison</h3>
+            
+            <div className="overflow-x-auto rounded-3xl border border-gray-200 bg-white">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-200">
+                    <th className="px-6 py-6 text-left text-sm font-black text-gray-900 bg-gray-50 min-w-[250px]">
+                      Feature / Plan
+                    </th>
+                    {PLANS.map((plan) => (
+                      <th key={plan.id} className="px-6 py-6 text-center text-xs font-black text-gray-900 bg-gray-50 min-w-[140px]">
+                        <div className="text-sm">{plan.name}</div>
+                        <div className="text-base mt-2">{plan.price}<span className="text-xs">/{plan.period}</span></div>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {ALL_FEATURES.map((feature, idx) => (
+                    <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 text-sm font-bold text-gray-700">
+                        {feature}
+                      </td>
+                      {PLANS.map((plan) => (
+                        <td key={plan.id} className="px-6 py-4 text-center">
+                          {PLAN_FEATURES_MAP[plan.id][feature] ? (
+                            <div className="flex justify-center">
+                              <div className="w-6 h-6 rounded-full bg-green-50 flex items-center justify-center">
+                                <Check size={16} className="text-green-600" strokeWidth={3} />
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex justify-center">
+                              <div className="w-6 h-6 rounded-full bg-red-50 flex items-center justify-center">
+                                <X size={16} className="text-red-600" strokeWidth={3} />
+                              </div>
+                            </div>
+                          )}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                  {/* Upgrade Now Buttons Row */}
+                  <tr className="bg-gray-50">
+                    <td className="px-6 py-6 text-sm font-black text-gray-900">
+                      Choose Plan
                     </td>
                     {PLANS.map((plan) => (
                       <td key={plan.id} className="px-6 py-4 text-center">
-                        {PLAN_FEATURES_MAP[plan.id][feature] ? (
-                          <div className="flex justify-center">
-                            <div className="w-6 h-6 rounded-full bg-green-50 dark:bg-green-900/20 flex items-center justify-center">
-                              <Check size={16} className="text-green-600 dark:text-green-400" strokeWidth={3} />
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="flex justify-center">
-                            <div className="w-6 h-6 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center">
-                              <X size={16} className="text-red-600 dark:text-red-400" strokeWidth={3} />
-                            </div>
-                          </div>
-                        )}
+                        <button 
+                          onClick={() => handleUpgradePlan(plan.id)}
+                          className={`w-full px-4 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 group/btn ${
+                            plan.isPopular 
+                              ? 'bg-indigo-600 text-white shadow-lg hover:bg-indigo-700' 
+                              : 'bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-600 hover:text-white'
+                          }`}
+                        >
+                          Upgrade Now
+                          <ArrowRight size={12} className="group-hover/btn:translate-x-1 transition-transform" />
+                        </button>
                       </td>
                     ))}
                   </tr>
-                ))}
-                {/* Upgrade Now Buttons Row */}
-                <tr className="bg-gray-50 dark:bg-slate-800/50">
-                  <td className="px-6 py-6 text-sm font-black text-gray-900 dark:text-white">
-                    Choose Plan
-                  </td>
-                  {PLANS.map((plan) => (
-                    <td key={plan.id} className="px-6 py-4 text-center">
-                      <button 
-                        onClick={() => handleSelectPlan(plan)}
-                        disabled={loading === plan.id}
-                        className={`w-full px-4 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 group/btn ${
-                          plan.isPopular 
-                            ? 'bg-indigo-600 text-white shadow-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed' 
-                            : 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-700 hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed'
-                        }`}
-                      >
-                        {loading === plan.id ? (
-                          <>
-                            <Loader size={12} className="animate-spin" />
-                            Processing...
-                          </>
-                        ) : (
-                          <>
-                            Upgrade Now
-                            <ArrowRight size={12} className="group-hover/btn:translate-x-1 transition-transform" />
-                          </>
-                        )}
-                      </button>
-                    </td>
-                  ))}
-                </tr>
-              </tbody>
-            </table>
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
 
-        <div className="mt-20 text-center space-y-6">
-          <div className="flex flex-wrap justify-center gap-12 text-gray-400">
-             <div className="flex items-center gap-2">
-                <Shield size={20} />
-                <span className="text-xs font-bold uppercase tracking-widest">Secure Activation</span>
-             </div>
-             <div className="flex items-center gap-2">
-                <Check size={20} />
-                <span className="text-xs font-bold uppercase tracking-widest">Instant Upgrade</span>
-             </div>
-             <div className="flex items-center gap-2">
-                <Zap size={20} />
-                <span className="text-xs font-bold uppercase tracking-widest">Cancel Anytime</span>
-             </div>
+          <div className="mt-20 text-center space-y-6">
+            <div className="flex flex-wrap justify-center gap-12 text-gray-400">
+               <div className="flex items-center gap-2">
+                  <Shield size={20} />
+                  <span className="text-xs font-bold uppercase tracking-widest">Secure Activation</span>
+               </div>
+               <div className="flex items-center gap-2">
+                  <Check size={20} />
+                  <span className="text-xs font-bold uppercase tracking-widest">Instant Upgrade</span>
+               </div>
+               <div className="flex items-center gap-2">
+                  <Zap size={20} />
+                  <span className="text-xs font-bold uppercase tracking-widest">Cancel Anytime</span>
+               </div>
+            </div>
+            <p className="text-[10px] text-gray-400 font-medium">Pricing shown is in INR. Taxes may apply. By selecting a plan, you agree to our Terms of Protocol and Privacy Policy.</p>
           </div>
-          <p className="text-[10px] text-gray-400 font-medium">
-            Pricing shown is in INR. Taxes may apply. By selecting a plan, you agree to our Terms of Protocol and Privacy Policy.
-          </p>
         </div>
-      </div>
+      </section>
+
+      {/* Feedbacks */}
+      <section id="impact" className="py-16 bg-white">
+        <div className="container mx-auto px-6 text-center">
+          <div className="mb-6">
+            <h3 className="text-xl font-black mb-2">Feedbacks</h3>
+            <p className="text-gray-500 text-sm">What students are saying about StudyClub24</p>
+          </div>
+
+          <div className="flex justify-center gap-2 text-yellow-400 mb-6"><Star fill="currentColor" /><Star fill="currentColor" /><Star fill="currentColor" /></div>
+          <p className="text-xl font-black italic">"StudyClub24 changed how I prepare for exams. It explains the logic behind every step."</p>
+          <div className="mt-8">
+            <div className="inline-flex items-center gap-3 bg-indigo-100 rounded-full px-4 py-2">
+              <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center">R</div>
+              <div className="text-left">
+                <div className="font-black">Rohan Mehta</div>
+                <div className="text-xs text-gray-500">Medical Aspirant, New Delhi</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="py-16 bg-gradient-to-r from-indigo-700 to-pink-500 text-white">
+        <div className="container mx-auto px-6 text-center">
+          <h2 className="text-3xl font-black mb-2">Ready to evolve?</h2>
+          <p className="mb-6 text-gray-100">Join thousands of students leveraging AI to unlock their academic potential.</p>
+          <button onClick={handleGetStarted} className="px-8 py-3 bg-white text-indigo-700 rounded-full font-bold">Start Free Protocol</button>
+        </div>
+      </section>
+
+      <Footer onOpenLegal={onOpenLegal} />
     </div>
   );
 };
 
-export default SubscriptionScreen;
+export default Homepage;
