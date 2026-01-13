@@ -217,7 +217,7 @@ const Homepage: React.FC<HomepageProps> = ({ onOpenAuth, onGetStarted, onOpenUpg
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F9FC] font-sans overflow-x-hidden selection:bg-indigo-100 selection:text-indigo-900">
+    <div className="min-h-screen bg-[#F8F9FC] font-sans overflow-x-hidden selection:bg-indigo-100 selection:text-indigo-900 flex flex-col">
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-[1000] bg-white/80 backdrop-blur-xl border-b border-gray-100 py-4">
         <div className="container mx-auto px-6 flex items-center justify-between">
@@ -248,6 +248,8 @@ const Homepage: React.FC<HomepageProps> = ({ onOpenAuth, onGetStarted, onOpenUpg
         </div>
       </nav>
 
+      {/* Main Content */}
+      <main className="flex-grow">
       {/* Hero */}
       <section className="pt-28 pb-16 px-6">
         <div className="container mx-auto px-6 text-center">
@@ -257,7 +259,7 @@ const Homepage: React.FC<HomepageProps> = ({ onOpenAuth, onGetStarted, onOpenUpg
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <div className="text-left">
-              <h1 className="text-4xl md:text-6xl font-extrabold text-gray-900 leading-tight">Built by a <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-pink-600">Student.</span>For Students.</h1>
+              <h1 className="text-4xl md:text-6xl font-extrabold text-gray-900 leading-tight">Built by a <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-pink-600">Student.</span><br />For Students.</h1>
               <p className="mt-6 text-gray-600 max-w-xl">Long notes. Heavy syllabus. Zero clarity.
 This tool was created to fix that.
 Upload your notes or click a picture, and we help you turn them into:
@@ -326,7 +328,7 @@ flashcards, summaries, quizzes, tests, study plans, and more.
           <div className="max-w-6xl mx-auto text-center">
             <p className="text-sm font-black uppercase tracking-[0.3em] text-orange-500 mb-4">How It Started</p>
             <h2 className="text-4xl md:text-6xl font-black text-gray-900 leading-tight mb-8">
-              Our Dream is <span className="text-indigo-600">Better Learning</span> For Every Student
+              Our Dream is <span className="text-indigo-600">Better Learning</span><br />For Every Student
             </h2>
             <div className="space-y-4 text-lg text-gray-700 leading-relaxed text-left mb-8">
               <p>This platform began with Shreya, a student who struggled with long notes, heavy syllabus, and the constant pressure to keep up. Studying felt confusing, revision felt endless, and no matter how much time she put in, clarity always felt missing.</p>
@@ -924,6 +926,7 @@ flashcards, summaries, quizzes, tests, study plans, and more.
           <button onClick={handleLogin} className="px-8 py-3 bg-white text-indigo-700 rounded-full font-bold">Start Free Protocol</button>
         </div>
       </section>
+      </main>
 
       <Footer onOpenLegal={onOpenLegal} />
     </div>

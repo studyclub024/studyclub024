@@ -964,7 +964,7 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8F9FC] dark:bg-slate-950 pb-20 transition-colors framework-context">
+    <div className="min-h-screen bg-[#F8F9FC] dark:bg-slate-950 transition-colors framework-context flex flex-col">
       <Header 
         isDarkMode={isDarkMode} 
         onToggleDarkMode={() => setIsDarkMode(!isDarkMode)} 
@@ -984,7 +984,7 @@ const App: React.FC = () => {
         planId={userPlan}
         canUseThemes={canUseFeature('themes')}
       />
-      <main className="container mx-auto px-2 md:px-4 pt-4 md:pt-8">
+      <main className="container mx-auto px-2 md:px-4 pt-4 md:pt-8 pb-20 flex-grow">
         <div className="flex flex-col gap-6 md:gap-8 max-w-6xl mx-auto">
           <div className="grid grid-cols-4 md:flex md:overflow-x-auto gap-1 md:gap-2 pb-1">
             {TABS.map(tab => (
