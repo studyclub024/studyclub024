@@ -87,10 +87,10 @@ const getLessonAudioText = (lesson: EnglishLesson): string => {
 
 const EnglishLearningApp: React.FC<Props> = ({ onBack, embedded = false }) => {
     // State with LocalStorage
-    const [nativeLanguage, setNativeLanguage] = useState<string | null>(() => localStorage.getItem('englishtutor_lang') || null);
+    const [nativeLanguage, setNativeLanguage] = useState<string | null>(() => sessionStorage.getItem('englishtutor_lang') || null);
     const [messages, setMessages] = useState<ChatMessage[]>(() => {
         try {
-            const saved = localStorage.getItem('englishtutor_messages');
+            const saved = sessionStorage.getItem('englishtutor_messages');
             return saved ? JSON.parse(saved) : [];
         } catch {
             return [];
@@ -154,11 +154,11 @@ const EnglishLearningApp: React.FC<Props> = ({ onBack, embedded = false }) => {
 
     // Persistence Effects
     useEffect(() => {
-        if (nativeLanguage) localStorage.setItem('englishtutor_lang', nativeLanguage);
+        if (nativeLanguage) sessionStorage.setItem('englishtutor_lang', nativeLanguage);
     }, [nativeLanguage]);
 
     useEffect(() => {
-        localStorage.setItem('englishtutor_messages', JSON.stringify(messages));
+        sessionStorage.setItem('englishtutor_messages', JSON.stringify(messages));
     }, [messages]);
 
     // Scroll to bottom on new message

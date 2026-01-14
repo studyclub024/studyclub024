@@ -24,7 +24,7 @@ const defaultSessionName = (index = 1) => `Session ${index}`;
 
 export const loadSessions = (): ChatSession[] => {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = sessionStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw) as ChatSession[];
     // prune messages per session
@@ -44,7 +44,7 @@ export const loadSessions = (): ChatSession[] => {
 
 export const saveSessions = (sessions: ChatSession[]) => {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
   } catch (e) {
     console.error('Failed to save chat sessions', e);
   }

@@ -266,16 +266,16 @@ const App: React.FC = () => {
         const processedKey = `studyclub24_processed_states_${uid}`;
 
         try {
-          const storedHistory = localStorage.getItem(historyKey);
-          const storedLibrary = localStorage.getItem(libraryKey);
-          const storedInputs = localStorage.getItem(inputKey);
-          const storedExam = localStorage.getItem(examKey);
-          const storedResults = localStorage.getItem(resultsKey);
-          const storedCaches = localStorage.getItem(cachesKey);
-          const storedModes = localStorage.getItem(selectedModesKey);
-          const storedView = localStorage.getItem(viewStateKey);
-          const storedActiveTab = localStorage.getItem(activeTabKey);
-          const storedProcessed = localStorage.getItem(processedKey);
+          const storedHistory = sessionStorage.getItem(historyKey);
+          const storedLibrary = sessionStorage.getItem(libraryKey);
+          const storedInputs = sessionStorage.getItem(inputKey);
+          const storedExam = sessionStorage.getItem(examKey);
+          const storedResults = sessionStorage.getItem(resultsKey);
+          const storedCaches = sessionStorage.getItem(cachesKey);
+          const storedModes = sessionStorage.getItem(selectedModesKey);
+          const storedView = sessionStorage.getItem(viewStateKey);
+          const storedActiveTab = sessionStorage.getItem(activeTabKey);
+          const storedProcessed = sessionStorage.getItem(processedKey);
 
           setStudyHistory(storedHistory ? JSON.parse(storedHistory) : []);
           setSavedMaterials(storedLibrary ? JSON.parse(storedLibrary) : []);
@@ -306,6 +306,7 @@ const App: React.FC = () => {
         setShowResultView(false);
         setTabInputs({ students: '', exams: '', equations: '' });
         setTabProcessedStates({ students: false, exams: false, equations: false });
+        sessionStorage.clear();
       }
       setAuthLoading(false);
     });
@@ -315,16 +316,16 @@ const App: React.FC = () => {
   useEffect(() => {
     if (currentUser && isHydrated) {
       const uid = currentUser.uid;
-      localStorage.setItem(`studyclub24_history_${uid}`, JSON.stringify(studyHistory));
-      localStorage.setItem(`studyclub24_library_${uid}`, JSON.stringify(savedMaterials));
-      localStorage.setItem(`studyclub24_tab_inputs_${uid}`, JSON.stringify(tabInputs));
-      localStorage.setItem(`studyclub24_selected_exam_${uid}`, JSON.stringify(selectedExam));
-      localStorage.setItem(`studyclub24_tab_results_${uid}`, JSON.stringify(tabResults));
-      localStorage.setItem(`studyclub24_tab_caches_${uid}`, JSON.stringify(tabCaches));
-      localStorage.setItem(`studyclub24_selected_modes_${uid}`, JSON.stringify(tabSelectedModes));
-      localStorage.setItem(`studyclub24_view_state_${uid}`, JSON.stringify(showResultView));
-      localStorage.setItem(`studyclub24_active_tab_${uid}`, JSON.stringify(activeTab));
-      localStorage.setItem(`studyclub24_processed_states_${uid}`, JSON.stringify(tabProcessedStates));
+      sessionStorage.setItem(`studyclub24_history_${uid}`, JSON.stringify(studyHistory));
+      sessionStorage.setItem(`studyclub24_library_${uid}`, JSON.stringify(savedMaterials));
+      sessionStorage.setItem(`studyclub24_tab_inputs_${uid}`, JSON.stringify(tabInputs));
+      sessionStorage.setItem(`studyclub24_selected_exam_${uid}`, JSON.stringify(selectedExam));
+      sessionStorage.setItem(`studyclub24_tab_results_${uid}`, JSON.stringify(tabResults));
+      sessionStorage.setItem(`studyclub24_tab_caches_${uid}`, JSON.stringify(tabCaches));
+      sessionStorage.setItem(`studyclub24_selected_modes_${uid}`, JSON.stringify(tabSelectedModes));
+      sessionStorage.setItem(`studyclub24_view_state_${uid}`, JSON.stringify(showResultView));
+      sessionStorage.setItem(`studyclub24_active_tab_${uid}`, JSON.stringify(activeTab));
+      sessionStorage.setItem(`studyclub24_processed_states_${uid}`, JSON.stringify(tabProcessedStates));
     }
   }, [studyHistory, savedMaterials, tabInputs, selectedExam, tabResults, tabCaches, tabSelectedModes, showResultView, activeTab, currentUser, isHydrated, tabProcessedStates]);
 

@@ -164,13 +164,15 @@ const CoursesPage: React.FC = () => {
         {(selectedCategory || selectedCourse) ? (
           <button
             onClick={() => {
-              if (selectedCourse) {
+              if (searchQuery) {
+                setSearchQuery('');
+              } else if (selectedCourse) {
                 setSelectedCourse(null);
               } else if (selectedCategory) {
                 setSelectedCategory(null);
               }
             }}
-            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100 dark:bg-slate-800 hover:bg-gray-200"
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 transition-all"
           >
             ← Back
           </button>
@@ -178,7 +180,9 @@ const CoursesPage: React.FC = () => {
           <div />
         )}
 
-        {selectedCategory ? (
+        {searchQuery ? (
+          <div className="text-sm font-bold theme-text">Search Results for "{searchQuery}"</div>
+        ) : selectedCategory ? (
           <div className="text-sm font-bold opacity-80">{selectedCategory}{selectedCourse ? ` / ${selectedCourse}` : ''}</div>
         ) : (
           <div />
@@ -230,47 +234,73 @@ const CoursesPage: React.FC = () => {
         )}
       </div>
 
-      {/* Hierarchical Grid */}
+      {/* Hierarchical Grid or Search Results */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-20">
-        {/* If no category selected => show categories */}
-        {!selectedCategory && categories.map(cat => (
-          <div key={cat} onClick={() => { setSelectedCategory(cat); setSelectedCourse(null); }} className="group relative bg-white dark:bg-slate-900 rounded-[2rem] p-8 border-2 border-transparent hover:border-theme shadow-xl transition-all cursor-pointer">
-            <div className="flex items-start justify-between mb-4">
-              <div className="p-3 theme-bg-soft theme-text rounded-2xl"><BookOpen /></div>
-            </div>
-            <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2">{cat}</h3>
-            <p className="text-sm text-gray-500">{topicLibrary.filter(t => t.category === cat).length} topics available</p>
-          </div>
-        ))}
-
-        {/* If category selected but no course selected => show sub-courses (courses) */}
-        {selectedCategory && !selectedCourse && subCourses.map(courseName => (
-          <div key={courseName} onClick={() => setSelectedCourse(courseName)} className="group relative bg-white dark:bg-slate-900 rounded-[2rem] p-8 border-2 border-transparent hover:border-theme shadow-xl transition-all cursor-pointer">
-            <div className="flex items-start justify-between mb-4">
-              <div className="p-3 theme-bg-soft theme-text rounded-2xl"><Layers /></div>
-            </div>
-            <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2">{courseName}</h3>
-            <p className="text-sm text-gray-500">{topicsForCourse.filter(t => t.course === courseName).length || topicLibrary.filter(t => t.course === courseName && t.category === selectedCategory).length} topics</p>
-          </div>
-        ))}
-
-        {/* If course selected => show topics under that course */}
-        {selectedCategory && selectedCourse && (
-          topicsForCourse.length > 0 ? topicsForCourse.map(topic => (
-            <div key={topic.id} onClick={() => setSelectedTopicId(topic.id)} className="group relative bg-white dark:bg-slate-900 rounded-[3rem] p-6 border-2 border-transparent hover:border-theme shadow transition-all cursor-pointer">
+        {searchQuery ? (
+          filteredTopics.length > 0 ? filteredTopics.map(topic => (
+            <div key={topic.id} onClick={() => setSelectedTopicId(topic.id)} className="group relative bg-white dark:bg-slate-900 rounded-[3rem] p-6 border-2 border-transparent hover:border-theme shadow-xl transition-all cursor-pointer">
               <div className="flex items-start justify-between mb-4">
-                <div className="p-3 theme-bg-soft theme-text rounded-2xl"><BookOpen /></div>
-                {topic.isPremium ? <div className="text-amber-600 font-black">Premium</div> : null}
+                <div className="p-3 theme-bg-soft theme-text rounded-2xl">
+                  {(() => {
+                    const Icon = getSubjectIcon(topic.course.split(' ')[0]);
+                    return <Icon />;
+                  })()}
+                </div>
+                {topic.isPremium ? <div className="text-amber-600 font-black text-[10px] uppercase tracking-widest bg-amber-50 px-3 py-1 rounded-full">Premium</div> : null}
               </div>
               <h3 className="text-xl font-black text-gray-900 dark:text-white mb-1">{topic.label}</h3>
-              <p className="text-sm text-gray-500">{topic.course} • {topic.category}</p>
+              <p className="text-[10px] font-black theme-text uppercase tracking-widest opacity-60">{topic.course} • {topic.category}</p>
             </div>
           )) : (
             <div className="col-span-full py-40 flex flex-col items-center justify-center text-center opacity-30 grayscale">
               <Bookmark size={80} className="mb-6" />
-              <p className="text-2xl font-black uppercase tracking-[0.2em]">No Topics Found</p>
+              <p className="text-2xl font-black uppercase tracking-[0.2em]">No Results Found</p>
+              <button onClick={() => setSearchQuery('')} className="mt-4 theme-text font-bold hover:underline">Clear Search</button>
             </div>
           )
+        ) : (
+          <>
+            {/* If no category selected => show categories */}
+            {!selectedCategory && categories.map(cat => (
+              <div key={cat} onClick={() => { setSelectedCategory(cat); setSelectedCourse(null); }} className="group relative bg-white dark:bg-slate-900 rounded-[2rem] p-8 border-2 border-transparent hover:border-theme shadow-xl transition-all cursor-pointer">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="p-3 theme-bg-soft theme-text rounded-2xl"><BookOpen /></div>
+                </div>
+                <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2">{cat}</h3>
+                <p className="text-sm text-gray-500">{topicLibrary.filter(t => t.category === cat).length} topics available</p>
+              </div>
+            ))}
+
+            {/* If category selected but no course selected => show sub-courses (courses) */}
+            {selectedCategory && !selectedCourse && subCourses.map(courseName => (
+              <div key={courseName} onClick={() => setSelectedCourse(courseName)} className="group relative bg-white dark:bg-slate-900 rounded-[2rem] p-8 border-2 border-transparent hover:border-theme shadow-xl transition-all cursor-pointer">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="p-3 theme-bg-soft theme-text rounded-2xl"><Layers /></div>
+                </div>
+                <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2">{courseName}</h3>
+                <p className="text-sm text-gray-500">{topicLibrary.filter(t => t.course === courseName && t.category === selectedCategory).length} topics</p>
+              </div>
+            ))}
+
+            {/* If course selected => show topics under that course */}
+            {selectedCategory && selectedCourse && (
+              topicsForCourse.length > 0 ? topicsForCourse.map(topic => (
+                <div key={topic.id} onClick={() => setSelectedTopicId(topic.id)} className="group relative bg-white dark:bg-slate-900 rounded-[3rem] p-6 border-2 border-transparent hover:border-theme shadow transition-all cursor-pointer">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="p-3 theme-bg-soft theme-text rounded-2xl"><BookOpen /></div>
+                    {topic.isPremium ? <div className="text-amber-600 font-black">Premium</div> : null}
+                  </div>
+                  <h3 className="text-xl font-black text-gray-900 dark:text-white mb-1">{topic.label}</h3>
+                  <p className="text-sm text-gray-500">{topic.course} • {topic.category}</p>
+                </div>
+              )) : (
+                <div className="col-span-full py-40 flex flex-col items-center justify-center text-center opacity-30 grayscale">
+                  <Bookmark size={80} className="mb-6" />
+                  <p className="text-2xl font-black uppercase tracking-[0.2em]">No Topics Found</p>
+                </div>
+              )
+            )}
+          </>
         )}
       </div>
     </div>
