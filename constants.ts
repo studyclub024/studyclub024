@@ -29,64 +29,72 @@ export const MODE_CONFIG = {
     label: 'Flashcards',
     description: 'Memorize key concepts',
     icon: 'Layers',
-    gradient: 'from-[#8E44AD] to-[#3498DB]',
-    shadow: 'shadow-purple-500/30',
+    gradient: 'from-[#a855f7] to-[#ec4899]',
+    shadow: 'shadow-fuchsia-500/25',
     textColor: 'text-white',
   },
   [StudyMode.NOTES]: {
     label: 'Study Notes',
     description: 'Structured topic breakdown',
     icon: 'Notebook',
-    gradient: 'from-[#3498DB] to-[#2ECC71]',
-    shadow: 'shadow-blue-500/30',
+    gradient: 'from-[#3b82f6] to-[#06b6d4]',
+    shadow: 'shadow-blue-500/25',
     textColor: 'text-white',
   },
   [StudyMode.QUIZ]: {
-    label: 'Quiz Me',
+    label: 'Test',
     description: 'Practice questions',
     icon: 'CheckCircle',
-    gradient: 'from-[#2ECC71] to-[#1ABC9C]',
-    shadow: 'shadow-green-500/30',
+    gradient: 'from-[#10b981] to-[#34d399]',
+    shadow: 'shadow-emerald-500/25',
     textColor: 'text-white',
   },
   [StudyMode.PLAN]: {
     label: 'Study Plan',
     description: 'Roadmap to mastery',
     icon: 'Calendar',
-    gradient: 'from-[#E91E63] to-[#9C27B0]',
-    shadow: 'shadow-pink-500/30',
+    gradient: 'from-[#ec4899] to-[#d946ef]',
+    shadow: 'shadow-pink-500/25',
     textColor: 'text-white',
   },
   [StudyMode.SUMMARY]: {
     label: 'Summary',
     description: 'Quick overview',
     icon: 'List',
-    gradient: 'from-[#7F8C8D] to-[#2C3E50]',
-    shadow: 'shadow-slate-500/30',
+    gradient: 'from-[#64748b] to-[#94a3b8]',
+    shadow: 'shadow-slate-500/25',
     textColor: 'text-white',
   },
   [StudyMode.ESSAY]: {
     label: 'Essay',
     description: 'Deep dive explanation',
     icon: 'FileText',
-    gradient: 'from-[#2980B9] to-[#3498DB]',
-    shadow: 'shadow-indigo-500/30',
+    gradient: 'from-[#6366f1] to-[#3b82f6]',
+    shadow: 'shadow-indigo-500/25',
     textColor: 'text-white',
   },
   [StudyMode.ELI5]: {
     label: 'Explain Like I’m 5',
     description: 'Simple terms',
     icon: 'Baby',
-    gradient: 'from-[#FF9800] to-[#E91E63]',
-    shadow: 'shadow-orange-500/30',
+    gradient: 'from-[#f97316] to-[#fbbf24]',
+    shadow: 'shadow-orange-500/25',
     textColor: 'text-white',
   },
   [StudyMode.DESCRIBE]: {
     label: 'Describe',
     description: 'Explain visuals & logic',
     icon: 'ScanEye',
-    gradient: 'from-[#1ABC9C] to-[#3498DB]',
-    shadow: 'shadow-teal-500/30',
+    gradient: 'from-[#06b6d4] to-[#38bdf8]',
+    shadow: 'shadow-cyan-500/25',
+    textColor: 'text-white',
+  },
+  [StudyMode.CHAT]: {
+    label: 'Chat',
+    description: 'Chat and clear doubts',
+    icon: 'MessageCircle',
+    gradient: 'from-[#7c3aed] to-[#4f46e5]',
+    shadow: 'shadow-violet-500/25',
     textColor: 'text-white',
   },
 };
@@ -180,10 +188,10 @@ EQUATION:
 {{EQUATION}}`,
 };
 
-export const THEME_CONFIG: Record<FlashcardTheme, { 
-  label: string; 
-  description: string; 
-  labelQ: string; 
+export const THEME_CONFIG: Record<FlashcardTheme, {
+  label: string;
+  description: string;
+  labelQ: string;
   labelA: string;
   primary: string;
   accent: string;

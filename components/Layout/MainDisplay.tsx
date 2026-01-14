@@ -8,6 +8,7 @@ import DescribeDisplay from '../Display/DescribeDisplay';
 import MathDisplay from '../Display/MathDisplay';
 import SubjectNotesDisplay from '../Display/SubjectNotesDisplay';
 import StudyPlanDisplay from '../Display/StudyPlanDisplay';
+import ChatDisplay from '../Display/ChatDisplay';
 import { generateSpeech } from '../../services/geminiService';
 import { Volume2, StopCircle, RefreshCw, Share2, Check, Bookmark, AlertCircle, RotateCcw, Lock } from 'lucide-react';
 import { FootballIcon } from '../../App';
@@ -68,13 +69,13 @@ const MainDisplay: React.FC<Props> = ({ content, onRegenerate, onSave, onMastery
       try {
         sourceRef.current.stop();
         sourceRef.current.disconnect();
-      } catch (e) {}
+      } catch (e) { }
       sourceRef.current = null;
     }
     if (audioContextRef.current) {
       try {
         audioContextRef.current.close();
-      } catch (e) {}
+      } catch (e) { }
       audioContextRef.current = null;
     }
     setIsPlaying(false);
@@ -110,7 +111,7 @@ const MainDisplay: React.FC<Props> = ({ content, onRegenerate, onSave, onMastery
     setIsLoadingAudio(true);
     try {
       const text = getContentText(content);
-      const base64Audio = await generateSpeech(text.substring(0, 4000)); 
+      const base64Audio = await generateSpeech(text.substring(0, 4000));
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
       audioContextRef.current = audioContext;
       const audioBuffer = await decodeAudioData(decode(base64Audio), audioContext, 24000, 1);
@@ -138,6 +139,7 @@ const MainDisplay: React.FC<Props> = ({ content, onRegenerate, onSave, onMastery
       case 'essay':
       case 'eli5': return <SimpleTextDisplay data={content} />;
       case 'plan': return <StudyPlanDisplay data={content} />;
+      case 'chat': return <ChatDisplay data={content} />;
       default: return null;
     }
   };
@@ -145,9 +147,9 @@ const MainDisplay: React.FC<Props> = ({ content, onRegenerate, onSave, onMastery
   return (
     <div className="animate-fade-in-up mt-8 relative min-h-[400px]">
       <div className="flex flex-wrap justify-end mb-4 gap-2">
-        <button 
-          onClick={onSave} 
-          disabled={isRegenerating || isSaved} 
+        <button
+          onClick={onSave}
+          disabled={isRegenerating || isSaved}
           className={`group flex items-center gap-2 px-4 py-2 rounded-full font-medium text-sm transition-all shadow-sm ${isSaved ? 'text-gray-500 bg-white border border-gray-100 cursor-default' : 'border border-gray-200 bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20'}`}
         >
           {isSaved ? <Check size={16} className="text-green-500" /> : <Bookmark size={16} />}

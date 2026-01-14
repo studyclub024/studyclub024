@@ -7,9 +7,10 @@ import LatexRenderer from './LatexRenderer';
 interface Props {
   data: QuizResponse;
   onMastery?: () => void;
+  fullWidth?: boolean;
 }
 
-const QuizDisplay: React.FC<Props> = ({ data, onMastery }) => {
+const QuizDisplay: React.FC<Props> = ({ data, onMastery, fullWidth }) => {
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
   const [showResults, setShowResults] = useState(false);
 
@@ -29,7 +30,7 @@ const QuizDisplay: React.FC<Props> = ({ data, onMastery }) => {
       if (!selected) return;
       if (selected === q.answer) {
         score++;
-      } 
+      }
     });
     return score;
   };
@@ -37,15 +38,15 @@ const QuizDisplay: React.FC<Props> = ({ data, onMastery }) => {
   const handleSubmit = () => {
     setShowResults(true);
     mcq.forEach((q, idx) => {
-        if (selectedAnswers[idx] === q.answer) {
-            onMastery?.();
-        }
+      if (selectedAnswers[idx] === q.answer) {
+        onMastery?.();
+      }
     });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-10 pb-20">
+    <div className={`${fullWidth ? 'w-full' : 'max-w-4xl mx-auto'} space-y-10 pb-20`}>
       <div className="flex items-center justify-between border-b border-gray-100 pb-4 md:pb-6">
         <div>
           <h2 className="text-xl md:text-3xl font-black text-gray-950 tracking-tight">Active Assessment</h2>
@@ -83,15 +84,15 @@ const QuizDisplay: React.FC<Props> = ({ data, onMastery }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {question.options.map((option, optIdx) => {
                     let buttonStyle = "border-gray-100 bg-gray-50/50 hover:bg-white hover:border-indigo-300 hover:shadow-sm";
-                    
+
                     if (showResults) {
-                       if (option === question.answer) {
-                          buttonStyle = "bg-green-50 border-green-500 text-green-900 font-bold shadow-sm ring-2 ring-green-100";
-                       } else if (userSelected === option) {
-                          buttonStyle = "bg-red-50 border-red-500 text-red-900 opacity-90";
-                       } else {
-                          buttonStyle = "opacity-40 border-gray-100 grayscale-[0.5]";
-                       }
+                      if (option === question.answer) {
+                        buttonStyle = "bg-green-50 border-green-500 text-green-900 font-bold shadow-sm ring-2 ring-green-100";
+                      } else if (userSelected === option) {
+                        buttonStyle = "bg-red-50 border-red-500 text-red-900 opacity-90";
+                      } else {
+                        buttonStyle = "opacity-40 border-gray-100 grayscale-[0.5]";
+                      }
                     } else if (userSelected === option) {
                       buttonStyle = "bg-indigo-50 border-indigo-600 text-indigo-950 font-bold shadow-md ring-4 ring-indigo-50";
                     }
@@ -132,28 +133,28 @@ const QuizDisplay: React.FC<Props> = ({ data, onMastery }) => {
 
       {short && short.length > 0 && (
         <div className="mt-12 md:mt-16 space-y-6 md:space-y-8">
-            <div className="flex items-center gap-2 md:gap-3">
-               <div className="h-px bg-gray-200 flex-1"></div>
-               <h3 className="text-sm md:text-xl font-black text-gray-400 uppercase tracking-widest">Constructive Responses</h3>
-               <div className="h-px bg-gray-200 flex-1"></div>
-            </div>
-            <div className="grid gap-4 md:gap-6">
-                {short.map((item, idx) => (
-                    <div key={idx} className="bg-white rounded-[2rem] p-4 md:p-10 border border-gray-100 shadow-sm">
-                         <div className="text-base md:text-xl font-bold text-gray-950 mb-4 md:mb-6 flex gap-2 md:gap-4">
-                            <span className="text-indigo-300 font-black">Q.</span>
-                            <div className="w-full"><LatexRenderer>{item.q}</LatexRenderer></div>
-                         </div>
-                         <div className={`transition-all duration-500 ease-out overflow-hidden ${showResults ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
-                             <div className="bg-indigo-600 text-white p-4 md:p-8 rounded-[1.5rem] shadow-xl shadow-indigo-100">
-                                <span className="font-black text-[10px] uppercase tracking-widest block mb-2 md:mb-3 opacity-70">Official Answer Key</span> 
-                                <div className="text-sm md:text-lg leading-relaxed"><LatexRenderer className="text-white">{item.answer}</LatexRenderer></div>
-                             </div>
-                         </div>
-                         {!showResults && <p className="text-xs text-gray-400 font-bold uppercase tracking-widest text-center mt-2 opacity-60 italic">Submit quiz to reveal answers</p>}
-                    </div>
-                ))}
-            </div>
+          <div className="flex items-center gap-2 md:gap-3">
+            <div className="h-px bg-gray-200 flex-1"></div>
+            <h3 className="text-sm md:text-xl font-black text-gray-400 uppercase tracking-widest">Constructive Responses</h3>
+            <div className="h-px bg-gray-200 flex-1"></div>
+          </div>
+          <div className="grid gap-4 md:gap-6">
+            {short.map((item, idx) => (
+              <div key={idx} className="bg-white rounded-[2rem] p-4 md:p-10 border border-gray-100 shadow-sm">
+                <div className="text-base md:text-xl font-bold text-gray-950 mb-4 md:mb-6 flex gap-2 md:gap-4">
+                  <span className="text-indigo-300 font-black">Q.</span>
+                  <div className="w-full"><LatexRenderer>{item.q}</LatexRenderer></div>
+                </div>
+                <div className={`transition-all duration-500 ease-out overflow-hidden ${showResults ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                  <div className="bg-indigo-600 text-white p-4 md:p-8 rounded-[1.5rem] shadow-xl shadow-indigo-100">
+                    <span className="font-black text-[10px] uppercase tracking-widest block mb-2 md:mb-3 opacity-70">Official Answer Key</span>
+                    <div className="text-sm md:text-lg leading-relaxed"><LatexRenderer className="text-white">{item.answer}</LatexRenderer></div>
+                  </div>
+                </div>
+                {!showResults && <p className="text-xs text-gray-400 font-bold uppercase tracking-widest text-center mt-2 opacity-60 italic">Submit quiz to reveal answers</p>}
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

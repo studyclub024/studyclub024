@@ -132,7 +132,7 @@ const SubscriptionScreen: React.FC<Props> = ({ onSelect, onClose, isLoggedIn = f
 
     // User is logged in, proceed with payment
     setLoading(plan.id);
-    
+
     try {
       // Get user details from Firebase auth if available
       const user = auth.currentUser;
@@ -144,7 +144,7 @@ const SubscriptionScreen: React.FC<Props> = ({ onSelect, onClose, isLoggedIn = f
 
       // Initiate Razorpay payment
       await razorpayService.initiatePayment(plan, userDetails);
-      
+
       // Call the onSelect callback
       onSelect(plan);
     } catch (error) {
@@ -188,7 +188,7 @@ const SubscriptionScreen: React.FC<Props> = ({ onSelect, onClose, isLoggedIn = f
   return (
     <div className="fixed inset-0 z-[1000] bg-[#F8F9FC] dark:bg-slate-950 overflow-y-auto py-16 px-4 animate-fade-in">
       {onClose && (
-        <button 
+        <button
           onClick={onClose}
           className="fixed top-6 right-6 p-3 bg-white dark:bg-slate-900 border border-gray-100 dark:border-white/5 rounded-2xl shadow-lg hover:shadow-xl text-gray-400 hover:text-gray-900 transition-all z-[1001]"
         >
@@ -207,7 +207,7 @@ const SubscriptionScreen: React.FC<Props> = ({ onSelect, onClose, isLoggedIn = f
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {PLANS.map((plan, idx) => (
-            <div 
+            <div
               key={plan.id}
               className={`relative flex flex-col bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border-2 transition-all hover:scale-[1.02] group ${plan.isPopular ? 'border-indigo-600 shadow-2xl shadow-indigo-100 dark:shadow-none ring-4 ring-indigo-50 dark:ring-indigo-900/10' : 'border-gray-50 dark:border-white/5 shadow-xl shadow-gray-100 dark:shadow-none hover:border-indigo-200'}`}
               style={{ animationDelay: `${idx * 100}ms` }}
@@ -220,12 +220,10 @@ const SubscriptionScreen: React.FC<Props> = ({ onSelect, onClose, isLoggedIn = f
 
               <div className="mb-6">
                 <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${plan.gradient} flex items-center justify-center text-white mb-6 shadow-lg group-hover:rotate-6 transition-transform`}>
-                  {plan.id === 'free' && <Zap size={24} />}
-                  {plan.id === 'weekly' && <Star size={24} />}
-                  {plan.id === 'monthly' && <Shield size={24} />}
-                  {plan.id === 'monthly-pro' && <Trophy size={24} />}
-                  {plan.id === 'yearly' && <Star size={24} />}
-                  {plan.id === 'yearly-pro' && <Crown size={24} />}
+                  {plan.id === 'crash-course' && <Zap size={24} />}
+                  {plan.id === 'instant-help' && <Shield size={24} />}
+                  {plan.id === 'focused-prep' && <Trophy size={24} />}
+                  {plan.id === 'study-pro' && <Crown size={24} />}
                 </div>
                 <h3 className="text-xl font-black text-gray-900 dark:text-white mb-2">{plan.name}</h3>
                 <p className="text-xs text-gray-400 dark:text-slate-500 font-medium leading-relaxed min-h-[3rem]">
@@ -251,14 +249,13 @@ const SubscriptionScreen: React.FC<Props> = ({ onSelect, onClose, isLoggedIn = f
                 ))}
               </div>
 
-              <button 
+              <button
                 onClick={() => handleSelectPlan(plan)}
                 disabled={loading === plan.id}
-                className={`w-full py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 group/btn ${
-                  plan.isPopular 
-                    ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-100 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed' 
-                    : 'bg-gray-50 dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed'
-                }`}
+                className={`w-full py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 group/btn active:scale-95 ${plan.isPopular
+                  ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-200 hover:bg-indigo-700 hover:shadow-indigo-300 hover:-translate-y-1'
+                  : 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-700 hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-600 hover:shadow-xl hover:shadow-indigo-200 hover:-translate-y-1'
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 {loading === plan.id ? (
                   <>
@@ -267,7 +264,7 @@ const SubscriptionScreen: React.FC<Props> = ({ onSelect, onClose, isLoggedIn = f
                   </>
                 ) : (
                   <>
-                    {plan.id === 'free' ? 'Select Free' : 'Upgrade Now'} 
+                    Upgrade Now
                     <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
                   </>
                 )}
@@ -281,7 +278,7 @@ const SubscriptionScreen: React.FC<Props> = ({ onSelect, onClose, isLoggedIn = f
           <h2 className="text-3xl font-black text-gray-900 dark:text-white text-center mb-12">
             Detailed Feature Comparison
           </h2>
-          
+
           <div className="overflow-x-auto rounded-3xl border border-gray-200 dark:border-white/10 bg-white dark:bg-slate-900">
             <table className="w-full">
               <thead>
@@ -329,14 +326,13 @@ const SubscriptionScreen: React.FC<Props> = ({ onSelect, onClose, isLoggedIn = f
                   </td>
                   {PLANS.map((plan) => (
                     <td key={plan.id} className="px-6 py-4 text-center">
-                      <button 
+                      <button
                         onClick={() => handleSelectPlan(plan)}
                         disabled={loading === plan.id}
-                        className={`w-full px-4 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 group/btn ${
-                          plan.isPopular 
-                            ? 'bg-indigo-600 text-white shadow-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed' 
-                            : 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-700 hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed'
-                        }`}
+                        className={`w-full px-4 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 group/btn active:scale-95 ${plan.isPopular
+                          ? 'bg-indigo-600 text-white shadow-lg hover:bg-indigo-700 hover:shadow-xl hover:shadow-indigo-300 hover:-translate-y-1'
+                          : 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-700 hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-600 hover:shadow-xl hover:shadow-indigo-200 hover:-translate-y-1'
+                          } disabled:opacity-50 disabled:cursor-not-allowed`}
                       >
                         {loading === plan.id ? (
                           <>
@@ -360,18 +356,18 @@ const SubscriptionScreen: React.FC<Props> = ({ onSelect, onClose, isLoggedIn = f
 
         <div className="mt-20 text-center space-y-6">
           <div className="flex flex-wrap justify-center gap-12 text-gray-400">
-             <div className="flex items-center gap-2">
-                <Shield size={20} />
-                <span className="text-xs font-bold uppercase tracking-widest">Secure Activation</span>
-             </div>
-             <div className="flex items-center gap-2">
-                <Check size={20} />
-                <span className="text-xs font-bold uppercase tracking-widest">Instant Upgrade</span>
-             </div>
-             <div className="flex items-center gap-2">
-                <Zap size={20} />
-                <span className="text-xs font-bold uppercase tracking-widest">Cancel Anytime</span>
-             </div>
+            <div className="flex items-center gap-2">
+              <Shield size={20} />
+              <span className="text-xs font-bold uppercase tracking-widest">Secure Activation</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Check size={20} />
+              <span className="text-xs font-bold uppercase tracking-widest">Instant Upgrade</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Zap size={20} />
+              <span className="text-xs font-bold uppercase tracking-widest">Cancel Anytime</span>
+            </div>
           </div>
           <p className="text-[10px] text-gray-400 font-medium">
             Pricing shown is in INR. Taxes may apply. By selecting a plan, you agree to our Terms of Protocol and Privacy Policy.
