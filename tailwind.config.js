@@ -4,12 +4,14 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
     "./components/**/*.{js,ts,jsx,tsx}",
+    "./constants.ts",
+    "./*.{js,ts,jsx,tsx}",
   ],
   darkMode: 'class',
   theme: {
     extend: {
-      screens: { 
-        'xs': '480px' 
+      screens: {
+        'xs': '480px'
       },
       animation: {
         'float': 'float 4s ease-in-out infinite',

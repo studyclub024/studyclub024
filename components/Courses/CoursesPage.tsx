@@ -30,7 +30,7 @@ const CoursesPage: React.FC = () => {
   const [topicLibrary] = useState<Topic[]>(() => courseLibrary.getTopics());
   const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
   const [selectedResultType, setSelectedResultType] = useState<string | null>(null);
-  
+
   // Hierarchical navigation state: Category -> Sub-Category (Course) -> Topic
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
@@ -39,7 +39,7 @@ const CoursesPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [catFilter, setCatFilter] = useState('');
   const [classFilter, setClassFilter] = useState('');
-  
+
   // Get dynamic filter options
   const allCategories = useMemo(() => getAllCategories(topicLibrary), [topicLibrary]);
   const allCourses = useMemo(() => getAllCourses(topicLibrary), [topicLibrary]);
@@ -47,14 +47,14 @@ const CoursesPage: React.FC = () => {
   // Filter topics based on search and filters
   const filteredTopics = useMemo(() => {
     return topicLibrary.filter(topic => {
-      const matchesSearch = !searchQuery || 
-        topic.label.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      const matchesSearch = !searchQuery ||
+        topic.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
         topic.course.toLowerCase().includes(searchQuery.toLowerCase()) ||
         topic.category.toLowerCase().includes(searchQuery.toLowerCase());
-      
+
       const matchesCat = !catFilter || topic.category === catFilter;
       const matchesCourse = !classFilter || topic.course === classFilter;
-      
+
       return matchesSearch && matchesCat && matchesCourse;
     });
   }, [topicLibrary, searchQuery, catFilter, classFilter]);
@@ -79,9 +79,9 @@ const CoursesPage: React.FC = () => {
   const renderContent = (content: StudyContent) => {
     switch (content.mode) {
       case 'notes': return <NotesDisplay data={content as any} />;
-      case 'flashcards': return <FlashcardDisplay data={content as any} canUseThemes={true} onOpenUpgrade={() => {}} />;
+      case 'flashcards': return <FlashcardDisplay data={content as any} canUseThemes={true} onOpenUpgrade={() => { }} />;
       case 'quiz': return <QuizDisplay data={content as any} />;
-      case 'math': return <MathDisplay data={content as any} onRegenerate={() => {}} isRegenerating={false} />;
+      case 'math': return <MathDisplay data={content as any} onRegenerate={() => { }} isRegenerating={false} />;
       case 'eli5': return <SimpleTextDisplay data={content as any} />;
       case 'describe': return <DescribeDisplay data={content as any} />;
       case 'plan': return <StudyPlanDisplay data={content as any} />;
@@ -134,19 +134,13 @@ const CoursesPage: React.FC = () => {
               return (
                 <div className="space-y-6">
                   <div className="flex items-center justify-between">
-                    <button onClick={() => setSelectedTopicId(null)} className="px-3 py-2 rounded-lg bg-gray-100 dark:bg-slate-800">← Back</button>
-                    <div className="text-sm font-bold">{topic.label}</div>
+                    <button onClick={() => setSelectedTopicId(null)} className="px-4 py-2 rounded-xl bg-white dark:bg-slate-800 shadow-sm border border-gray-100 dark:border-white/5 font-bold text-xs uppercase tracking-widest hover:theme-text transition-all">← Back to Vault</button>
+                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">{topic.course} Protocol</div>
                   </div>
-                  <div className="bg-white dark:bg-slate-900 rounded-lg border theme-border p-6">
+                  <div className="-mx-2 md:mx-0 overflow-hidden rounded-[2rem] md:rounded-[2.5rem] shadow-2xl border border-gray-100 dark:border-white/5 bg-white dark:bg-slate-900 animate-fade-in">
                     <PageComponent />
                   </div>
-                  <div>
-                    <TopicPage
-                      topic={topic}
-                      onBack={() => setSelectedTopicId(null)}
-                      onSelectResult={(type) => setSelectedResultType(type)}
-                    />
-                  </div>
+
                 </div>
               );
             }
@@ -162,7 +156,7 @@ const CoursesPage: React.FC = () => {
       </div>
     );
   }
-  
+
 
   return (
     <div className="container mx-auto px-4 py-8 animate-fade-in space-y-12">
@@ -194,40 +188,40 @@ const CoursesPage: React.FC = () => {
       {/* Header section */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
         <div className="space-y-3">
-           <div className="inline-flex items-center gap-2 px-4 py-1.5 theme-bg-soft theme-text rounded-full text-[10px] font-black uppercase tracking-widest border theme-border">
-              <Star size={12} fill="currentColor" /> Curated Academic Protocols
-           </div>
-           <h2 className="text-5xl font-black text-gray-950 dark:text-white tracking-tighter leading-tight">Academic Vault</h2>
-           <p className="text-gray-500 dark:text-slate-400 font-medium max-w-xl text-lg">
-             Explore high-fidelity, pre-built educational pathways for board exams, competitive targets, and core concepts.
-           </p>
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 theme-bg-soft theme-text rounded-full text-[10px] font-black uppercase tracking-widest border theme-border">
+            <Star size={12} fill="currentColor" /> Curated Academic Protocols
+          </div>
+          <h2 className="text-5xl font-black text-gray-950 dark:text-white tracking-tighter leading-tight">Academic Vault</h2>
+          <p className="text-gray-500 dark:text-slate-400 font-medium max-w-xl text-lg">
+            Explore high-fidelity, pre-built educational pathways for board exams, competitive targets, and core concepts.
+          </p>
         </div>
-        
+
         <div className="w-full md:w-[400px] relative group">
-           <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:theme-text transition-colors" size={20} />
-           <input 
-             type="text" 
-             value={searchQuery}
-             onChange={(e) => setSearchQuery(e.target.value)}
-             placeholder="Search topic or subject..." 
-             className="w-full pl-16 pr-8 py-4 bg-white dark:bg-slate-900 border-2 border-gray-100 dark:border-white/5 rounded-[2rem] outline-none focus:border-theme font-semibold dark:text-white shadow-xl shadow-gray-100/30 dark:shadow-none transition-all"
-           />
+          <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:theme-text transition-colors" size={20} />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search topic or subject..."
+            className="w-full pl-16 pr-8 py-4 bg-white dark:bg-slate-900 border-2 border-gray-100 dark:border-white/5 rounded-[2rem] outline-none focus:border-theme font-semibold dark:text-white shadow-xl shadow-gray-100/30 dark:shadow-none transition-all"
+          />
         </div>
       </div>
 
       {/* Modern Filter Hub */}
       <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-6 shadow-sm border theme-border flex flex-wrap items-center gap-6">
         <div className="flex items-center gap-2 text-gray-400 font-black text-[10px] uppercase tracking-widest border-r theme-border pr-6">
-           <Filter size={14} /> Global Filters
+          <Filter size={14} /> Global Filters
         </div>
-        
+
         <div className="flex flex-wrap gap-4 flex-1">
-           <FilterSelect label="Exam/Category" value={catFilter} onChange={setCatFilter} options={allCategories} />
-           <FilterSelect label="Course" value={classFilter} onChange={setClassFilter} options={allCourses} />
+          <FilterSelect label="Exam/Category" value={catFilter} onChange={setCatFilter} options={allCategories} />
+          <FilterSelect label="Course" value={classFilter} onChange={setClassFilter} options={allCourses} />
         </div>
 
         {(catFilter || classFilter) && (
-          <button 
+          <button
             onClick={() => { setCatFilter(''); setClassFilter(''); }}
             className="text-pink-600 font-black text-[10px] uppercase tracking-widest hover:underline"
           >
@@ -285,15 +279,15 @@ const CoursesPage: React.FC = () => {
 
 const FilterSelect = ({ label, value, onChange, options }: any) => (
   <div className="flex flex-col gap-1.5 min-w-[120px]">
-     <label className="text-[8px] font-black text-gray-400 uppercase tracking-widest ml-1">{label}</label>
-     <select 
-       value={value} 
-       onChange={(e) => onChange(e.target.value)}
-       className="bg-gray-50 dark:bg-slate-800 px-4 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-tight text-gray-700 dark:text-white outline-none focus:ring-2 ring-indigo-100 dark:ring-indigo-900/50 border-none appearance-none cursor-pointer shadow-sm transition-all hover:bg-white dark:hover:bg-slate-700"
-     >
-       <option value="">All {label}s</option>
-       {options.map((opt: string) => <option key={opt} value={opt}>{opt}</option>)}
-     </select>
+    <label className="text-[8px] font-black text-gray-400 uppercase tracking-widest ml-1">{label}</label>
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="bg-gray-50 dark:bg-slate-800 px-4 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-tight text-gray-700 dark:text-white outline-none focus:ring-2 ring-indigo-100 dark:ring-indigo-900/50 border-none appearance-none cursor-pointer shadow-sm transition-all hover:bg-white dark:hover:bg-slate-700"
+    >
+      <option value="">All {label}s</option>
+      {options.map((opt: string) => <option key={opt} value={opt}>{opt}</option>)}
+    </select>
   </div>
 );
 

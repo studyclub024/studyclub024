@@ -1,9 +1,11 @@
 import React, { useState } from 'react'
-import { FlashcardsResponse, NotesResponse, QuizResponse, StudyMode } from '../../../types'
+import { FlashcardsResponse, NotesResponse, QuizResponse, StudyMode, DescribeResponse } from '../../../types'
 import FlashcardDisplay from '../../Display/FlashcardDisplay'
 import NotesDisplay from '../../Display/NotesDisplay'
 import QuizDisplay from '../../Display/QuizDisplay'
-import { Zap, BookOpen, Brain, FileText } from 'lucide-react'
+import { Zap, BookOpen, Brain, FileText, ScanEye } from 'lucide-react'
+import DescribeDisplay from '../../Display/DescribeDisplay'
+import SimpleTextDisplay from '../../Display/SimpleTextDisplay'
 import LatexRenderer from '../../Display/LatexRenderer'
 
 // Real CBSE 12th Physics content
@@ -154,6 +156,52 @@ const notesData: NotesResponse = {
   ]
 }
 
+const describeData: DescribeResponse = {
+  mode: 'describe',
+  title: "Visual Analysis: Electrostatics & Circuits",
+  key_insights: [
+    "Opposite charges create a symmetrical dipole field that density indicates strength.",
+    "Dielectric materials polarize to reduce the net electric field, increasing capacitance.",
+    "Circuit branches provide alternative pathways, dividing current based on resistance ratios."
+  ],
+  images: [
+    "https://antigravity-artifacts.s3.amazonaws.com/electric_field_lines_visual_1768400472234.png",
+    "https://antigravity-artifacts.s3.amazonaws.com/capacitor_diagram_visual_1768400506214.png",
+    "https://antigravity-artifacts.s3.amazonaws.com/current_electricity_circuit_visual_1768400533041.png",
+    "https://antigravity-artifacts.s3.amazonaws.com/electric_field_lines_visual_1768400472234.png",
+    "https://antigravity-artifacts.s3.amazonaws.com/capacitor_diagram_visual_1768400506214.png",
+    "https://antigravity-artifacts.s3.amazonaws.com/current_electricity_circuit_visual_1768400533041.png",
+    "https://antigravity-artifacts.s3.amazonaws.com/electric_field_lines_visual_1768400472234.png",
+    "https://antigravity-artifacts.s3.amazonaws.com/capacitor_diagram_visual_1768400506214.png",
+    "https://antigravity-artifacts.s3.amazonaws.com/current_electricity_circuit_visual_1768400533041.png"
+  ],
+  captions: [
+    "Mapping of electric field lines between a positive and negative point charge. The lines represent the direction of force on a positive test charge.",
+    "3D model of a parallel plate capacitor featuring a dielectric slab. Notice how the slab alters the field vectors between the plates.",
+    "Advanced circuit schematic showing complex current distribution (i1, i2, i3) through a network of resistances connected to a 9V source."
+  ],
+  sections: [
+    {
+      heading: "Electric Dipole Geometry",
+      content: "The first visual illustrates the classic dipole configuration. Note how the line density is highest directly between the charges, indicating the strongest field region.",
+      bullets: [
+        "Symmetry around the equatorial plane",
+        "Field strength proportional to line density",
+        "Flux lines never cross"
+      ]
+    },
+    {
+      heading: "Capacitance & Dielectrics",
+      content: "The second visual demonstrates the effect of adding a dielectric material (K > 1). The material's internal polarization opposes the external field, effectively allowing more charge storage for the same voltage.",
+      bullets: [
+        "Induced charges on dielectric surface",
+        "Reduction in internal potential difference",
+        "Energy density storage mechanics"
+      ]
+    }
+  ]
+}
+
 const quizData: QuizResponse = {
   mode: 'quiz',
   mcq: [
@@ -268,59 +316,58 @@ const Topic_12_phy_ncert: React.FC = () => {
     switch (selectedMode) {
       case 'flashcards':
         return (
-          <FlashcardDisplay 
+          <FlashcardDisplay
             data={flashcardsData}
             canUseThemes={false}
-            onOpenUpgrade={() => {}}
+            onOpenUpgrade={() => { }}
+            fullWidth={true}
           />
         )
       case 'notes':
-        return <NotesDisplay data={notesData} />
-      case 'quiz':
-        return <QuizDisplay data={quizData} />
-      case 'plan':
-        return <div className="text-white text-center py-10">Study Plan coming soon...</div>
+        return <NotesDisplay data={notesData} fullWidth={true} />
       case 'summary':
-        return <div className="text-white text-center py-10">Summary coming soon...</div>
-      case 'essay':
-        return <div className="text-white text-center py-10">Essay coming soon...</div>
-      case 'eli5':
-        return <div className="text-white text-center py-10">Explain Like I'm 5 coming soon...</div>
+        return <SimpleTextDisplay data={{ ...notesData, mode: 'summary', bullets: notesData.sections[0].bullets } as any} fullWidth={true} />
       case 'describe':
-        return <div className="text-white text-center py-10">Describe coming soon...</div>
+        return <DescribeDisplay data={describeData} fullWidth={true} />
       default:
-        return <NotesDisplay data={notesData} />
+        return <NotesDisplay data={notesData} fullWidth={true} />
     }
   }
 
   const allModes = [
-    { id: 'flashcards', icon: Brain, label: 'Flashcards', description: 'Pre-generated flashcards' },
-    { id: 'notes', icon: BookOpen, label: 'Study Notes', description: 'Pre-generated study notes' },
-    { id: 'quiz', icon: FileText, label: 'Quiz Me', description: 'Pre-generated quiz me' },
-    { id: 'plan', icon: Zap, label: 'Study Plan', description: 'Pre-generated study plan' },
-    { id: 'summary', icon: FileText, label: 'Summary', description: 'Pre-generated summary' },
-    { id: 'essay', icon: FileText, label: 'Essay', description: 'Pre-generated essay' },
-    { id: 'eli5', icon: Brain, label: "Explain Like I'm 5", description: "Pre-generated explain like i'm 5" },
-    { id: 'describe', icon: BookOpen, label: 'Describe', description: 'Pre-generated describe' },
+    { id: 'flashcards', icon: Brain, label: 'Flashcards', description: 'Interactive cards' },
+    { id: 'notes', icon: BookOpen, label: 'Study Notes', description: 'In-depth notes' },
+    { id: 'summary', icon: FileText, label: 'Summary', description: 'Quick recap' },
+    { id: 'describe', icon: BookOpen, label: 'Describe', description: 'Detailed view' },
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="bg-transparent">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 md:py-8 px-4 md:px-6 shadow-2xl">
-        <div className="container mx-auto max-w-5xl">
-          <div className="flex items-center gap-2 md:gap-3 mb-1 md:mb-2">
-            <Zap className="w-6 h-6 md:w-10 md:h-10" />
-            <h1 className="text-2xl md:text-4xl font-bold">Physics Class 12</h1>
+      <div className="theme-bg text-white py-6 md:py-10 px-6 md:px-10 shadow-2xl relative overflow-hidden transition-all duration-700">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl opacity-50" />
+        <div className="w-full relative z-10">
+          <div className="flex items-center gap-3 md:gap-4 mb-3">
+            <div className="bg-white/20 p-2.5 rounded-2xl backdrop-blur-sm shadow-inner shrink-0 leading-none">
+              <Zap className="w-6 h-6 md:w-8 md:h-8" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-2xl md:text-5xl font-black tracking-tighter leading-none truncate mb-1">Physics Class 12</h1>
+              <p className="text-[9px] md:text-xs font-black uppercase tracking-[0.3em] text-white/60">Academic Protocol</p>
+            </div>
           </div>
-          <h2 className="text-lg md:text-2xl font-semibold ml-8 md:ml-13 opacity-90">Electrostatics & Current Electricity</h2>
-          <p className="mt-2 md:mt-3 text-sm md:text-base text-blue-100 ml-8 md:ml-13">CBSE NCERT | Chapter 1 & 2</p>
+          <h2 className="text-lg md:text-2xl font-black mt-4 opacity-95 tracking-tight leading-tight">Electrostatics & Current Electricity</h2>
+          <div className="flex flex-wrap items-center gap-2 mt-6">
+            <span className="bg-white/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest backdrop-blur-sm">CBSE NCERT</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-white/30" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-white/80">Chapter 1 & 2</span>
+          </div>
         </div>
       </div>
 
       {/* Mode Selector */}
-      <div className="container mx-auto max-w-5xl px-3 md:px-6 py-4 md:py-8">
-        <div className="grid grid-cols-4 md:grid-cols-4 gap-2 md:gap-4 mb-6 md:mb-8">
+      <div className="w-full px-2 md:px-8 py-6 md:py-10">
+        <div className="grid grid-cols-4 gap-2 md:gap-4 mb-6 md:mb-8">
           {allModes.map((mode) => {
             const Icon = mode.icon
             const isActive = selectedMode === mode.id
@@ -329,17 +376,17 @@ const Topic_12_phy_ncert: React.FC = () => {
                 key={mode.id}
                 onClick={() => setSelectedMode(mode.id)}
                 className={`
-                  relative p-2 md:p-4 rounded-lg md:rounded-xl transition-all duration-200
-                  ${isActive 
-                    ? 'bg-white text-gray-900 shadow-lg scale-100' 
-                    : 'bg-white/10 text-white hover:bg-white/20'
+                  relative p-2.5 md:p-5 rounded-xl md:rounded-2xl transition-all duration-300 group
+                  ${isActive
+                    ? 'theme-bg text-white shadow-xl shadow-theme/20 scale-[1.02]'
+                    : 'bg-white dark:bg-slate-800 text-gray-500 dark:text-slate-400 hover:theme-bg-soft hover:theme-text border border-gray-100 dark:border-white/5'
                   }
                 `}
               >
-                <div className="flex flex-col items-center gap-0.5 md:gap-2">
-                  <Icon className={`w-4 h-4 md:w-6 md:h-6 ${isActive ? 'text-blue-600' : ''}`} />
-                  <span className="font-semibold text-[9px] md:text-sm text-center leading-tight">{mode.label}</span>
-                  <span className={`text-[10px] md:text-xs hidden md:block ${isActive ? 'text-gray-600' : 'text-gray-400'}`}>
+                <div className="flex flex-col items-center gap-1.5 md:gap-3">
+                  <Icon className={`w-4 h-4 md:w-6 md:h-6 ${isActive ? 'text-white' : 'group-hover:theme-text'}`} />
+                  <span className="font-black text-[8px] md:text-xs uppercase tracking-widest text-center leading-none">{mode.label}</span>
+                  <span className={`text-[9px] hidden md:block opacity-60 font-medium uppercase tracking-tighter ${isActive ? 'text-white' : ''}`}>
                     {mode.description}
                   </span>
                 </div>
@@ -349,32 +396,46 @@ const Topic_12_phy_ncert: React.FC = () => {
         </div>
 
         {/* Content Area */}
-        <div className="bg-white/5 backdrop-blur-lg rounded-xl md:rounded-2xl shadow-2xl p-3 md:p-8 border border-white/10">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-[3rem] shadow-2xl p-6 md:p-12 border border-gray-100 dark:border-white/5 overflow-hidden transition-all text-gray-900 dark:text-white">
           {renderContent()}
         </div>
       </div>
 
       {/* Footer Info */}
-      <div className="container mx-auto max-w-5xl px-6 pb-8">
-        <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-xl p-6 border border-blue-500/20">
-          <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
-            <Zap className="w-5 h-5" /> Chapter Coverage
+      <div className="w-full px-4 md:px-10 pb-12">
+        <div className="theme-bg-soft rounded-[2rem] p-6 md:p-8 border theme-border">
+          <h3 className="theme-text font-black text-xs uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+            <Zap size={14} className="theme-text" /> Chapter Coverage
           </h3>
-          <div className="grid md:grid-cols-2 gap-4 text-blue-100 text-sm">
+          <div className="grid md:grid-cols-2 gap-8 md:gap-12">
             <div>
-              <strong className="text-white">Electrostatics:</strong>
-              <ul className="list-disc list-inside mt-1 space-y-1">
-                <li>Coulomb's Law & Electric Field</li>
-                <li>Gauss's Law & Applications</li>
-                <li>Electric Potential & Capacitance</li>
+              <strong className="text-gray-900 dark:text-white text-sm font-black uppercase tracking-widest block mb-3">Electrostatics</strong>
+              <ul className="space-y-2">
+                {[
+                  "Coulomb's Law & Electric Field",
+                  "Gauss's Law & Applications",
+                  "Electric Potential & Capacitance"
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3 text-xs md:text-sm text-gray-500 dark:text-slate-400 font-medium">
+                    <div className="w-1.5 h-1.5 rounded-full theme-bg opacity-40 shrink-0" />
+                    {item}
+                  </li>
+                ))}
               </ul>
             </div>
             <div>
-              <strong className="text-white">Current Electricity:</strong>
-              <ul className="list-disc list-inside mt-1 space-y-1">
-                <li>Current, Drift Velocity & Ohm's Law</li>
-                <li>Resistivity & Temperature Dependence</li>
-                <li>Kirchhoff's Laws & Circuit Analysis</li>
+              <strong className="text-gray-900 dark:text-white text-sm font-black uppercase tracking-widest block mb-3">Current Electricity</strong>
+              <ul className="space-y-2">
+                {[
+                  "Current, Drift Velocity & Ohm's Law",
+                  "Resistivity & Temperature Dependence",
+                  "Kirchhoff's Laws & Circuit Analysis"
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3 text-xs md:text-sm text-gray-500 dark:text-slate-400 font-medium">
+                    <div className="w-1.5 h-1.5 rounded-full theme-bg opacity-40 shrink-0" />
+                    {item}
+                  </li>
+                ))}
               </ul>
             </div>
           </div>

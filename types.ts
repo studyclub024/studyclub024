@@ -10,6 +10,7 @@ export enum StudyMode {
   MATH = 'math',
   MATH_NOTES = 'math_notes',
   PLAN = 'plan',
+  CHAT = 'chat',
 }
 
 export enum FlashcardTheme {
@@ -57,19 +58,19 @@ export interface DiagramElement {
   x: number; // 0-100 (percentage of width)
   y: number; // 0-100 (percentage of height)
   style?: 'primary' | 'secondary' | 'accent';
-  imagePrompt?: string; 
+  imagePrompt?: string;
 }
 
 export interface DiagramConnection {
-  from: string; 
-  to: string;   
+  from: string;
+  to: string;
   label?: string;
   animated?: boolean;
 }
 
 export interface DiagramAnimation {
   type: 'step_reveal' | 'flow_highlight' | 'focus_pulse';
-  sequence: string[]; 
+  sequence: string[];
   timing: 'slow' | 'medium' | 'fast';
 }
 
@@ -172,6 +173,11 @@ export interface StudyPlanResponse {
   schedule: StudyPlanDay[];
 }
 
+export interface ChatResponse {
+  mode: 'chat';
+  initialMessage?: string;
+}
+
 export interface FlashcardsResponse {
   mode: 'flashcards';
   theme: FlashcardTheme;
@@ -214,6 +220,8 @@ export interface DescribeResponse {
   title: string;
   sections: DescribeSection[];
   key_insights: string[];
+  images?: string[];
+  captions?: string[];
 }
 
 export interface ChemReaction {
@@ -361,7 +369,8 @@ export type StudyContent =
   | ChemNotesResponse
   | MathNotesResponse
   | PhysicsNotesResponse
-  | StudyPlanResponse;
+  | StudyPlanResponse
+  | ChatResponse;
 
 export interface SavedMaterial {
   id: string;
