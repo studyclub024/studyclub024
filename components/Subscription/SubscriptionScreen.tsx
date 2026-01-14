@@ -16,7 +16,9 @@ const ALL_FEATURES = [
   'Save Flashcards',
   'Share Flashcards',
   'Language Learning',
-  'Theme For Fun Learning'
+  'Theme For Fun Learning',
+  'Voice input',
+  'Chat'
 ];
 
 // Feature details map for each plan
@@ -32,6 +34,8 @@ const PLAN_FEATURES_MAP: Record<string, Record<string, boolean>> = {
     'Share Flashcards': false,
     'Language Learning': false,
     'Theme For Fun Learning': false,
+    'Voice input': false,
+    'Chat': false,
   },
   'instant-help': {
     'Course & Question Paper': false,
@@ -44,6 +48,8 @@ const PLAN_FEATURES_MAP: Record<string, Record<string, boolean>> = {
     'Share Flashcards': false,
     'Language Learning': false,
     'Theme For Fun Learning': false,
+    'Voice input': false,
+    'Chat': false,
   },
   'focused-prep': {
     'Course & Question Paper': true,
@@ -56,6 +62,8 @@ const PLAN_FEATURES_MAP: Record<string, Record<string, boolean>> = {
     'Share Flashcards': false,
     'Language Learning': true,
     'Theme For Fun Learning': true,
+    'Voice input': false,
+    'Chat': false,
   },
   'study-pro': {
     'Course & Question Paper': true,
@@ -68,6 +76,8 @@ const PLAN_FEATURES_MAP: Record<string, Record<string, boolean>> = {
     'Share Flashcards': true,
     'Language Learning': true,
     'Theme For Fun Learning': true,
+    'Voice input': true,
+    'Chat': true,
   },
 };
 
@@ -106,7 +116,7 @@ export const PLANS: SubscriptionPlan[] = [
     price: '₹599',
     period: 'Month Billed Monthly',
     description: 'Less than a Cafe outing',
-    features: ['Course & Question Paper', 'Unlimited Notes Upload', 'Unlimited Flashcards', 'Unlimited Summaries', 'Unlimited Test', 'Study Plan', 'Save Flashcards', 'Share Flashcards', 'Language Learning', 'Theme For Fun Learning'],
+    features: ['Course & Question Paper', 'Unlimited Notes Upload', 'Unlimited Flashcards', 'Unlimited Summaries', 'Unlimited Test', 'Study Plan', 'Save Flashcards', 'Share Flashcards', 'Language Learning', 'Theme For Fun Learning', 'Voice input', 'Chat'],
     gradient: 'from-amber-400 to-yellow-600'
   }
 ];
