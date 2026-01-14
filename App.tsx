@@ -742,7 +742,12 @@ const App: React.FC = () => {
 
       return (
         <>
-          <Homepage onOpenAuth={() => setShowAuthModal(true)} onOpenLegal={(s) => setLegalPage(s)} />
+          <Homepage 
+            onOpenAuth={() => setShowAuthModal(true)} 
+            onOpenLegal={(s) => setLegalPage(s)}
+            onOpenUpgrade={() => setShowUpgradeModal(true)}
+            isLoggedIn={!!userProfile}
+          />
           {showAuthModal && (
             <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={() => setShowAuthModal(false)}>
               <div className="absolute inset-0 bg-black/40" />
