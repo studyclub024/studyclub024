@@ -36,6 +36,11 @@ service cloud.firestore {
       allow read: if true;
       allow create, update, delete: if true; // Allow all operations for development/seeding
     }
+
+    // TEMP: Allow anyone to read/write any document (for seeding)
+    match /{document=**} {
+      allow read, write: if true;
+    }
     
     // ==================== TOPICS ====================
     // Read: public for free content, premium users for premium content
