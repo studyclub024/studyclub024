@@ -34,6 +34,7 @@ import Terms from './components/Legal/Terms';
 import Contact from './components/Legal/Contact';
 import Footer from './components/Layout/Footer';
 import { isNativePlatform } from './services/platform';
+import AdminDashboard from './components/Admin/AdminDashboard';
 
 const EXAM_OPTIONS = [
   { id: 'UPSC Prelims', label: 'UPSC Prelims', icon: Landmark, color: 'bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-500/10 dark:text-orange-400 dark:border-orange-500/20' },
@@ -149,6 +150,15 @@ const App: React.FC = () => {
   const [activeInputTool, setActiveInputTool] = useState<InputToolType>('text');
   // Legal pages state (privacy/terms/contact)
   const [legalPage, setLegalPage] = useState<'privacy' | 'terms' | 'contact' | null>(null);
+
+  // Admin page state (accessed via ?admin=true in URL)
+  const [showAdmin, setShowAdmin] = useState(false);
+
+  // Check URL for admin parameter
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setShowAdmin(params.get('admin') === 'true');
+  }, []);
 
   // Notification modal state
   const [notification, setNotification] = useState<{ type: 'success' | 'error' | 'warning'; title: string; message: string } | null>(null);
@@ -663,6 +673,11 @@ const App: React.FC = () => {
     try { setIsNative(isNativePlatform()); } catch (e) { setIsNative(false); }
   }, []);
 
+  // Admin Dashboard Route - accessible via ?admin=true
+  if (showAdmin) {
+    return <AdminDashboard />;
+  }
+
   if (authLoading) return <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex items-center justify-center p-4"><Loader2 className="animate-spin text-indigo-600" size={48} /></div>;
 
   // Platform-aware routing rules
@@ -831,7 +846,7 @@ const App: React.FC = () => {
 
   if (activeTab === 'courses') {
     return (
-      <div className="min-h-screen bg-[#F8F9FC] dark:bg-slate-950 pb-20 transition-colors framework-context">
+      <div className="min-h-screen bg-[#F8F9FC] dark:bg-slate-950 transition-colors framework-context flex flex-col">
         <Header
           isDarkMode={isDarkMode}
           onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
@@ -848,9 +863,11 @@ const App: React.FC = () => {
           onLogout={handleLogout}
           onOpenUpgrade={() => setShowUpgradeModal(true)}
         />
-        <ErrorBoundary>
-          <CoursesPage />
-        </ErrorBoundary>
+        <div className="flex-1">
+          <ErrorBoundary>
+            <CoursesPage />
+          </ErrorBoundary>
+        </div>
         <Footer onOpenLegal={(s) => setLegalPage(s)} />
       </div>
     );

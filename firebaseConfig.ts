@@ -9,7 +9,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyBlOLDIGjDQxd6_j9Ps_sFws3y0al-OcgE",
   authDomain: "my-website-map-470209.firebaseapp.com",
   projectId: "my-website-map-470209",
-  storageBucket: "my-website-map-470209.appspot.com",
+  storageBucket: "my-website-map-470209.firebasestorage.app",
   messagingSenderId: "189767100910",
   appId: "1:189767100910:web:104ea1ffd4c75e508a06ff",
 };
