@@ -198,6 +198,12 @@ const Homepage: React.FC<HomepageProps> = ({ onOpenAuth, onGetStarted, onOpenUpg
   };
 
   const handleDemo = () => {
+    // Check if user is logged in first
+    if (!isLoggedIn) {
+      if (onOpenAuth) onOpenAuth();
+      return;
+    }
+    
     if (previewUsedOnce) {
       handleGoToPricing();
       return;
@@ -210,6 +216,12 @@ const Homepage: React.FC<HomepageProps> = ({ onOpenAuth, onGetStarted, onOpenUpg
   };
 
   const handleStartUpload = () => {
+    // Check if user is logged in first
+    if (!isLoggedIn) {
+      if (onOpenAuth) onOpenAuth();
+      return;
+    }
+    
     if (previewUsedOnce) {
       handleGoToPricing();
       return;
