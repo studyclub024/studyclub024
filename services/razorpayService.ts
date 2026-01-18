@@ -89,11 +89,21 @@ class RazorpayService {
     });
   }
 
-  // Convert price string to paise (Razorpay uses smallest currency unit)
-  getPriceInPaise(priceString: string): number {
+  // Convert price string to paise and calculate monthly amount with GST
+  getPriceInPaise(priceString: string, period: string): number {
     // Remove ₹ symbol and convert to number
-    const price = parseFloat(priceString.replace('₹', '').replace(',', ''));
-    return Math.round(price * 100); // Convert to paise
+    const dailyPrice = parseFloat(priceString.replace('₹', '').replace(',', ''));
+    
+    // If it's a daily rate, multiply by 30 days for monthly billing
+    let monthlyPrice = dailyPrice;
+    if (period.toLowerCase().includes('day')) {
+      monthlyPrice = dailyPrice * 30;
+    }
+    
+    // Add 18% GST
+    const priceWithGST = monthlyPrice * 1.18;
+    
+    return Math.round(priceWithGST * 100); // Convert to paise
   }
 
   // Initialize payment
@@ -141,8 +151,7 @@ class RazorpayService {
       }
       console.log('🔵 User logged in:', currentUser.uid);
 
-      const amount = this.getPriceInPaise(plan.price);
-      console.log('🔵 Amount in paise:', amount);
+      const amount = this.getPriceInPaise(plan.price, plan.period);
 
       // Create order on backend - Use Firebase Functions URL
       const isLocalhost = window.location.hostname === 'localhost';

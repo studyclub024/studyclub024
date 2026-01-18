@@ -18,7 +18,7 @@ const ALL_FEATURES = [
   'Share Flashcards',
   'Language Learning',
   'Theme For Fun Learning',
-  'Voice input',
+  'Podcast',
   'Chat'
 ];
 
