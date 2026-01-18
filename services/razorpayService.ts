@@ -167,7 +167,7 @@ class RazorpayService {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          amount: amount / 100, // Convert back to rupees
+          amount, // Send paise directly
           planId: plan.id,
           userId: currentUser.uid,
         }),
