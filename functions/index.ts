@@ -196,7 +196,7 @@ export const createOrder = functions.https.onRequest(async (req, res) => {
     const receipt = `rcpt_${timestamp}_${shortUserId}`.substring(0, 40);
 
     const options = {
-      amount: amount * 100,
+      amount: amount ,//* 100,
       currency: 'INR',
       receipt: receipt,
       notes: { planId, userId },
