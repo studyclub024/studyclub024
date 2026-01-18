@@ -121,8 +121,15 @@ const Homepage: React.FC<HomepageProps> = ({ onOpenAuth, onGetStarted, onOpenUpg
   };
 
   const handleGetStarted = () => {
-    if (onGetStarted) onGetStarted();
-    else alert('Get started clicked');
+    if (!isLoggedIn) {
+      // If user is not logged in, open auth modal
+      if (onOpenAuth) onOpenAuth();
+      else alert('Please login to continue');
+    } else {
+      // If logged in, proceed to workspace
+      if (onGetStarted) onGetStarted();
+      else alert('Get started clicked');
+    }
   };
 
   const handleUpgradePlan = (planId: string) => {

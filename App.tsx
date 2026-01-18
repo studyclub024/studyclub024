@@ -1332,6 +1332,8 @@ const App: React.FC = () => {
 
       {showUpgradeModal && (
         <SubscriptionScreen
+          isLoggedIn={!!currentUser}
+          onOpenAuth={() => setShowAuth(true)}
           onSelect={async (plan) => {
             if (currentUser) {
               try {

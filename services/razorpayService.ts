@@ -101,20 +101,26 @@ class RazorpayService {
     plan: SubscriptionPlan,
     userDetails: { name?: string; email?: string; phone?: string } = {}
   ): Promise<void> {
+    console.log('🔵 Initiating payment for plan:', plan.id);
+    
     // Reset payment processing flag and order ID for new payment
     this.isProcessingPayment = false;
     this.currentOrderId = null;
     
     // Load Razorpay script
+    console.log('🔵 Loading Razorpay script...');
     const scriptLoaded = await this.loadScript();
     
     if (!scriptLoaded) {
+      console.error('❌ Failed to load Razorpay script');
       this.showNotification('error', 'Connection Error', 'Failed to load Razorpay SDK. Please check your internet connection.');
       return;
     }
+    console.log('✅ Razorpay script loaded successfully');
 
     // Skip payment for free plan
     if (plan.id === 'free') {
+      console.log('🔵 Free plan selected, skipping payment');
       this.handlePaymentSuccess(
         { 
           razorpay_payment_id: 'free_plan', 
@@ -129,14 +135,23 @@ class RazorpayService {
     try {
       const currentUser = auth.currentUser;
       if (!currentUser) {
+        console.error('❌ User not logged in');
         this.showNotification('warning', 'Login Required', 'Please log in to continue with payment.');
         return;
       }
+      console.log('🔵 User logged in:', currentUser.uid);
 
       const amount = this.getPriceInPaise(plan.price);
+      console.log('🔵 Amount in paise:', amount);
 
-      // Create order on backend
-      const API_URL = import.meta.env.VITE_API_URL || (window.location.hostname === 'localhost' ? 'http://localhost:3001' : window.location.origin);
+      // Create order on backend - Use Firebase Functions URL
+      const isLocalhost = window.location.hostname === 'localhost';
+      const API_URL = isLocalhost 
+        ? 'https://us-central1-my-website-map-470209.cloudfunctions.net'
+        : window.location.origin;
+      console.log('🔵 API URL:', API_URL);
+      console.log('🔵 Creating order...');
+      
       const orderResponse = await fetch(`${API_URL}/api/create-order`, {
         method: 'POST',
         headers: {
@@ -149,11 +164,15 @@ class RazorpayService {
         }),
       });
 
+      console.log('🔵 Order response status:', orderResponse.status);
       if (!orderResponse.ok) {
-        throw new Error('Failed to create order');
+        const errorText = await orderResponse.text();
+        console.error('❌ Order creation failed:', errorText);
+        throw new Error(`Failed to create order: ${errorText}`);
       }
 
       const orderData = await orderResponse.json();
+      console.log('✅ Order created:', orderData);
       
       // Store current order ID to track this payment instance
       this.currentOrderId = orderData.orderId;
@@ -200,7 +219,10 @@ class RazorpayService {
   private async verifyPaymentOnBackend(response: RazorpayResponse): Promise<boolean> {
     try {
       console.log('Verifying payment on backend...');
-      const API_URL = import.meta.env.VITE_API_URL || (window.location.hostname === 'localhost' ? 'http://localhost:3001' : window.location.origin);
+      const isLocalhost = window.location.hostname === 'localhost';
+      const API_URL = isLocalhost 
+        ? 'https://us-central1-my-website-map-470209.cloudfunctions.net'
+        : window.location.origin;
       console.log('API URL:', API_URL);
       
       const verifyResponse = await fetch(`${API_URL}/api/verify-payment`, {

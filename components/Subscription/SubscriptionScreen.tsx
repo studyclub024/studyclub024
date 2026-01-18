@@ -133,14 +133,19 @@ const SubscriptionScreen: React.FC<Props> = ({ onSelect, onClose, isLoggedIn = f
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
 
   const handleSelectPlan = async (plan: SubscriptionPlan) => {
+    console.log('🔴 UPGRADE NOW CLICKED! Plan:', plan.id);
+    console.log('🔴 User logged in?', isLoggedIn);
+    
     if (!isLoggedIn) {
       // User not logged in, store the plan and open auth
+      console.log('🔴 User not logged in, opening auth...');
       setSelectedPlan(plan.id);
       if (onOpenAuth) onOpenAuth();
       return;
     }
 
     // User is logged in, proceed with payment
+    console.log('🔴 Setting loading state...');
     setLoading(plan.id);
 
     try {
