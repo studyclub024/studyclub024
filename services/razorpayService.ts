@@ -101,7 +101,7 @@ class RazorpayService {
     }
     
     // Add 18% GST
-    const priceWithGST = 1;//monthlyPrice * 1.18; Just for 1 rs payment
+    const priceWithGST = monthlyPrice * 1.18;
     
     return Math.round(priceWithGST); // Convert to paise
   }
