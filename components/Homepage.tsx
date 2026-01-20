@@ -18,7 +18,7 @@ const ALL_FEATURES = [
   'Share Flashcards',
   'Language Learning',
   'Theme For Fun Learning',
-  'Voice input',
+  'Podcast',
   'Chat'
 ];
 
@@ -113,6 +113,13 @@ const scrollToSection = (e: React.MouseEvent, id: string) => {
 };
 
 const Homepage: React.FC<HomepageProps> = ({ onOpenAuth, onGetStarted, onOpenUpgrade, onOpenSelectMode, isLoggedIn = false, onOpenLegal }) => {
+    // Preview demo states
+    const [previewUsedOnce, setPreviewUsedOnce] = useState(false);
+    const [previewFileName, setPreviewFileName] = useState<string>('');
+    const [previewText, setPreviewText] = useState<string>('');
+    const [previewStatus, setPreviewStatus] = useState<string>('');
+    const [previewOpen, setPreviewOpen] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
 
   const handleLogin = () => {
@@ -121,8 +128,15 @@ const Homepage: React.FC<HomepageProps> = ({ onOpenAuth, onGetStarted, onOpenUpg
   };
 
   const handleGetStarted = () => {
-    if (onGetStarted) onGetStarted();
-    else alert('Get started clicked');
+    if (!isLoggedIn) {
+      // If user is not logged in, open auth modal
+      if (onOpenAuth) onOpenAuth();
+      else alert('Please login to continue');
+    } else {
+      // If logged in, proceed to workspace
+      if (onGetStarted) onGetStarted();
+      else alert('Get started clicked');
+    }
   };
 
   const handleUpgradePlan = (planId: string) => {
@@ -169,11 +183,33 @@ const Homepage: React.FC<HomepageProps> = ({ onOpenAuth, onGetStarted, onOpenUpg
 
 
   const handleDemo = () => {
-    handleLogin();
+    // Check if user is logged in first
+    if (!isLoggedIn) {
+      if (onOpenAuth) onOpenAuth();
+      return;
+    }
+    if (previewUsedOnce) {
+      handleGoToPricing();
+      return;
+    }
+    setPreviewFileName('Demo Sample');
+    setPreviewText('Demo 1-minute summary\n\nKey points:\n- This is a demo preview that highlights the main concepts.\n- Practice the example problems shown.\n- Review the summary to revise quickly.');
+    setPreviewStatus('done');
+    setPreviewOpen(true);
+    setPreviewUsedOnce(true);
   };
 
   const handleStartUpload = () => {
-    handleLogin();
+    // Check if user is logged in first
+    if (!isLoggedIn) {
+      if (onOpenAuth) onOpenAuth();
+      return;
+    }
+    if (previewUsedOnce) {
+      handleGoToPricing();
+      return;
+    }
+    fileInputRef.current?.click();
   };
 
   const handleGoToPricing = () => {

@@ -17,7 +17,7 @@ const ALL_FEATURES = [
   'Share Flashcards',
   'Language Learning',
   'Theme For Fun Learning',
-  'Voice input',
+  'Podcast',
   'Chat'
 ];
 
@@ -118,7 +118,7 @@ export const PLANS: SubscriptionPlan[] = [
     price: '₹499',
     period: 'Month Billed Monthly',
     description: 'Less than a Cafe outing',
-    features: ['Course & Question Paper', 'Unlimited Notes Upload', 'Unlimited Flashcards', 'Unlimited Summaries', 'Unlimited Test', 'Study Plan', 'Save Flashcards', 'Share Flashcards', 'Language Learning', 'Theme For Fun Learning', 'Voice input', 'Chat'],
+    features: ['Course & Question Paper', 'Unlimited Notes Upload', 'Unlimited Flashcards', 'Unlimited Summaries', 'Unlimited Test', 'Study Plan', 'Save Flashcards', 'Share Flashcards', 'Language Learning', 'Theme For Fun Learning', 'Podcast', 'Chat'],
     gradient: 'from-amber-400 to-yellow-600'
   }
 ];
@@ -134,15 +134,41 @@ const SubscriptionScreen: React.FC<Props> = ({ onSelect, onClose, isLoggedIn = f
   const [loading, setLoading] = useState<string | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
 
+  // Calculate monthly price
+  const getMonthlyPrice = (plan: SubscriptionPlan): string => {
+    const price = parseFloat(plan.price.replace('₹', '').replace(',', ''));
+    if (plan.period.toLowerCase().includes('day')) {
+      const monthlyAmount = price * 30;
+      return `₹${monthlyAmount.toFixed(0)}`;
+    }
+    return plan.price;
+  };
+
+  // Calculate total price with GST
+  const getTotalWithGST = (plan: SubscriptionPlan): string => {
+    const price = parseFloat(plan.price.replace('₹', '').replace(',', ''));
+    let monthlyAmount = price;
+    if (plan.period.toLowerCase().includes('day')) {
+      monthlyAmount = price * 30;
+    }
+    const totalWithGST = monthlyAmount * 1.18;
+    return `₹${Math.round(totalWithGST)}`;
+  };
+
   const handleSelectPlan = async (plan: SubscriptionPlan) => {
+    console.log('🔴 UPGRADE NOW CLICKED! Plan:', plan.id);
+    console.log('🔴 User logged in?', isLoggedIn);
+    
     if (!isLoggedIn) {
       // User not logged in, store the plan and open auth
+      console.log('🔴 User not logged in, opening auth...');
       setSelectedPlan(plan.id);
       if (onOpenAuth) onOpenAuth();
       return;
     }
 
     // User is logged in, proceed with payment
+    console.log('🔴 Setting loading state...');
     setLoading(plan.id);
 
     try {
@@ -244,10 +270,25 @@ const SubscriptionScreen: React.FC<Props> = ({ onSelect, onClose, isLoggedIn = f
               </div>
 
               <div className="mb-8">
-                <div className="flex items-baseline gap-1">
+                <div className="flex items-baseline gap-1 mb-1">
                   <span className="text-3xl font-black text-gray-900 dark:text-white">{plan.price}</span>
                   <span className="text-gray-400 font-bold text-sm">/{plan.period}</span>
                 </div>
+                {plan.period.toLowerCase().includes('day') && (
+                  <div className="space-y-1">
+                    <div className="text-sm font-bold text-gray-600 dark:text-slate-400">
+                   
+                    </div>
+                    <div className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
+                 
+                    </div>
+                  </div>
+                )}
+                {plan.period.toLowerCase().includes('month') && (
+                  <div className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 mt-1">
+
+                  </div>
+                )}
               </div>
 
               <div className="flex-1 space-y-4 mb-8">

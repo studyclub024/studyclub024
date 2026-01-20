@@ -940,7 +940,12 @@ const App: React.FC = () => {
 
       return (
         <>
-          <Homepage onOpenAuth={() => setShowAuthModal(true)} onOpenLegal={(s) => setLegalPage(s)} />
+          <Homepage 
+            onOpenAuth={() => setShowAuthModal(true)} 
+            onOpenLegal={(s) => setLegalPage(s)}
+            onOpenUpgrade={() => setShowUpgradeModal(true)}
+            isLoggedIn={!!userProfile}
+          />
           {showAuthModal && (
             <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={() => setShowAuthModal(false)}>
               <div className="absolute inset-0 bg-black/40" />
@@ -1380,7 +1385,7 @@ const App: React.FC = () => {
                           className={`flex-1 md:flex-none flex items-center justify-center gap-2 md:gap-3 px-4 md:px-8 py-3 md:py-4 rounded-xl text-[10px] md:text-sm font-black uppercase tracking-widest transition-all ${isRecording ? 'bg-red-500 text-white shadow-xl shadow-red-200 scale-105' : (extractingSource === 'voice' ? 'bg-gray-100 dark:bg-slate-800 text-gray-400' : 'bg-white dark:bg-slate-700 text-pink-600 dark:text-pink-300 border-2 border-pink-100 dark:border-pink-500/20 hover:border-pink-300 active:scale-95')}`}
                           aria-label={isRecording ? "Stop podcast recording" : "Start podcast recording"}
                         >
-                          {isRecording ? <StopCircle size={18} /> : (extractingSource === 'voice' ? <Loader2 size={18} className="animate-spin" /> : ((hasVoiceAccess || (isFree && (userProfile?.stats.totalGenerations || 0) < 1 && !hasUsedVoiceTrial)) ? <Mic size={18} /> : <Lock size={18} />))} {isRecording ? 'Stop' : (extractingSource === 'voice' ? 'Processing...' : 'Podcast')}
+                          {isRecording ? <StopCircle size={18} /> : (hasVoiceAccess ? <Mic size={18} /> : <Lock size={18} />)} {isRecording ? 'Stop' : 'Podcast'}
                         </button>
 
                         <button onClick={() => {
@@ -1587,6 +1592,8 @@ const App: React.FC = () => {
 
       {showUpgradeModal && (
         <SubscriptionScreen
+          isLoggedIn={!!currentUser}
+          onOpenAuth={() => setShowAuth(true)}
           onSelect={async (plan) => {
             if (currentUser) {
               try {

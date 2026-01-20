@@ -15,10 +15,14 @@ import * as crypto from 'crypto';
 admin.initializeApp();
 const db = admin.firestore();
 
+// Load environment variables
+import * as dotenv from 'dotenv';
+dotenv.config();
+
 // Razorpay configuration
 const getRazorpayConfig = () => ({
-  key_id: process.env.RAZORPAY_KEY_ID || '',
-  key_secret: process.env.RAZORPAY_KEY_SECRET || '',
+  key_id: process.env.RAZORPAY_KEY_ID || functions.config().razorpay?.key_id || '',
+  key_secret: process.env.RAZORPAY_KEY_SECRET || functions.config().razorpay?.key_secret || '',
 });
 
 /**
@@ -156,13 +160,14 @@ export const onSubscriptionCreated = functions.firestore
  * HTTP Function: Create Razorpay Order
  */
 export const createOrder = functions.https.onRequest(async (req, res) => {
-  // Set CORS headers
+  // Set CORS headers for all origins
   res.set('Access-Control-Allow-Origin', '*');
-  res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.set('Access-Control-Allow-Headers', 'Content-Type');
+  res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.set('Access-Control-Max-Age', '3600');
   
   if (req.method === 'OPTIONS') {
-    res.status(200).send('');
+    res.status(204).send('');
     return;
   }
 
@@ -191,7 +196,7 @@ export const createOrder = functions.https.onRequest(async (req, res) => {
     const receipt = `rcpt_${timestamp}_${shortUserId}`.substring(0, 40);
 
     const options = {
-      amount: amount * 100,
+      amount: amount ,//* 100,
       currency: 'INR',
       receipt: receipt,
       notes: { planId, userId },
@@ -220,11 +225,12 @@ export const createOrder = functions.https.onRequest(async (req, res) => {
  */
 export const verifyPayment = functions.https.onRequest(async (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
-  res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.set('Access-Control-Allow-Headers', 'Content-Type');
+  res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.set('Access-Control-Max-Age', '3600');
   
   if (req.method === 'OPTIONS') {
-    res.status(200).send('');
+    res.status(204).send('');
     return;
   }
 
