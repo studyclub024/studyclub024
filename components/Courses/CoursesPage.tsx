@@ -25,7 +25,7 @@ const getAllCourses = (topics: Topic[]) => {
   return Array.from(set);
 };
 
-const CoursesPage: React.FC = () => {
+const CoursesPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   // legacy selectedCourse removed; topic navigation uses `selectedTopicId`
   const [topicLibrary] = useState<Topic[]>(() => courseLibrary.getTopics());
   const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
@@ -172,13 +172,21 @@ const CoursesPage: React.FC = () => {
                 setSelectedCategory(null);
               }
             }}
-            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 transition-all"
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 transition-all font-bold text-xs uppercase tracking-wider text-gray-600 dark:text-gray-400"
           >
-            ← Back
+            <ArrowLeft size={16} /> Back
+          </button>
+        ) : onBack ? (
+          <button
+            onClick={onBack}
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 transition-all font-bold text-xs uppercase tracking-wider text-gray-600 dark:text-gray-400"
+          >
+            <ArrowLeft size={16} /> Home
           </button>
         ) : (
           <div />
         )}
+
 
         {searchQuery ? (
           <div className="text-sm font-bold theme-text">Search Results for "{searchQuery}"</div>

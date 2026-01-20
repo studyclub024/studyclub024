@@ -3,7 +3,7 @@ import { FlashcardsResponse, NotesResponse, QuizResponse, StudyMode, DescribeRes
 import FlashcardDisplay from '../../Display/FlashcardDisplay'
 import NotesDisplay from '../../Display/NotesDisplay'
 import QuizDisplay from '../../Display/QuizDisplay'
-import { Zap, BookOpen, Brain, FileText, ScanEye } from 'lucide-react'
+import { Zap, BookOpen, Brain, FileText, ScanEye, Image as ImageIcon, PenTool } from 'lucide-react'
 import DescribeDisplay from '../../Display/DescribeDisplay'
 import SimpleTextDisplay from '../../Display/SimpleTextDisplay'
 import LatexRenderer from '../../Display/LatexRenderer'
@@ -156,47 +156,49 @@ const notesData: NotesResponse = {
   ]
 }
 
-const describeData: DescribeResponse = {
+const topperNotesData: DescribeResponse = {
   mode: 'describe',
-  title: "Visual Analysis: Electrostatics & Circuits",
+  title: "Class Topper's handwritten Notes",
   key_insights: [
-    "Opposite charges create a symmetrical dipole field that density indicates strength.",
-    "Dielectric materials polarize to reduce the net electric field, increasing capacitance.",
-    "Circuit branches provide alternative pathways, dividing current based on resistance ratios."
+    "Comprehensive coverage of Gauss Law applications.",
+    "Detailed circuit analysis with color-coded current paths.",
+    "Exam-focused tips for Capacitor derivation questions."
   ],
   images: [
-    "https://antigravity-artifacts.s3.amazonaws.com/electric_field_lines_visual_1768400472234.png",
-    "https://antigravity-artifacts.s3.amazonaws.com/capacitor_diagram_visual_1768400506214.png",
-    "https://antigravity-artifacts.s3.amazonaws.com/current_electricity_circuit_visual_1768400533041.png",
-    "https://antigravity-artifacts.s3.amazonaws.com/electric_field_lines_visual_1768400472234.png",
-    "https://antigravity-artifacts.s3.amazonaws.com/capacitor_diagram_visual_1768400506214.png",
-    "https://antigravity-artifacts.s3.amazonaws.com/current_electricity_circuit_visual_1768400533041.png",
     "https://antigravity-artifacts.s3.amazonaws.com/electric_field_lines_visual_1768400472234.png",
     "https://antigravity-artifacts.s3.amazonaws.com/capacitor_diagram_visual_1768400506214.png",
     "https://antigravity-artifacts.s3.amazonaws.com/current_electricity_circuit_visual_1768400533041.png"
   ],
   captions: [
-    "Mapping of electric field lines between a positive and negative point charge. The lines represent the direction of force on a positive test charge.",
-    "3D model of a parallel plate capacitor featuring a dielectric slab. Notice how the slab alters the field vectors between the plates.",
-    "Advanced circuit schematic showing complex current distribution (i1, i2, i3) through a network of resistances connected to a 9V source."
+    "Handwritten notes on Electric Field lines and Coulomb's law derivation.",
+    "Systematic breakdown of parallel plate capacitor with dielectric medium.",
+    "Simplified Kirchhoff's Laws application on complex DC bridge networks."
   ],
   sections: [
     {
-      heading: "Electric Dipole Geometry",
-      content: "The first visual illustrates the classic dipole configuration. Note how the line density is highest directly between the charges, indicating the strongest field region.",
+      heading: "Top Scorer's Strategy",
+      content: "These notes highlight the key diagrams that examiners look for in CBSE papers. Pay special attention to the labeled arrows in the dipole field sections.",
       bullets: [
-        "Symmetry around the equatorial plane",
-        "Field strength proportional to line density",
-        "Flux lines never cross"
+        "Use pencil for all field diagrams",
+        "Label ε0 values clearly in derivations",
+        "Mention assumptions like 'point charges' or 'infinite sheets'"
       ]
-    },
+    }
+  ]
+}
+
+const revisionData: NotesResponse = {
+  mode: 'notes',
+  title: "Last Minute Revision - PDF Outline",
+  sections: [
     {
-      heading: "Capacitance & Dielectrics",
-      content: "The second visual demonstrates the effect of adding a dielectric material (K > 1). The material's internal polarization opposes the external field, effectively allowing more charge storage for the same voltage.",
+      heading: "Must-Revise Topics (15 Min)",
       bullets: [
-        "Induced charges on dielectric surface",
-        "Reduction in internal potential difference",
-        "Energy density storage mechanics"
+        "Coulomb's Law in Vector Form",
+        "Electric flux for a cylindrical Gaussian surface",
+        "Energy density of electric field ($1/2 \\epsilon_0 E^2$)",
+        "Drift velocity relation: $I = neAv_d$",
+        "Internal resistance formula: $r = (E-V)/I$"
       ]
     }
   ]
@@ -310,7 +312,7 @@ const quizData: QuizResponse = {
 }
 
 const Topic_12_phy_ncert: React.FC = () => {
-  const [selectedMode, setSelectedMode] = useState<string>('notes')
+  const [selectedMode, setSelectedMode] = useState<string>('flashcards')
 
   const renderContent = () => {
     switch (selectedMode) {
@@ -324,21 +326,34 @@ const Topic_12_phy_ncert: React.FC = () => {
           />
         )
       case 'notes':
-        return <NotesDisplay data={notesData} fullWidth={true} />
+        return <DescribeDisplay data={topperNotesData} fullWidth={true} />
       case 'summary':
-        return <SimpleTextDisplay data={{ ...notesData, mode: 'summary', bullets: notesData.sections[0].bullets } as any} fullWidth={true} />
+        return <NotesDisplay data={revisionData} fullWidth={true} />
       case 'describe':
-        return <DescribeDisplay data={describeData} fullWidth={true} />
+        return (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 mb-4">
+              <ScanEye className="theme-text" />
+              <h3 className="text-lg font-bold">Physics Formulas Cheat Sheet</h3>
+            </div>
+            <img
+              src="https://antigravity-artifacts.s3.amazonaws.com/current_electricity_circuit_visual_1768400533041.png"
+              className="w-full rounded-3xl border shadow-lg"
+              alt="Cheat Sheet"
+            />
+            <SimpleTextDisplay data={{ ...notesData, mode: 'summary', bullets: notesData.sections[notesData.sections.length - 1].bullets } as any} fullWidth={true} />
+          </div>
+        )
       default:
-        return <NotesDisplay data={notesData} fullWidth={true} />
+        return <FlashcardDisplay data={flashcardsData} canUseThemes={false} onOpenUpgrade={() => { }} fullWidth={true} />
     }
   }
 
   const allModes = [
-    { id: 'flashcards', icon: Brain, label: 'Flashcards', description: 'Interactive cards' },
-    { id: 'notes', icon: BookOpen, label: 'Study Notes', description: 'In-depth notes' },
-    { id: 'summary', icon: FileText, label: 'Summary', description: 'Quick recap' },
-    { id: 'describe', icon: BookOpen, label: 'Describe', description: 'Detailed view' },
+    { id: 'flashcards', icon: Brain, label: 'Flash Cards', description: 'Interactive cards' },
+    { id: 'notes', icon: ImageIcon, label: 'Class Topper’s Notes', description: 'Hand Written' },
+    { id: 'summary', icon: FileText, label: 'Last Minute Revision', description: 'PDF Format' },
+    { id: 'describe', icon: ScanEye, label: 'Cheat Sheet', description: 'Formula Image' },
   ]
 
   return (

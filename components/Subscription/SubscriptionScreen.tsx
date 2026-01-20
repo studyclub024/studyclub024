@@ -82,6 +82,7 @@ const PLAN_FEATURES_MAP: Record<string, Record<string, boolean>> = {
 };
 
 export const PLANS: SubscriptionPlan[] = [
+  /*
   {
     id: 'crash-course',
     name: 'Crash Course Plan',
@@ -91,6 +92,7 @@ export const PLANS: SubscriptionPlan[] = [
     features: ['Course & Question Paper'],
     gradient: 'from-blue-400 to-indigo-500'
   },
+  */
   {
     id: 'instant-help',
     name: 'Instant help',
@@ -113,7 +115,7 @@ export const PLANS: SubscriptionPlan[] = [
   {
     id: 'study-pro',
     name: 'Study Pro ⭐',
-    price: '₹599',
+    price: '₹499',
     period: 'Month Billed Monthly',
     description: 'Less than a Cafe outing',
     features: ['Course & Question Paper', 'Unlimited Notes Upload', 'Unlimited Flashcards', 'Unlimited Summaries', 'Unlimited Test', 'Study Plan', 'Save Flashcards', 'Share Flashcards', 'Language Learning', 'Theme For Fun Learning', 'Voice input', 'Chat'],
@@ -215,11 +217,11 @@ const SubscriptionScreen: React.FC<Props> = ({ onSelect, onClose, isLoggedIn = f
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="flex flex-wrap justify-center gap-6">
           {PLANS.map((plan, idx) => (
             <div
               key={plan.id}
-              className={`relative flex flex-col bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border-2 transition-all hover:scale-[1.02] group ${plan.isPopular ? 'border-indigo-600 shadow-2xl shadow-indigo-100 dark:shadow-none ring-4 ring-indigo-50 dark:ring-indigo-900/10' : 'border-gray-50 dark:border-white/5 shadow-xl shadow-gray-100 dark:shadow-none hover:border-indigo-200'}`}
+              className={`relative flex flex-col bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border-2 transition-all hover:scale-[1.02] group w-full md:w-[calc(50%-1.5rem)] lg:w-[calc(25%-1.5rem)] min-w-[280px] ${plan.isPopular ? 'border-indigo-600 shadow-2xl shadow-indigo-100 dark:shadow-none ring-4 ring-indigo-50 dark:ring-indigo-900/10' : 'border-gray-50 dark:border-white/5 shadow-xl shadow-gray-100 dark:shadow-none hover:border-indigo-200'}`}
               style={{ animationDelay: `${idx * 100}ms` }}
             >
               {plan.isPopular && (

@@ -35,28 +35,39 @@ export const isAIAvailable = () => Boolean(getAI());
 
 // Graceful error handler for Gemini API calls
 const handleGeminiError = (error: any, fallbackMessage: string): Error => {
-  console.error("Gemini API Error:", error);
-  
-  if (error?.message?.includes('API_KEY') || error?.message?.includes('authentication')) {
-    return new Error("API authentication failed. Please check your configuration.");
+  console.error("Gemini API Error Detail:", {
+    message: error?.message,
+    status: error?.status,
+    reason: error?.reason,
+    details: error?.details
+  });
+
+  const msg = error?.message || "";
+
+  if (msg.includes('API_KEY') || msg.includes('authentication')) {
+    return new Error("System configuration error: API authentication failed.");
   }
-  
-  if (error?.status === 429) {
-    return new Error("Service temporarily unavailable. Please try again in a few moments.");
+
+  if (error?.status === 429 || msg.includes('quota') || msg.includes('limit')) {
+    return new Error("The AI service is currently at capacity or you have reached your temporary quota. Please try again in 1 minute.");
   }
-  
-  if (error?.status === 400 || error?.message?.includes('invalid')) {
-    return new Error("Invalid request format. Please check your input.");
+
+  if (msg.includes('safety') || msg.includes('blocked') || msg.includes('candidate')) {
+    return new Error("Content blocked: The input or response triggered our safety filters. Please try rephrasing your request.");
   }
-  
+
+  if (error?.status === 400 || msg.includes('invalid') || msg.includes('unsupported')) {
+    return new Error("Request error: The AI model found the input format invalid or unsupported.");
+  }
+
   if (error?.status >= 500) {
-    return new Error("Service error. Please try again later.");
+    return new Error("AI Service temporary failure. Our engineers have been notified. Please try again later.");
   }
-  
-  if (error?.message?.includes('network') || error?.message?.includes('fetch')) {
-    return new Error("Network error. Please check your internet connection.");
+
+  if (msg.includes('network') || msg.includes('fetch') || msg.includes('deadline')) {
+    return new Error("Connectivity issue: The request timed out. Please check your internet connection.");
   }
-  
+
   return new Error(fallbackMessage);
 };
 
@@ -92,9 +103,9 @@ const getInnerSchemaForMode = (mode: StudyMode): any => {
         type: Type.OBJECT,
         properties: {
           mode: { type: Type.STRING, enum: [StudyMode.FLASHCARDS] },
-          theme: { 
-            type: Type.STRING, 
-            enum: ['classic', 'got', 'game', 'heist', 'jumanji', 'potter', 'lotr', 'stranger', 'spider', 'iron', 'captain', 'thor', 'hulk', 'deadpool', 'batman'] 
+          theme: {
+            type: Type.STRING,
+            enum: ['classic', 'got', 'game', 'heist', 'jumanji', 'potter', 'lotr', 'stranger', 'spider', 'iron', 'captain', 'thor', 'hulk', 'deadpool', 'batman']
           },
           cards: {
             type: Type.ARRAY,
@@ -312,8 +323,8 @@ export const detectEquations = async (text: string): Promise<string[]> => {
   const aiClient = requireAI();
   const response = await aiClient.models.generateContent({
     model: "gemini-3-flash-preview",
-    contents: { 
-      parts: [{ 
+    contents: {
+      parts: [{
         text: `SCAN THE FOLLOWING TEXT FOR ALL SYMBOLIC MATHEMATICAL EXPRESSIONS, CHEMICAL FORMULAS, OR SCIENTIFIC EQUATIONS.
         
         GOAL: Extract every instance of math/science notation.
@@ -323,8 +334,8 @@ export const detectEquations = async (text: string): Promise<string[]> => {
         INPUT TEXT:
         """
         ${text}
-        """` 
-      }] 
+        """`
+      }]
     },
     config: {
       systemInstruction: "You are a specialized mathematical extraction engine. Your task is to identify and convert mathematical or scientific expressions from plain text into a JSON array of LaTeX strings. Be extremely thorough.",
@@ -368,10 +379,10 @@ export const generateStudyMaterial = async (input: string, mode: StudyMode, cont
     const thinkingBudget = isHardTask ? 32000 : 0;
 
     let prompt = `Task: Create study material for mode: ${mode}. Context: ${context}. Input material: ${input}. ${theme ? `Theme: ${theme}` : ''}`;
-    
+
     if (mode === StudyMode.MATH) {
-        const key = context as keyof typeof MATH_PROMPTS;
-        prompt = (MATH_PROMPTS[key] || MATH_PROMPTS.DEFAULT).replace('{{EQUATION}}', input);
+      const key = context as keyof typeof MATH_PROMPTS;
+      prompt = (MATH_PROMPTS[key] || MATH_PROMPTS.DEFAULT).replace('{{EQUATION}}', input);
     }
 
     let response;
@@ -390,9 +401,12 @@ export const generateStudyMaterial = async (input: string, mode: StudyMode, cont
     } catch (apiError) {
       throw handleGeminiError(apiError, "Failed to generate study material. Please try again.");
     }
-    
+
     if (!response?.text) {
-      throw new Error("Empty response from API. Please try again.");
+      if (response?.candidates?.[0]?.finishReason === 'SAFETY') {
+        throw new Error("Content blocked: The AI response was filtered for safety. Please try a different topic.");
+      }
+      throw new Error("The AI generated an empty response. Please try refining your input.");
     }
 
     try {
@@ -533,7 +547,7 @@ export const evaluateSpeech = async (base64Data: string, mimeType: string): Prom
     if (!response?.text) {
       throw new Error("Could not evaluate speech. Please try again.");
     }
-    
+
     try {
       return JSON.parse(response.text) as SpeechEvaluation;
     } catch (parseError) {
@@ -601,71 +615,71 @@ export const generateEnglishLesson = async (input: string, nativeLanguage: strin
     try {
       const aiClient = requireAI();
       response = await aiClient.models.generateContent({
-        model: "gemini-3-pro-preview", 
+        model: "gemini-3-pro-preview",
         contents: `Create an English lesson for a ${nativeLanguage} speaker. Context: ${context}. Topic/Input: ${input}`,
         config: {
           responseMimeType: "application/json",
           responseSchema: {
             type: Type.OBJECT,
-        properties: {
-          title: { type: Type.STRING },
-          context: { type: Type.STRING },
-          dialogue: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                speaker: { type: Type.STRING },
-                text: { type: Type.STRING },
-                translation: { type: Type.STRING }
-              }
-            }
-          },
-          grammar_details: {
-            type: Type.OBJECT,
             properties: {
-              tense_name: { type: Type.STRING },
-              when_to_use: { type: Type.ARRAY, items: { type: Type.STRING } },
-              structure: {
-                type: Type.OBJECT,
-                properties: {
-                  affirmative: { type: Type.STRING },
-                  negative: { type: Type.STRING },
-                  question: { type: Type.STRING }
-                }
-              },
-              examples: { type: Type.ARRAY, items: { type: Type.STRING } },
-              common_mistakes: {
+              title: { type: Type.STRING },
+              context: { type: Type.STRING },
+              dialogue: {
                 type: Type.ARRAY,
                 items: {
                   type: Type.OBJECT,
                   properties: {
-                    wrong: { type: Type.STRING },
-                    correct: { type: Type.STRING }
+                    speaker: { type: Type.STRING },
+                    text: { type: Type.STRING },
+                    translation: { type: Type.STRING }
                   }
                 }
               },
-              speaking_tip: { type: Type.STRING }
-            }
+              grammar_details: {
+                type: Type.OBJECT,
+                properties: {
+                  tense_name: { type: Type.STRING },
+                  when_to_use: { type: Type.ARRAY, items: { type: Type.STRING } },
+                  structure: {
+                    type: Type.OBJECT,
+                    properties: {
+                      affirmative: { type: Type.STRING },
+                      negative: { type: Type.STRING },
+                      question: { type: Type.STRING }
+                    }
+                  },
+                  examples: { type: Type.ARRAY, items: { type: Type.STRING } },
+                  common_mistakes: {
+                    type: Type.ARRAY,
+                    items: {
+                      type: Type.OBJECT,
+                      properties: {
+                        wrong: { type: Type.STRING },
+                        correct: { type: Type.STRING }
+                      }
+                    }
+                  },
+                  speaking_tip: { type: Type.STRING }
+                }
+              },
+              vocabulary: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    word: { type: Type.STRING },
+                    meaning: { type: Type.STRING },
+                    usage: { type: Type.STRING }
+                  }
+                }
+              },
+              grammar_focus: { type: Type.STRING },
+              exam_tip: { type: Type.STRING }
+            },
+            required: ['title', 'context', 'vocabulary']
           },
-          vocabulary: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                word: { type: Type.STRING },
-                meaning: { type: Type.STRING },
-                usage: { type: Type.STRING }
-              }
-            }
-          },
-          grammar_focus: { type: Type.STRING },
-          exam_tip: { type: Type.STRING }
-        },
-        required: ['title', 'context', 'vocabulary']
-      },
-      thinkingConfig: { thinkingBudget: 4000 }
-    }
+          thinkingConfig: { thinkingBudget: 4000 }
+        }
       });
     } catch (apiError) {
       throw handleGeminiError(apiError, "Failed to generate lesson. Please try again.");

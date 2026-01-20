@@ -31,6 +31,7 @@ import { MATH_MODE_CONFIG, THEME_CONFIG } from './constants';
 import Homepage from './components/Homepage';
 import Privacy from './components/Legal/Privacy';
 import Terms from './components/Legal/Terms';
+import Refund from './components/Legal/Refund';
 import Contact from './components/Legal/Contact';
 import Footer from './components/Layout/Footer';
 import { isNativePlatform } from './services/platform';
@@ -44,6 +45,7 @@ const EXAM_OPTIONS = [
 
 const TABS = [
   { id: 'students', label: 'Students', mobileLabel: 'Students', icon: Users, premium: false },
+  { id: 'crash-courses', label: 'Crash Courses', mobileLabel: 'Courses', icon: Rocket, premium: false },
   { id: 'exams', label: 'Exams', mobileLabel: 'Exams', icon: GraduationCap, premium: false },
   { id: 'equations', label: 'Equations', mobileLabel: 'Math', icon: Calculator, premium: false },
   { id: 'english', label: 'English', mobileLabel: 'Lang', icon: Languages, premium: true },
@@ -148,12 +150,15 @@ const App: React.FC = () => {
   const [error, setError] = useState<React.ReactNode | null>(null);
   const [activeInputTool, setActiveInputTool] = useState<InputToolType>('text');
   // Legal pages state (privacy/terms/contact)
-  const [legalPage, setLegalPage] = useState<'privacy' | 'terms' | 'contact' | null>(null);
+  const [legalPage, setLegalPage] = useState<'privacy' | 'terms' | 'contact' | 'refund' | null>(null);
 
   // Notification modal state
   const [notification, setNotification] = useState<{ type: 'success' | 'error' | 'warning'; title: string; message: string } | null>(null);
 
   const [urlValue, setUrlValue] = useState('');
+  const [hasUsedVoiceTrial, setHasUsedVoiceTrial] = useState(() => {
+    return sessionStorage.getItem('studyclub24_voice_trial') === 'true';
+  });
 
   const imageInputRef = useRef<HTMLInputElement>(null);
   const pdfInputRef = useRef<HTMLInputElement>(null);
@@ -177,18 +182,22 @@ const App: React.FC = () => {
 
   const canUseFeature = (feature: 'themes' | 'save' | 'english' | 'sharing' | 'tts' | 'regen' | 'courses' | 'flashcards' | 'summaries' | 'test' | 'studyplan'): boolean => {
     if (isStudyPro) return true;
+    const totalGen = userProfile?.stats.totalGenerations || 0;
+    const isFirstTimeTrial = isFree && totalGen < 1;
+    // Special check for viewing the result of the trial
+    const isViewingTrialResult = isFree && totalGen === 1;
 
     switch (feature) {
       case 'courses': return isCrashCourse || isFocusedPrep || isStudyPro;
       case 'flashcards':
       case 'summaries':
-      case 'test': return isInstantHelp || isFocusedPrep || isStudyPro;
-      case 'studyplan': return isInstantHelp || isFocusedPrep || isStudyPro;
-      case 'themes':
+      case 'test': return isFirstTimeTrial || isInstantHelp || isFocusedPrep || isStudyPro;
+      case 'studyplan': return isFirstTimeTrial || isInstantHelp || isFocusedPrep || isStudyPro;
+      case 'themes': return isFirstTimeTrial || isViewingTrialResult || isFocusedPrep || isStudyPro;
       case 'english': return isFocusedPrep || isStudyPro;
       case 'save':
       case 'sharing': return isStudyPro;
-      case 'tts': return isInstantHelp || isFocusedPrep || isStudyPro;
+      case 'tts': return isFirstTimeTrial || isViewingTrialResult || isInstantHelp || isFocusedPrep || isStudyPro;
       case 'regen': return !isFree && !isCrashCourse;
       default: return false;
     }
@@ -196,7 +205,8 @@ const App: React.FC = () => {
 
   const getInputLimits = () => {
     if (isStudyPro) return Infinity;
-    if (isFree || isCrashCourse) return 0; // No notes upload
+    if (isFree) return 1; // One-time trial
+    if (isCrashCourse) return 0; // No notes upload for Crash Course
     if (isInstantHelp) return 5; // 5 per day
     if (isFocusedPrep) return 10; // 10 per day
     return 0;
@@ -207,12 +217,19 @@ const App: React.FC = () => {
     const dailyGen = userProfile?.stats.dailyGenerations || 0;
     const limit = getInputLimits();
 
-    if ((isFree || isCrashCourse) && limit === 0) {
-      return { allowed: false, reason: "Notes upload not available on your plan. Upgrade to unlock." };
+    if (isFree) {
+      if (totalGen >= 1) {
+        return { allowed: false, reason: "Your one-time trial has ended. Upgrade to a premium plan to continue generating high-quality study materials." };
+      }
+      return { allowed: true };
+    }
+
+    if (isCrashCourse && limit === 0) {
+      return { allowed: false, reason: "Notes upload is not available on the Crash Course plan. Upgrade to unlock." };
     }
 
     if (!isStudyPro && limit > 0 && dailyGen >= limit) {
-      return { allowed: false, reason: `You've reached your daily limit of ${limit} notes upload. Upgrade to Study Pro for unlimited access.` };
+      return { allowed: false, reason: `You've reached your daily limit of ${limit} notes uploads. Upgrade to Study Pro for unlimited access.` };
     }
 
     return { allowed: true };
@@ -238,13 +255,7 @@ const App: React.FC = () => {
     }
 
     const framework = userProfile?.preferences.flashcardTheme || FlashcardTheme.CLASSIC;
-    const config = THEME_CONFIG[framework];
-
     document.documentElement.setAttribute('data-framework', framework);
-    document.documentElement.style.setProperty('--primary-theme', config.primary);
-    document.documentElement.style.setProperty('--accent-theme', config.accent);
-    document.documentElement.style.setProperty('--primary-rgb', hexToRgb(config.primary));
-
   }, [isDarkMode, userProfile?.preferences.flashcardTheme]);
 
   useEffect(() => {
@@ -329,29 +340,49 @@ const App: React.FC = () => {
     }
   }, [studyHistory, savedMaterials, tabInputs, selectedExam, tabResults, tabCaches, tabSelectedModes, showResultView, activeTab, currentUser, isHydrated, tabProcessedStates]);
 
+  // Unified User Profile & Heartbeat logic
+  const heartbeatIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     if (!currentUser) {
       setUserProfile(null);
+      if (heartbeatIntervalRef.current) clearInterval(heartbeatIntervalRef.current);
       return;
     }
-    // Updated Firestore query to compat style
+
     const userDocRef = db.collection('users').doc(currentUser.uid);
+
+    // Heartbeat: Update lastActiveDate periodically to keep leaderboard position
+    // Using a separate interval instead of inside onSnapshot to avoid feedback loops
+    heartbeatIntervalRef.current = setInterval(() => {
+      const now = Date.now();
+      userDocRef.update({ 'stats.lastActiveDate': now }).catch(e => console.warn("Heartbeat failed", e));
+    }, 5 * 60 * 1000); // 5 minutes
+
     const unsubscribe = userDocRef.onSnapshot((snapshot) => {
       if (snapshot.exists) {
         const data = snapshot.data() as UserProfile;
-        // Daily reset logic
         const lastActive = data.stats.lastActiveDate || 0;
+        const now = Date.now();
         const today = new Date().setHours(0, 0, 0, 0);
         const lastDay = new Date(lastActive).setHours(0, 0, 0, 0);
 
+        // Only update daily balance if day has changed
         if (today > lastDay) {
-          userDocRef.update({ 'stats.dailyGenerations': 0, 'stats.lastActiveDate': Date.now() });
+          userDocRef.update({
+            'stats.dailyGenerations': 0,
+            'stats.lastActiveDate': now
+          });
         }
 
         setUserProfile(data);
       }
     });
-    return () => unsubscribe();
+
+    return () => {
+      unsubscribe();
+      if (heartbeatIntervalRef.current) clearInterval(heartbeatIntervalRef.current);
+    };
   }, [currentUser?.uid]);
 
   const updateFirestoreStats = async (updates: Partial<UserProfile['stats']>) => {
@@ -368,7 +399,13 @@ const App: React.FC = () => {
 
   const handleUpdatePreferences = async (prefs: Partial<UserProfile['preferences']>) => {
     if (!currentUser) return;
-    // Updated Firestore query to compat style
+
+    // Optimistically update local state for instant UI feedback
+    setUserProfile(prev => prev ? {
+      ...prev,
+      preferences: { ...prev.preferences, ...prefs }
+    } : null);
+
     const userDocRef = db.collection('users').doc(currentUser.uid);
     try {
       await userDocRef.update({
@@ -376,6 +413,7 @@ const App: React.FC = () => {
       });
     } catch (err) {
       console.error("Update Preferences Error:", err);
+      // Not rolling back because onSnapshot will eventually sync the correct DB state
     }
   };
 
@@ -401,8 +439,6 @@ const App: React.FC = () => {
 
       mediaRecorder.onstop = async () => {
         const audioBlob = new Blob(chunks, { type: 'audio/webm' });
-        setIsLoading(true);
-        setExtractingSource('voice');
         try {
           const reader = new FileReader();
           reader.readAsDataURL(audioBlob);
@@ -411,6 +447,10 @@ const App: React.FC = () => {
             const base64 = resultData.split(',')[1];
             const text = await transcribeAudio(base64, audioBlob.type);
             handleTextChange(text);
+            if (isFree && (userProfile?.stats.totalGenerations || 0) < 1) {
+              setHasUsedVoiceTrial(true);
+              sessionStorage.setItem('studyclub24_voice_trial', 'true');
+            }
           };
         } catch (err: any) {
           setError(err.message);
@@ -431,6 +471,9 @@ const App: React.FC = () => {
   const stopRecording = () => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       mediaRecorderRef.current.stop();
+      // Set loading state immediately to prevent icon flicker
+      setIsLoading(true);
+      setExtractingSource('voice');
     }
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(t => t.stop());
@@ -449,17 +492,33 @@ const App: React.FC = () => {
     try { await auth.signOut(); } catch (err) { console.error("Logout failed", err); }
   };
 
+  const clearAchievementTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const handleAchievementUpdate = useCallback((achievement: AchievementBadge | null) => {
-    if (achievement && (!currentAchievement || achievement.type !== currentAchievement.type || achievement.rank !== currentAchievement.rank)) {
-      setCurrentAchievement(achievement);
-      // Only show sharing modal if allowed
-      if (canUseFeature('sharing')) {
-        setShowShareModal(true);
+    if (!achievement) {
+      // Stabilize: Don't immediately clear achievement to prevent flickering during snapshot updates
+      if (!clearAchievementTimeoutRef.current) {
+        clearAchievementTimeoutRef.current = setTimeout(() => {
+          setCurrentAchievement(null);
+          clearAchievementTimeoutRef.current = null;
+        }, 3000);
       }
-    } else if (!achievement) {
-      setCurrentAchievement(null);
+      return;
     }
-  }, [currentAchievement, userPlan]);
+
+    // New achievement found: Clear any pending removals immediately
+    if (clearAchievementTimeoutRef.current) {
+      clearTimeout(clearAchievementTimeoutRef.current);
+      clearAchievementTimeoutRef.current = null;
+    }
+
+    setCurrentAchievement(prev => {
+      if (prev && prev.type === achievement.type && prev.rank === achievement.rank) {
+        return prev;
+      }
+      return achievement;
+    });
+  }, [userPlan]);
 
   const runEquationDetection = async (text: string) => {
     if (text.trim().length > 3) {
@@ -551,7 +610,7 @@ const App: React.FC = () => {
             <span className="font-black uppercase tracking-tight">Access Locked</span>
           </div>
           <p className="text-sm font-bold text-slate-600 leading-relaxed">{limitCheck.reason}</p>
-          <button onClick={() => setShowUpgradeModal(true)} className="theme-bg text-white py-3 rounded-xl font-black uppercase text-xs tracking-widest shadow-xl shadow-theme-soft hover:opacity-90">View Plans</button>
+          <button onClick={() => setShowUpgradeModal(true)} className="theme-bg rounded-xl font-black uppercase text-xs tracking-widest shadow-xl shadow-theme-soft hover:opacity-90">View Plans</button>
         </div>
       );
       return;
@@ -638,8 +697,125 @@ const App: React.FC = () => {
     }
     const content = tabResults[activeTab];
     if (!content) return;
-    const newSaved: SavedMaterial = { id: Date.now().toString(), timestamp: Date.now(), exam: selectedExam || 'General', mode: content.mode, content, label: currentInput.substring(0, 50) + '...' };
+
+    // Calculate current input for the label
+    const currentInput = activeTab === 'equations'
+      ? (mathInputMode === 'content' ? tabInputs.equations : equationManualText)
+      : (tabInputs[activeTab] || '');
+
+    // Save to library
+    const newSaved: SavedMaterial = {
+      id: Date.now().toString(),
+      timestamp: Date.now(),
+      exam: selectedExam || 'General',
+      mode: content.mode,
+      content,
+      label: currentInput.substring(0, 50) + '...'
+    };
     setSavedMaterials(prev => [newSaved, ...prev]);
+
+    // Download to device
+    const formatContentForDownload = (content: StudyContent): string => {
+      let text = `StudyClub24 - ${content.mode.toUpperCase()}\n`;
+      text += `Generated: ${new Date().toLocaleString()}\n`;
+      text += `${'='.repeat(60)}\n\n`;
+
+      switch (content.mode) {
+        case StudyMode.FLASHCARDS:
+          text += `Flashcards\n\n`;
+          if ('cards' in content && content.cards) {
+            content.cards.forEach((card, i) => {
+              text += `Card ${i + 1}:\n`;
+              text += `Q: ${card.question}\n`;
+              text += `A: ${card.answer}\n\n`;
+            });
+          }
+          break;
+        case StudyMode.NOTES:
+          text += `${'title' in content && content.title ? content.title : 'Study Notes'}\n\n`;
+          if ('sections' in content && content.sections) {
+            content.sections.forEach(section => {
+              text += `${section.heading}\n`;
+              section.bullets.forEach(bullet => text += `  • ${bullet}\n`);
+              text += '\n';
+            });
+          }
+          break;
+        case StudyMode.QUIZ:
+          text += `Quiz\n\n`;
+          if ('mcq' in content && content.mcq) {
+            content.mcq.forEach((q, i) => {
+              text += `${i + 1}. ${q.q}\n`;
+              q.options.forEach((opt, j) => text += `   ${String.fromCharCode(65 + j)}. ${opt}\n`);
+              text += `   Answer: ${q.answer}\n\n`;
+            });
+          }
+          break;
+        case StudyMode.SUMMARY:
+          text += `Summary\n\n`;
+          if ('bullets' in content && content.bullets) {
+            content.bullets.forEach(bullet => text += `• ${bullet}\n`);
+          }
+          break;
+        case StudyMode.ESSAY:
+          text += `${'title' in content && content.title ? content.title : 'Essay'}\n\n`;
+          if ('essay' in content && content.essay) {
+            text += `${content.essay}\n`;
+          }
+          break;
+        case StudyMode.ELI5:
+          text += `${'topic' in content && content.topic ? content.topic : 'ELI5 Explanation'}\n\n`;
+          if ('sections' in content && content.sections) {
+            content.sections.forEach(section => {
+              text += `\n${section.heading}\n`;
+              text += `${section.content}\n`;
+            });
+          }
+          break;
+        case StudyMode.MATH:
+          text += `Math Solution\n\n`;
+          text += `Equation: ${'equation' in content && content.equation ? content.equation : ''}\n\n`;
+          if ('steps' in content && content.steps) {
+            content.steps.forEach((step, i) => {
+              text += `Step ${i + 1}: ${step.title}\n`;
+              text += `${step.expression}\n`;
+              text += `${step.explanation}\n\n`;
+            });
+          }
+          text += `Final Answer: ${'final_answer' in content && content.final_answer ? content.final_answer : ''}\n`;
+          break;
+        case StudyMode.PLAN:
+          text += `Study Plan: ${'title' in content && content.title ? content.title : 'Study Plan'}\n\n`;
+          text += `Objective: ${'target_goal' in content && content.target_goal ? content.target_goal : ''}\n`;
+          text += `Duration: ${'duration_days' in content && content.duration_days ? content.duration_days + ' days' : ''}\n\n`;
+          if ('schedule' in content && content.schedule) {
+            content.schedule.forEach((day) => {
+              text += `Day ${day.day}: ${day.topic}\n`;
+              text += `Objective: ${day.objective}\n`;
+              day.tasks.forEach(task => text += `  • ${task}\n`);
+              text += '\n';
+            });
+          }
+          break;
+        default:
+          text += JSON.stringify(content, null, 2);
+      }
+
+      return text;
+    };
+
+    const textContent = formatContentForDownload(content);
+    const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    const fileName = `StudyClub24_${content.mode}_${new Date().toISOString().split('T')[0]}.txt`;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
     if (userProfile) updateFirestoreStats({ masteredConcepts: userProfile.stats.masteredConcepts + 1 });
   };
 
@@ -674,7 +850,7 @@ const App: React.FC = () => {
     if (!currentUser) {
       // If a legal page is requested, render it instead of the homepage
       if (legalPage === 'privacy') return (
-        <div className="min-h-screen bg-[#F8F9FC] dark:bg-slate-950 pb-20 transition-colors framework-context">
+        <div className="min-h-screen bg-[#F8F9FC] dark:bg-slate-950 transition-colors framework-context flex flex-col">
           <Header
             isDarkMode={isDarkMode}
             onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
@@ -691,12 +867,12 @@ const App: React.FC = () => {
             onLogout={handleLogout}
             onOpenUpgrade={() => setShowUpgradeModal(true)}
           />
-          <main className="container mx-auto px-4 py-8"><Privacy onBack={() => setLegalPage(null)} /></main>
+          <main className="container mx-auto px-4 py-8 flex-grow"><Privacy onBack={() => setLegalPage(null)} /></main>
           <Footer onOpenLegal={(s) => setLegalPage(s)} />
         </div>
       );
       if (legalPage === 'terms') return (
-        <div className="min-h-screen bg-[#F8F9FC] dark:bg-slate-950 pb-20 transition-colors framework-context">
+        <div className="min-h-screen bg-[#F8F9FC] dark:bg-slate-950 transition-colors framework-context flex flex-col">
           <Header
             isDarkMode={isDarkMode}
             onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
@@ -713,12 +889,12 @@ const App: React.FC = () => {
             onLogout={handleLogout}
             onOpenUpgrade={() => setShowUpgradeModal(true)}
           />
-          <main className="container mx-auto px-4 py-8"><Terms onBack={() => setLegalPage(null)} /></main>
+          <main className="container mx-auto px-4 py-8 flex-grow"><Terms onBack={() => setLegalPage(null)} /></main>
           <Footer onOpenLegal={(s) => setLegalPage(s)} />
         </div>
       );
       if (legalPage === 'contact') return (
-        <div className="min-h-screen bg-[#F8F9FC] dark:bg-slate-950 pb-20 transition-colors framework-context">
+        <div className="min-h-screen bg-[#F8F9FC] dark:bg-slate-950 transition-colors framework-context flex flex-col">
           <Header
             isDarkMode={isDarkMode}
             onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
@@ -735,7 +911,29 @@ const App: React.FC = () => {
             onLogout={handleLogout}
             onOpenUpgrade={() => setShowUpgradeModal(true)}
           />
-          <main className="container mx-auto px-4 py-8"><Contact onBack={() => setLegalPage(null)} /></main>
+          <main className="container mx-auto px-4 py-8 flex-grow"><Contact onBack={() => setLegalPage(null)} /></main>
+          <Footer onOpenLegal={(s) => setLegalPage(s)} />
+        </div>
+      );
+      if (legalPage === 'refund') return (
+        <div className="min-h-screen bg-[#F8F9FC] dark:bg-slate-950 transition-colors framework-context flex flex-col">
+          <Header
+            isDarkMode={isDarkMode}
+            onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
+            onProfileClick={() => setShowAuthModal(true)}
+            onCoursesClick={() => setActiveTab('courses')}
+            onLogoClick={() => { setLegalPage(null); setActiveTab('students'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            isActiveProfile={activeTab === 'profile'}
+            isActiveCourses={activeTab === 'courses'}
+            activeFramework={userProfile?.preferences.flashcardTheme || FlashcardTheme.CLASSIC}
+            onSetFramework={(f) => handleUpdatePreferences({ flashcardTheme: f })}
+            planId={userPlan}
+            canUseThemes={canUseFeature('themes')}
+            userProfile={userProfile}
+            onLogout={handleLogout}
+            onOpenUpgrade={() => setShowUpgradeModal(true)}
+          />
+          <main className="container mx-auto px-4 py-8 flex-grow"><Refund onBack={() => setLegalPage(null)} /></main>
           <Footer onOpenLegal={(s) => setLegalPage(s)} />
         </div>
       );
@@ -758,7 +956,7 @@ const App: React.FC = () => {
 
   // If a legal page is requested while authenticated, render it at top level
   if (legalPage === 'privacy') return (
-    <div className="min-h-screen bg-[#F8F9FC] dark:bg-slate-950 pb-20 transition-colors framework-context">
+    <div className="min-h-screen bg-[#F8F9FC] dark:bg-slate-950 transition-colors framework-context flex flex-col">
       <Header
         isDarkMode={isDarkMode}
         onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
@@ -774,12 +972,12 @@ const App: React.FC = () => {
         planId={userPlan}
         canUseThemes={canUseFeature('themes')}
       />
-      <main className="container mx-auto px-4 py-8"><Privacy onBack={() => setLegalPage(null)} /></main>
+      <main className="container mx-auto px-4 py-8 flex-grow"><Privacy onBack={() => setLegalPage(null)} /></main>
       <Footer onOpenLegal={(s) => setLegalPage(s)} />
     </div>
   );
   if (legalPage === 'terms') return (
-    <div className="min-h-screen bg-[#F8F9FC] dark:bg-slate-950 pb-20 transition-colors framework-context">
+    <div className="min-h-screen bg-[#F8F9FC] dark:bg-slate-950 transition-colors framework-context flex flex-col">
       <Header
         isDarkMode={isDarkMode}
         onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
@@ -795,12 +993,12 @@ const App: React.FC = () => {
         planId={userPlan}
         canUseThemes={canUseFeature('themes')}
       />
-      <main className="container mx-auto px-4 py-8"><Terms onBack={() => setLegalPage(null)} /></main>
+      <main className="container mx-auto px-4 py-8 flex-grow"><Terms onBack={() => setLegalPage(null)} /></main>
       <Footer onOpenLegal={(s) => setLegalPage(s)} />
     </div>
   );
   if (legalPage === 'contact') return (
-    <div className="min-h-screen bg-[#F8F9FC] dark:bg-slate-950 pb-20 transition-colors framework-context">
+    <div className="min-h-screen bg-[#F8F9FC] dark:bg-slate-950 transition-colors framework-context flex flex-col">
       <Header
         isDarkMode={isDarkMode}
         onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
@@ -816,22 +1014,40 @@ const App: React.FC = () => {
         planId={userPlan}
         canUseThemes={canUseFeature('themes')}
       />
-      <main className="container mx-auto px-4 py-8"><Contact onBack={() => setLegalPage(null)} /></main>
+      <main className="container mx-auto px-4 py-8 flex-grow"><Contact onBack={() => setLegalPage(null)} /></main>
+      <Footer onOpenLegal={(s) => setLegalPage(s)} />
+    </div>
+  );
+  if (legalPage === 'refund') return (
+    <div className="min-h-screen bg-[#F8F9FC] dark:bg-slate-950 transition-colors framework-context flex flex-col">
+      <Header
+        isDarkMode={isDarkMode}
+        onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
+        onProfileClick={() => setActiveTab('profile')}
+        onCoursesClick={() => setActiveTab('crash-courses')}
+        onLogoClick={() => { setLegalPage(null); setActiveTab('students'); setError(null); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+        isActiveProfile={activeTab === 'profile'}
+        isActiveCourses={activeTab === 'crash-courses'}
+        activeFramework={userProfile?.preferences.flashcardTheme || FlashcardTheme.CLASSIC}
+        onSetFramework={(f) => {
+          if (canUseFeature('themes')) handleUpdatePreferences({ flashcardTheme: f }); else setShowUpgradeModal(true);
+        }}
+        planId={userPlan}
+        canUseThemes={canUseFeature('themes')}
+      />
+      <main className="container mx-auto px-4 py-8 flex-grow"><Refund onBack={() => setLegalPage(null)} /></main>
       <Footer onOpenLegal={(s) => setLegalPage(s)} />
     </div>
   );
 
-
-
-
-  if (activeTab === 'courses') {
+  if (activeTab === 'crash-courses' && canUseFeature('courses')) {
     return (
-      <div className="min-h-screen bg-[#F8F9FC] dark:bg-slate-950 pb-20 transition-colors framework-context">
+      <div className="min-h-screen bg-[#F8F9FC] dark:bg-slate-950 transition-colors framework-context flex flex-col">
         <Header
           isDarkMode={isDarkMode}
           onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
           onProfileClick={() => { setActiveTab('profile'); setShowResultView(false); }}
-          onCoursesClick={() => setActiveTab('courses')}
+          onCoursesClick={() => setActiveTab('crash-courses')}
           onLogoClick={() => { setActiveTab('students'); setShowResultView(false); setError(null); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
           isActiveProfile={false}
           isActiveCourses={true}
@@ -843,17 +1059,20 @@ const App: React.FC = () => {
           onLogout={handleLogout}
           onOpenUpgrade={() => setShowUpgradeModal(true)}
         />
-        <ErrorBoundary>
-          <CoursesPage />
-        </ErrorBoundary>
+        <main className="flex-grow">
+          <ErrorBoundary>
+            <CoursesPage onBack={() => setActiveTab('students')} />
+          </ErrorBoundary>
+        </main>
         <Footer onOpenLegal={(s) => setLegalPage(s)} />
       </div>
     );
   }
 
+
   if (showResultView) {
     return (
-      <div className="min-h-screen bg-[#F8F9FC] dark:bg-slate-950 pb-20 animate-fade-in transition-colors framework-context">
+      <div className="min-h-screen bg-[#F8F9FC] dark:bg-slate-950 animate-fade-in transition-colors framework-context flex flex-col">
         <Header
           isDarkMode={isDarkMode}
           onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
@@ -872,9 +1091,12 @@ const App: React.FC = () => {
           }}
           planId={userPlan}
           canUseThemes={canUseFeature('themes')}
+          userProfile={userProfile}
+          onLogout={handleLogout}
+          onOpenUpgrade={() => setShowUpgradeModal(true)}
         />
-        <main className="container mx-auto px-4 py-8 min-h-[70vh] flex flex-col items-center">
-          <div className="w-full max-w-6xl">
+        <main className="container mx-auto px-4 py-8 flex-grow flex flex-col items-center">
+          <div className="w-full max-w-6xl flex-grow">
             <button onClick={() => setShowResultView(false)} className="mb-6 flex items-center gap-2 theme-text font-black text-xs uppercase tracking-widest hover:underline transition-all active:scale-95">
               <ChevronLeft size={16} /> Back to Editor
             </button>
@@ -908,7 +1130,7 @@ const App: React.FC = () => {
             ) : (
               <div className="flex flex-col items-center justify-center py-20 opacity-50">
                 <Bookmark size={80} className="text-gray-200 dark:text-slate-700 mb-6" />
-                <p className="text-xl font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Protocol data missing</p>
+                <p className="text-xl font-bold text-gray-400 dark:text-slate-400 uppercase tracking-widest">Protocol data missing</p>
                 <button onClick={() => setShowResultView(false)} className="mt-6 theme-text font-black text-xs uppercase tracking-widest hover:underline">Return to start</button>
               </div>
             )}
@@ -950,7 +1172,7 @@ const App: React.FC = () => {
               <button
                 key={tab.id}
                 onClick={() => { setActiveTab(tab.id); setError(null); }}
-                className={`group relative flex flex-col md:flex-row items-center justify-center gap-1 md:gap-3 px-1 md:px-6 py-3 md:py-4 rounded-xl md:rounded-[1.75rem] font-bold text-[9px] md:text-sm transition-all shadow-sm border ${activeTab === tab.id ? 'theme-bg text-white border-white/20' : 'bg-white dark:bg-slate-900 text-gray-500 dark:text-slate-400 border-gray-100 dark:border-white/5'
+                className={`group relative flex flex-col md:flex-row items-center justify-center gap-1 md:gap-3 px-1 md:px-6 py-3 md:py-4 rounded-xl md:rounded-[1.75rem] font-bold text-[9px] md:text-sm transition-all shadow-sm border ${activeTab === tab.id ? 'theme-bg border-transparent' : 'bg-white dark:bg-slate-900 text-gray-500 dark:text-slate-400 border-gray-100 dark:border-white/5'
                   }`}
               >
                 <tab.icon size={18} className="md:w-5 md:h-5" strokeWidth={2.5} />
@@ -963,7 +1185,7 @@ const App: React.FC = () => {
             ))}
           </div>
 
-          <Leaderboard key={currentUser ? currentUser.uid : null} user={currentUser} onAchievement={handleAchievementUpdate} />
+          <Leaderboard user={currentUser} onAchievement={handleAchievementUpdate} />
 
           <div className="space-y-6 md:space-y-8 animate-fade-in-up px-1 md:px-0">
             {isFree && (
@@ -988,6 +1210,11 @@ const App: React.FC = () => {
                 onClearHistory={handleClearHistory}
                 onRestoreSession={handleRestoreSession}
                 canUseThemes={canUseFeature('themes')}
+                currentAchievement={currentAchievement}
+                onShareAchievement={() => {
+                  if (canUseFeature('sharing')) setShowShareModal(true);
+                  else setShowUpgradeModal(true);
+                }}
               />
             ) : activeTab === 'english' ? (
               !canUseFeature('english') ? (
@@ -1000,7 +1227,7 @@ const App: React.FC = () => {
                     <p className="text-slate-500 dark:text-slate-400 font-medium leading-relaxed mb-8 md:mb-10 text-sm md:text-base">The English Learning Suite is available for students on <span className="font-bold text-pink-600">Premium plans</span>. Upgrade to access conversational AI, voice evaluation, and grammar challenges.</p>
                     <div className="flex flex-col gap-3 w-full">
                       <button onClick={() => setShowUpgradeModal(true)} className="w-full py-4 bg-pink-600 text-white rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-pink-200 dark:shadow-none active:scale-95 transition-all">Upgrade Now</button>
-                      <button onClick={() => setActiveTab('students')} className="w-full py-4 bg-white dark:bg-slate-800 text-slate-400 dark:text-slate-500 font-bold uppercase text-xs tracking-widest hover:text-slate-600">Maybe Later</button>
+                      <button onClick={() => setActiveTab('students')} className="w-full py-4 bg-white dark:bg-slate-800 text-slate-400 dark:text-slate-400 font-bold uppercase text-xs tracking-widest hover:text-slate-600">Maybe Later</button>
                     </div>
                   </div>
                 </div>
@@ -1009,6 +1236,21 @@ const App: React.FC = () => {
                   <EnglishLearningApp onBack={() => setActiveTab('students')} embedded={true} />
                 </div>
               )
+            ) : activeTab === 'crash-courses' ? (
+              // If unlocked, it's handled by the early return. If we are here, it's locked.
+              <div className="flex items-center justify-center py-12">
+                <div className="bg-white dark:bg-slate-900 p-8 md:p-12 rounded-[2.5rem] md:rounded-[3rem] shadow-2xl max-w-lg border border-indigo-100 dark:border-indigo-500/20 flex flex-col items-center text-center">
+                  <div className="w-16 h-16 md:w-20 md:h-20 bg-indigo-50 dark:bg-indigo-500/10 rounded-full flex items-center justify-center text-indigo-500 mb-6 md:mb-8 ring-8 ring-indigo-50/50 dark:ring-indigo-500/5">
+                    <Lock size={32} className="md:w-10 md:h-10" />
+                  </div>
+                  <h2 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white mb-4">🔒 Unlock Crash Courses</h2>
+                  <p className="text-slate-500 dark:text-slate-400 font-medium leading-relaxed mb-8 md:mb-10 text-sm md:text-base">Crash Courses are available for students on <span className="font-bold text-indigo-600">Premium plans</span>. Upgrade to access our curated academic vaults.</p>
+                  <div className="flex flex-col gap-3 w-full">
+                    <button onClick={() => setShowUpgradeModal(true)} className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-indigo-200 dark:shadow-none active:scale-95 transition-all">Upgrade Now</button>
+                    <button onClick={() => setActiveTab('students')} className="w-full py-4 bg-white dark:bg-slate-800 text-slate-400 dark:text-slate-400 font-bold uppercase text-xs tracking-widest hover:text-slate-600">Maybe Later</button>
+                  </div>
+                </div>
+              </div>
             ) : activeTab === 'exams' && !selectedExam ? (
               <div className="bg-white dark:bg-slate-900 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-16 shadow-xl shadow-indigo-100/50 dark:shadow-none border border-gray-100 dark:border-white/5">
                 <div className="text-center mb-8 md:mb-12">
@@ -1022,14 +1264,14 @@ const App: React.FC = () => {
                       <div className={`w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl flex items-center justify-center ${exam.color} shadow-sm`}><exam.icon size={24} /></div>
                       <div className="flex-1">
                         <h4 className="text-lg md:text-xl font-black text-gray-900 dark:text-white group-hover:theme-text">{exam.label}</h4>
-                        <p className="text-[10px] text-gray-400 dark:text-slate-500 font-bold uppercase tracking-widest mt-1">Ready for Analysis</p>
+                        <p className="text-[10px] text-gray-400 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">Ready for Analysis</p>
                       </div>
                       <ChevronRight size={20} className="text-gray-200 dark:text-slate-700" />
                     </button>
                   ))}
                 </div>
               </div>
-            ) : activeTab !== 'profile' && activeTab !== 'courses' && !error && (
+            ) : activeTab !== 'profile' && activeTab !== 'courses' && activeTab !== 'crash-courses' && !error && (
               <div className="bg-white dark:bg-slate-900 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 shadow-xl shadow-indigo-100/50 dark:shadow-none border border-gray-100 dark:border-white/5 relative overflow-hidden transition-all duration-700">
                 {extractingSource && <div className="absolute inset-0 z-[100] bg-white/60 dark:bg-slate-900/60 backdrop-blur-md flex flex-col items-center justify-center animate-fade-in"><FootballIcon size={80} className="theme-text" /></div>}
 
@@ -1037,13 +1279,13 @@ const App: React.FC = () => {
                   <div className="flex bg-gray-100 dark:bg-slate-800 p-1 rounded-xl md:rounded-2xl w-full md:w-fit mb-6 shadow-inner border border-gray-200 dark:border-white/5 relative z-10">
                     <button
                       onClick={() => { setMathInputMode('content'); setError(null); }}
-                      className={`flex-1 md:flex-none px-4 md:px-6 py-2 md:py-2.5 rounded-lg md:rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest transition-all ${mathInputMode === 'content' ? 'bg-white dark:bg-slate-700 theme-text shadow-md' : 'text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300'}`}
+                      className={`flex-1 md:flex-none px-4 md:px-6 py-2 md:py-2.5 rounded-lg md:rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest transition-all ${mathInputMode === 'content' ? 'bg-white dark:bg-slate-700 theme-text shadow-md' : 'text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-300'}`}
                     >
                       Smart Extract
                     </button>
                     <button
                       onClick={() => { setMathInputMode('manual'); setError(null); }}
-                      className={`flex-1 md:flex-none px-4 md:px-6 py-2 md:py-2.5 rounded-lg md:rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest transition-all ${mathInputMode === 'manual' ? 'bg-white dark:bg-slate-700 theme-text shadow-md' : 'text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300'}`}
+                      className={`flex-1 md:flex-none px-4 md:px-6 py-2 md:py-2.5 rounded-lg md:rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest transition-all ${mathInputMode === 'manual' ? 'bg-white dark:bg-slate-700 theme-text shadow-md' : 'text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-300'}`}
                     >
                       Manual Entry
                     </button>
@@ -1076,7 +1318,7 @@ const App: React.FC = () => {
                       onChange={(e) => handleTextChange(e.target.value)}
                       readOnly={isProcessed}
                       placeholder={getTabPlaceholder()}
-                      className={`w-full h-48 md:h-56 bg-gray-50/50 dark:bg-slate-800/50 border-2 transition-all border-gray-100 dark:border-white/5 rounded-2xl md:rounded-[2rem] p-6 md:p-10 outline-none font-medium text-base md:text-xl resize-none dark:text-white ${isRecording ? 'ring-4 ring-red-500/20 border-red-500 shadow-xl' : 'focus:border-theme'} ${isProcessed ? 'opacity-70 cursor-default' : ''}`}
+                      className={`w-full h-48 md:h-56 bg-gray-50/50 dark:bg-slate-800/50 border-2 transition-all border-gray-100 dark:border-white/5 rounded-2xl md:rounded-[2rem] p-6 md:p-10 outline-none font-medium text-base md:text-xl resize-none dark:text-white dark:placeholder-slate-400/70 ${isRecording ? 'ring-4 ring-red-500/20 border-red-500 shadow-xl' : 'focus:border-theme'} ${isProcessed ? 'opacity-70 cursor-default' : ''}`}
                       aria-label="Study material text input"
                     />
                   </div>
@@ -1111,30 +1353,48 @@ const App: React.FC = () => {
                           }
                         }}
                         disabled={isLoading}
-                        className="flex-1 flex items-center justify-center gap-3 py-4 theme-bg text-white rounded-2xl font-black uppercase tracking-[0.2em] text-xs shadow-xl shadow-theme-soft hover:opacity-90 transition-all active:scale-95"
+                        className="flex-1 flex items-center justify-center gap-3 py-4 theme-bg rounded-2xl font-black uppercase tracking-[0.2em] text-xs shadow-xl shadow-theme-soft hover:opacity-90 transition-all active:scale-95"
                       >
                         <Play size={18} fill="currentColor" /> {activeTab === 'students' ? 'Result Options' : 'Generate Analysis'}
                       </button>
                     ) : (
                       <>
                         <div className="flex bg-gray-100 dark:bg-slate-800 p-1 rounded-xl border border-gray-200/50 dark:border-white/5">
-                          <button onClick={() => setActiveInputTool('text')} className={`flex items-center gap-1.5 px-3 md:px-5 py-2 md:py-2.5 rounded-lg text-[9px] md:text-[10px] font-black uppercase tracking-widest ${activeInputTool === 'text' ? 'bg-white dark:bg-slate-700 theme-text shadow-sm' : 'text-gray-400 dark:text-slate-500'}`} aria-label="Switch to text input mode"><Type size={14} /> Text</button>
-                          <button onClick={() => setActiveInputTool('url')} className={`flex items-center gap-1.5 px-3 md:px-5 py-2 md:py-2.5 rounded-lg text-[9px] md:text-[10px] font-black uppercase tracking-widest ${activeInputTool === 'url' ? 'bg-white dark:bg-slate-700 theme-text shadow-sm' : 'text-gray-400 dark:text-slate-500'}`} aria-label="Switch to link input mode"><LinkIcon size={14} /> Link</button>
+                          <button onClick={() => setActiveInputTool('text')} className={`flex items-center gap-1.5 px-3 md:px-5 py-2 md:py-2.5 rounded-lg text-[9px] md:text-[10px] font-black uppercase tracking-widest ${activeInputTool === 'text' ? 'bg-white dark:bg-slate-700 theme-text shadow-sm' : 'text-gray-500 dark:text-slate-400'}`} aria-label="Switch to text input mode"><Type size={14} /> Text</button>
+                          <button onClick={() => {
+                            if (isInstantHelp || isFocusedPrep || isStudyPro) setActiveInputTool('url');
+                            else setShowUpgradeModal(true);
+                          }} className={`flex items-center gap-1.5 px-3 md:px-5 py-2 md:py-2.5 rounded-lg text-[9px] md:text-[10px] font-black uppercase tracking-widest ${activeInputTool === 'url' ? 'bg-white dark:bg-slate-700 theme-text shadow-sm' : 'text-gray-500 dark:text-slate-400'}`} aria-label="Switch to link input mode">
+                            {!(isInstantHelp || isFocusedPrep || isStudyPro) && <Lock size={12} />} <LinkIcon size={14} /> Link
+                          </button>
                         </div>
 
                         <button
                           onClick={() => {
-                            if (hasVoiceAccess) toggleVoiceRecording();
+                            const totalGen = userProfile?.stats.totalGenerations || 0;
+                            const isTrialPodcast = isFree && totalGen < 1 && !hasUsedVoiceTrial;
+                            if (hasVoiceAccess || isTrialPodcast) toggleVoiceRecording();
                             else setShowUpgradeModal(true);
                           }}
-                          className={`flex-1 md:flex-none flex items-center justify-center gap-2 md:gap-3 px-4 md:px-8 py-3 md:py-4 rounded-xl text-[10px] md:text-sm font-black uppercase tracking-widest transition-all ${isRecording ? 'bg-red-500 text-white shadow-xl shadow-red-200 scale-105' : 'bg-white dark:bg-slate-700 text-pink-600 dark:text-pink-400 border-2 border-pink-100 dark:border-pink-500/20 hover:border-pink-300 active:scale-95'}`}
-                          aria-label={isRecording ? "Stop voice recording" : "Start voice recording"}
+                          disabled={extractingSource === 'voice'}
+                          className={`flex-1 md:flex-none flex items-center justify-center gap-2 md:gap-3 px-4 md:px-8 py-3 md:py-4 rounded-xl text-[10px] md:text-sm font-black uppercase tracking-widest transition-all ${isRecording ? 'bg-red-500 text-white shadow-xl shadow-red-200 scale-105' : (extractingSource === 'voice' ? 'bg-gray-100 dark:bg-slate-800 text-gray-400' : 'bg-white dark:bg-slate-700 text-pink-600 dark:text-pink-300 border-2 border-pink-100 dark:border-pink-500/20 hover:border-pink-300 active:scale-95')}`}
+                          aria-label={isRecording ? "Stop podcast recording" : "Start podcast recording"}
                         >
-                          {isRecording ? <StopCircle size={18} /> : (hasVoiceAccess ? <Mic size={18} /> : <Lock size={18} />)} {isRecording ? 'Stop' : 'Voice'}
+                          {isRecording ? <StopCircle size={18} /> : (extractingSource === 'voice' ? <Loader2 size={18} className="animate-spin" /> : ((hasVoiceAccess || (isFree && (userProfile?.stats.totalGenerations || 0) < 1 && !hasUsedVoiceTrial)) ? <Mic size={18} /> : <Lock size={18} />))} {isRecording ? 'Stop' : (extractingSource === 'voice' ? 'Processing...' : 'Podcast')}
                         </button>
 
-                        <button onClick={() => imageInputRef.current?.click()} className="flex-1 md:flex-none flex items-center justify-center gap-2 md:gap-3 px-4 md:px-8 py-3 md:py-4 theme-bg text-white rounded-xl text-[10px] md:text-sm font-black uppercase tracking-widest transition-all hover:opacity-90 active:scale-95" aria-label="Scan image for text"><Camera size={18} /> Scan</button>
-                        <button onClick={() => pdfInputRef.current?.click()} className="flex-1 md:flex-none flex items-center justify-center gap-2 md:gap-3 px-4 md:px-8 py-3 md:py-4 bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200 border-2 border-gray-100 dark:border-white/5 rounded-xl text-[10px] md:text-sm font-black uppercase tracking-widest transition-all hover:bg-gray-50 active:scale-95" aria-label="Upload PDF document"><FileText size={18} /> Docs</button>
+                        <button onClick={() => {
+                          if (isInstantHelp || isFocusedPrep || isStudyPro) imageInputRef.current?.click();
+                          else setShowUpgradeModal(true);
+                        }} className="flex-1 md:flex-none flex items-center justify-center gap-2 md:gap-3 px-4 md:px-8 py-3 md:py-4 theme-bg rounded-xl text-[10px] md:text-sm font-black uppercase tracking-widest transition-all hover:opacity-90 active:scale-95" aria-label="Scan image for text">
+                          {!(isInstantHelp || isFocusedPrep || isStudyPro) && <Lock size={18} />} <Camera size={18} /> Scan
+                        </button>
+                        <button onClick={() => {
+                          if (isInstantHelp || isFocusedPrep || isStudyPro) pdfInputRef.current?.click();
+                          else setShowUpgradeModal(true);
+                        }} className="flex-1 md:flex-none flex items-center justify-center gap-2 md:gap-3 px-4 md:px-8 py-3 md:py-4 bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200 border-2 border-gray-100 dark:border-white/5 rounded-xl text-[10px] md:text-sm font-black uppercase tracking-widest transition-all hover:bg-gray-50 active:scale-95" aria-label="Upload PDF document">
+                          {!(isInstantHelp || isFocusedPrep || isStudyPro) && <Lock size={18} />} <FileText size={18} /> Docs
+                        </button>
                       </>
                     )}
 
@@ -1210,7 +1470,7 @@ const App: React.FC = () => {
                                   setMathInputMode('content');
                                   handleGenerate(StudyMode.MATH);
                                 }}
-                                className={`p-3 rounded-xl transition-all shadow-lg ${isSelected ? 'bg-white text-indigo-600' : 'theme-bg text-white hover:opacity-90 shadow-theme-soft'}`}
+                                className={`p-3 rounded-xl transition-all shadow-lg ${isSelected ? 'bg-white text-indigo-600' : 'theme-bg hover:opacity-90 shadow-theme-soft'}`}
                                 title="Immediate Step-by-Step Analysis"
                               >
                                 <Wand2 size={16} />
@@ -1274,7 +1534,7 @@ const App: React.FC = () => {
               {filteredLibrary.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-24 opacity-30 text-center">
                   <Bookmark size={64} className="mb-4 text-gray-400" />
-                  <p className="font-bold text-lg dark:text-slate-500">No materials found in vault.</p>
+                  <p className="font-bold text-lg dark:text-slate-400">No materials found in vault.</p>
                 </div>
               ) : (
                 filteredLibrary.map(item => (
@@ -1311,7 +1571,7 @@ const App: React.FC = () => {
         >
           <FolderOpen size={28} className="group-hover:rotate-6 transition-transform" />
           {savedMaterials.length > 0 && (
-            <span className="absolute -top-2 -right-2 theme-bg text-white w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black border-2 border-white shadow-lg animate-bounce">
+            <span className="absolute -top-2 -right-2 theme-bg w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black border-2 border-white shadow-lg animate-bounce">
               {savedMaterials.length}
             </span>
           )}

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { GraduationCap, Rocket, ArrowRight, Layers, Calculator, Languages, Brain, Globe, Shield, Zap, Star, Trophy, Crown, Check, FileText, Loader2, X } from 'lucide-react';
+import { GraduationCap, Rocket, ArrowRight, Layers, Calculator, Languages, Brain, Globe, Shield, Zap, Star, Trophy, Crown, Check, FileText, X } from 'lucide-react';
 import ModeSelector from './Input/ModeSelector';
 import Footer from './Layout/Footer';
 import { PLANS } from './Subscription/SubscriptionScreen';
@@ -88,7 +88,7 @@ type HomepageProps = {
   onOpenUpgrade?: () => void;
   onOpenSelectMode?: (mode: string) => void;
   isLoggedIn?: boolean;
-  onOpenLegal?: (section: 'privacy' | 'terms' | 'contact') => void;
+  onOpenLegal?: (section: 'privacy' | 'terms' | 'contact' | 'refund') => void;
 };
 
 const FeatureCard: React.FC<{
@@ -145,14 +145,6 @@ const Homepage: React.FC<HomepageProps> = ({ onOpenAuth, onGetStarted, onOpenUpg
     }
   }, [isLoggedIn, selectedPlan, onOpenUpgrade]);
 
-  // Smart Preview state & handlers
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const [previewStatus, setPreviewStatus] = useState<'idle' | 'uploading' | 'done'>('idle');
-  const [previewText, setPreviewText] = useState('');
-  const [previewFileName, setPreviewFileName] = useState<string | null>(null);
-  const [previewUsedOnce, setPreviewUsedOnce] = useState(false);
-
   // About section reveal
   const aboutRef = useRef<HTMLElement | null>(null);
 
@@ -175,51 +167,16 @@ const Homepage: React.FC<HomepageProps> = ({ onOpenAuth, onGetStarted, onOpenUpg
     return () => observer.disconnect();
   }, []);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (previewUsedOnce) {
-      // Redirect users to pricing after first free preview
-      handleGoToPricing();
-      return;
-    }
-
-    setPreviewFileName(file.name);
-    setPreviewOpen(true);
-    setPreviewStatus('uploading');
-
-    // Simulate upload + processing
-    setTimeout(() => {
-      const summary = `1-minute summary for ${file.name}\n\nKey points:\n- Overview of the document\n- Important concepts and examples\n- Suggested practice questions`;
-      setPreviewText(summary);
-      setPreviewStatus('done');
-      setPreviewUsedOnce(true);
-    }, 1200 + Math.random() * 1200);
-  };
 
   const handleDemo = () => {
-    if (previewUsedOnce) {
-      handleGoToPricing();
-      return;
-    }
-    setPreviewFileName('Demo Sample');
-    setPreviewText('Demo 1-minute summary\n\nKey points:\n- This is a demo preview that highlights the main concepts.\n- Practice the example problems shown.\n- Review the summary to revise quickly.');
-    setPreviewStatus('done');
-    setPreviewOpen(true);
-    setPreviewUsedOnce(true);
+    handleLogin();
   };
 
   const handleStartUpload = () => {
-    if (previewUsedOnce) {
-      handleGoToPricing();
-      return;
-    }
-    fileInputRef.current?.click();
+    handleLogin();
   };
 
   const handleGoToPricing = () => {
-    // Close preview, scroll to pricing section, and trigger upgrade flow
-    setPreviewOpen(false);
     const el = document.getElementById('pricing');
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     if (typeof window !== 'undefined' && !(typeof onOpenUpgrade === 'function')) window.dispatchEvent(new CustomEvent('openUpgrade'));
@@ -232,8 +189,8 @@ const Homepage: React.FC<HomepageProps> = ({ onOpenAuth, onGetStarted, onOpenUpg
       <nav className="fixed top-0 w-full z-[1000] bg-white/80 backdrop-blur-xl border-b border-gray-100 py-4">
         <div className="container mx-auto px-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="bg-indigo-600 p-2 rounded-xl text-white shadow-lg shadow-indigo-200">
-              <GraduationCap size={20} />
+            <div className="bg-white p-1 rounded-xl shadow-md border border-indigo-50 flex items-center justify-center overflow-hidden">
+              <img src="https://firebasestorage.googleapis.com/v0/b/my-website-map-470209.firebasestorage.app/o/logos%2Fsc.png?alt=media" alt="SC Logo" className="w-8 h-8 object-contain" />
             </div>
             <span className="text-xl font-black tracking-tight text-gray-900">StudyClub24</span>
           </div>
@@ -290,41 +247,7 @@ const Homepage: React.FC<HomepageProps> = ({ onOpenAuth, onGetStarted, onOpenUpg
                     <FileText size={16} /> Upload PDF
                   </button>
                   <button onClick={handleDemo} className="py-3 px-4 rounded-md border">Demo</button>
-                  <input ref={fileInputRef} type="file" accept=".pdf,.txt,.docx" onChange={handleFileChange} className="hidden" />
                 </div>
-
-                {/* Preview Modal */}
-                {previewOpen && (
-                  <div role="dialog" aria-modal="true" className="fixed inset-0 z-[2000] flex items-center justify-center">
-                    <div className="fixed inset-0 bg-black/40" onClick={() => setPreviewOpen(false)} />
-                    <div className="bg-white rounded-2xl shadow-2xl p-6 relative z-10 w-[min(880px,90%)]">
-                      <div className="flex items-start justify-between mb-4">
-                        <div>
-                          <h4 className="text-lg font-black">Smart Preview {previewFileName ? `— ${previewFileName}` : ''}</h4>
-                          <p className="text-sm text-gray-500 mt-1">{previewStatus === 'uploading' ? 'Generating 1-minute summary...' : 'Preview generated'}</p>
-                        </div>
-                        <button onClick={() => setPreviewOpen(false)} className="text-gray-400 hover:text-gray-700"><X /></button>
-                      </div>
-
-                      <div className="min-h-[160px]">
-                        {previewStatus === 'uploading' ? (
-                          <div className="flex items-center gap-4">
-                            <Loader2 className="animate-spin" />
-                            <div className="text-gray-600">Processing your file — this usually takes a few seconds.</div>
-                          </div>
-                        ) : (
-                          <div className="prose max-w-none text-gray-700 whitespace-pre-wrap">
-                            {previewText || 'No summary available.'}
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="mt-6 flex items-center justify-center">
-                        <button onClick={handleGoToPricing} className="px-6 py-3 rounded-full bg-indigo-600 text-white font-bold">Explore Plans</button>
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           </div>
@@ -637,11 +560,11 @@ const Homepage: React.FC<HomepageProps> = ({ onOpenAuth, onGetStarted, onOpenUpg
               <p className="text-gray-500 font-medium max-w-2xl mx-auto">Choose the protocol that matches your academic ambition. Unlock the full power of StudyClub24 today.</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="flex flex-wrap justify-center gap-6">
               {PLANS.map((plan, idx) => (
                 <div
                   key={plan.id}
-                  className={`relative flex flex-col bg-white rounded-[2.5rem] p-8 border-2 transition-all hover:scale-[1.02] group ${plan.isPopular ? 'border-indigo-600 shadow-2xl shadow-indigo-100 ring-4 ring-indigo-50' : 'border-gray-50 shadow-xl shadow-gray-100 hover:border-indigo-200'}`}
+                  className={`relative flex flex-col bg-white rounded-[2.5rem] p-8 border-2 transition-all hover:scale-[1.02] group w-full md:w-[calc(50%-1.5rem)] lg:w-[calc(25%-1.5rem)] min-w-[280px] ${plan.isPopular ? 'border-indigo-600 shadow-2xl shadow-indigo-100 ring-4 ring-indigo-50' : 'border-gray-50 shadow-xl shadow-gray-100 hover:border-indigo-200'}`}
                   style={{ animationDelay: `${idx * 80}ms` }}
                 >
                   {plan.isPopular && (

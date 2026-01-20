@@ -2,7 +2,7 @@ import React from 'react';
 import { GraduationCap, Shield, Check, Zap } from 'lucide-react';
 
 type FooterProps = {
-  onOpenLegal?: (section: 'privacy' | 'terms' | 'contact') => void;
+  onOpenLegal?: (section: 'privacy' | 'terms' | 'contact' | 'refund') => void;
 };
 
 const Footer: React.FC<FooterProps> = ({ onOpenLegal }) => {
@@ -15,8 +15,9 @@ const Footer: React.FC<FooterProps> = ({ onOpenLegal }) => {
         </div>
 
         <div className="flex gap-6 text-sm text-gray-500 dark:text-slate-400">
-          <button onClick={() => onOpenLegal && onOpenLegal('privacy')} className="hover:text-indigo-600 dark:hover:text-indigo-400">Privacy</button>
-          <button onClick={() => onOpenLegal && onOpenLegal('terms')} className="hover:text-indigo-600 dark:hover:text-indigo-400">Terms</button>
+          <button onClick={() => onOpenLegal && onOpenLegal('privacy')} className="hover:text-indigo-600 dark:hover:text-indigo-400">Privacy Policy</button>
+          <button onClick={() => onOpenLegal && onOpenLegal('terms')} className="hover:text-indigo-600 dark:hover:text-indigo-400">Terms & Conditions</button>
+          <button onClick={() => onOpenLegal && onOpenLegal('refund')} className="hover:text-indigo-600 dark:hover:text-indigo-400">Payment Policy</button>
           <button onClick={() => onOpenLegal && onOpenLegal('contact')} className="hover:text-indigo-600 dark:hover:text-indigo-400">Contact</button>
         </div>
 

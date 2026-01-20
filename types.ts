@@ -48,7 +48,7 @@ export interface AchievementBadge {
   userName: string;
   count: number;
   date: string;
-  type: 'champion' | 'elite' | 'pro' | 'streak' | 'climb' | 'leap';
+  type: 'champion' | 'elite' | 'pro' | 'streak' | 'climb' | 'leap' | 'rank';
 }
 
 export interface DiagramElement {
