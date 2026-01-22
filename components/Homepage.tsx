@@ -8,7 +8,7 @@ import { StudyMode } from '../types';
 
 // All features comparison list
 const ALL_FEATURES = [
-  'Course & Question Paper',
+  // 'Course & Question Paper',
   'Notes Upload',
   'Unlimited Flashcards',
   'Unlimited Summaries',
@@ -25,7 +25,7 @@ const ALL_FEATURES = [
 // Feature details map for each plan
 const PLAN_FEATURES_MAP: Record<string, Record<string, boolean>> = {
   'crash-course': {
-    'Course & Question Paper': true,
+    // 'Course & Question Paper': true,
     'Notes Upload': false,
     'Unlimited Flashcards': false,
     'Unlimited Summaries': false,
@@ -35,11 +35,11 @@ const PLAN_FEATURES_MAP: Record<string, Record<string, boolean>> = {
     'Share Flashcards': false,
     'Language Learning': false,
     'Theme For Fun Learning': false,
-    'Voice input': false,
+    'Podcast': false,
     'Chat': false,
   },
   'instant-help': {
-    'Course & Question Paper': false,
+    // 'Course & Question Paper': false,
     'Notes Upload': true,
     'Unlimited Flashcards': true,
     'Unlimited Summaries': true,
@@ -49,11 +49,11 @@ const PLAN_FEATURES_MAP: Record<string, Record<string, boolean>> = {
     'Share Flashcards': false,
     'Language Learning': false,
     'Theme For Fun Learning': false,
-    'Voice input': false,
+    'Podcast': false,
     'Chat': false,
   },
   'focused-prep': {
-    'Course & Question Paper': true,
+    // 'Course & Question Paper': true,
     'Notes Upload': true,
     'Unlimited Flashcards': true,
     'Unlimited Summaries': true,
@@ -63,11 +63,11 @@ const PLAN_FEATURES_MAP: Record<string, Record<string, boolean>> = {
     'Share Flashcards': false,
     'Language Learning': true,
     'Theme For Fun Learning': true,
-    'Voice input': false,
+    'Podcast': false,
     'Chat': false,
   },
   'study-pro': {
-    'Course & Question Paper': true,
+    // 'Course & Question Paper': true,
     'Notes Upload': true,
     'Unlimited Flashcards': true,
     'Unlimited Summaries': true,
@@ -77,7 +77,7 @@ const PLAN_FEATURES_MAP: Record<string, Record<string, boolean>> = {
     'Share Flashcards': true,
     'Language Learning': true,
     'Theme For Fun Learning': true,
-    'Voice input': true,
+    'Podcast': true,
     'Chat': true,
   },
 };
