@@ -1,313 +1,509 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>StudyClub24 - AI Study Assistant</title>
-    <script async custom-element="amp-auto-ads"
-        src="https://cdn.ampproject.org/v0/amp-auto-ads-0.1.js">
-</script>
-<amp-auto-ads type="adsense"
-        data-ad-client="ca-pub-9671489940692715">
-</amp-auto-ads>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Cinzel:wght@700&family=Space+Grotesk:wght@500;700&family=Special+Elite&family=MedievalSharp&family=Bangers&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/auto-render.min.js"></script>
-    <style>
-      /* --- GLOBAL ADAPTIVE SYSTEM --- */
-      :root {
-        --theme-bg: #F8F9FC;
-        --theme-surface: #FFFFFF;
-        --theme-border: #EEF2FF;
-        --theme-text: #111827;
-        --theme-text-muted: #6B7280;
-        --primary: #4F46E5;
-        --primary-rgb: 79, 70, 229;
-        --accent: #818CF8;
-        --glow: rgba(79, 70, 229, 0.1);
-        --font-main: 'Inter', sans-serif;
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>StudyClub24 - AI Study Assistant</title>
+  <script async custom-element="amp-auto-ads" src="https://cdn.ampproject.org/v0/amp-auto-ads-0.1.js">
+  </script>
+  <amp-auto-ads type="adsense" data-ad-client="ca-pub-9671489940692715">
+  </amp-auto-ads>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Cinzel:wght@700&family=Space+Grotesk:wght@500;700&family=Special+Elite&family=MedievalSharp&family=Bangers&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/auto-render.min.js"></script>
+  <style>
+    /* --- GLOBAL ADAPTIVE SYSTEM --- */
+    :root {
+      --theme-bg: #F8F9FC;
+      --theme-surface: #FFFFFF;
+      --theme-border: #EEF2FF;
+      --theme-text: #111827;
+      --theme-text-muted: #6B7280;
+      --primary: #4F46E5;
+      --primary-rgb: 79, 70, 229;
+      --on-primary: #FFFFFF;
+      --accent: #818CF8;
+      --glow: rgba(79, 70, 229, 0.1);
+      --font-main: 'Inter', sans-serif;
+    }
+
+    .dark:root {
+      --theme-bg: #020617;
+      --theme-surface: #0F172A;
+      --theme-border: rgba(255, 255, 255, 0.05);
+      --theme-text: #F8FAF9;
+      --theme-text-muted: #94A3B8;
+      --primary: #818CF8;
+      --on-primary: #FFFFFF;
+      --glow: rgba(129, 140, 248, 0.2);
+    }
+
+    /* --- GOT (Game of Thrones) --- */
+    [data-framework="got"] {
+      --primary: #78350F;
+      --primary-rgb: 120, 53, 15;
+      --on-primary: #FFFFFF;
+      --accent: #B45309;
+
+      --primary-soft: rgba(120, 53, 15, 0.1);
+    }
+
+    [data-framework="got"]:not(.dark) {
+      --theme-bg: #FEFBEB;
+      --theme-surface: #FFFDF5;
+      --theme-border: #FDE68A;
+    }
+
+    .dark[data-framework="got"] {
+      --theme-bg: #1A0F05;
+      --theme-surface: #24180B;
+      --theme-border: #78350F;
+      --primary: #FDE68A;
+      --primary-rgb: 253, 230, 138;
+      --on-primary: #1A0F05;
+      --theme-text: #FDE68A;
+      --primary-soft: rgba(253, 230, 138, 0.15);
+    }
+
+    /* --- CYBER GAME --- */
+    [data-framework="game"] {
+      --primary: #EC4899;
+      --primary-rgb: 236, 72, 153;
+      --on-primary: #FFFFFF;
+      --accent: #66FCF1;
+
+      --primary-soft: rgba(236, 72, 153, 0.1);
+    }
+
+    .dark[data-framework="game"] {
+      --theme-bg: #0B0C10;
+      --theme-surface: #1F2833;
+      --theme-border: #66FCF1;
+      --primary: #66FCF1;
+      --primary-rgb: 102, 252, 241;
+      --on-primary: #0B0C10;
+      --theme-text: #66FCF1;
+      --glow: rgba(102, 252, 241, 0.3);
+      --primary-soft: rgba(102, 252, 241, 0.2);
+    }
+
+    /* --- THE HEIST --- */
+    [data-framework="heist"] {
+      --primary: #991B1B;
+      --primary-rgb: 153, 27, 27;
+      --on-primary: #FFFFFF;
+      --accent: #FBBF24;
+
+      --primary-soft: rgba(153, 27, 27, 0.1);
+    }
+
+    [data-framework="heist"]:not(.dark) {
+      --theme-bg: #FEF2F2;
+      --theme-border: #FCA5A5;
+    }
+
+    .dark[data-framework="heist"] {
+      --theme-bg: #1A0505;
+      --theme-surface: #2D0A0A;
+      --theme-border: #991B1B;
+      --primary: #FBBF24;
+      --primary-rgb: 251, 191, 36;
+      --on-primary: #1A0505;
+      --theme-text: #FFFFFF;
+      --primary-soft: rgba(251, 191, 36, 0.2);
+    }
+
+    /* --- JUMANJI --- */
+    [data-framework="jumanji"] {
+      --primary: #166534;
+      --primary-rgb: 22, 101, 52;
+      --on-primary: #FFFFFF;
+      --accent: #84CC16;
+
+      --primary-soft: rgba(22, 101, 52, 0.1);
+    }
+
+    .dark[data-framework="jumanji"] {
+      --theme-bg: #061A0C;
+      --theme-surface: #0E2F1A;
+      --theme-border: #166534;
+      --primary: #D9F99D;
+      --primary-rgb: 217, 249, 157;
+      --on-primary: #061A0C;
+      --theme-text: #D9F99D;
+      --primary-soft: rgba(217, 249, 157, 0.15);
+    }
+
+    /* --- HARRY POTTER --- */
+    [data-framework="potter"] {
+      --primary: #1E1B4B;
+      --primary-rgb: 30, 27, 75;
+      --on-primary: #FFFFFF;
+      --accent: #EAB308;
+
+      --primary-soft: rgba(30, 27, 75, 0.1);
+    }
+
+    .dark[data-framework="potter"] {
+      --theme-bg: #0F172A;
+      --theme-surface: #1E293B;
+      --theme-border: #EAB308;
+      --primary: #FDE047;
+      --primary-rgb: 253, 224, 71;
+      --on-primary: #1E1B4B;
+      --theme-text: #FDE047;
+      --primary-soft: rgba(253, 224, 71, 0.2);
+    }
+
+    /* --- LORD OF THE RINGS --- */
+    [data-framework="lotr"] {
+      --primary: #422006;
+      --primary-rgb: 66, 32, 6;
+      --on-primary: #FFFFFF;
+      --accent: #FBBF24;
+
+      --primary-soft: rgba(66, 32, 6, 0.1);
+    }
+
+    .dark[data-framework="lotr"] {
+      --theme-bg: #1A0F05;
+      --theme-surface: #2D1A0A;
+      --theme-border: #422006;
+      --primary: #FDE68A;
+      --primary-rgb: 253, 230, 138;
+      --on-primary: #422006;
+      --theme-text: #FDE68A;
+      --primary-soft: rgba(253, 230, 138, 0.15);
+    }
+
+    /* --- STRANGER THINGS --- */
+    [data-framework="stranger"] {
+      --primary: #DC2626;
+      --primary-rgb: 220, 38, 38;
+      --on-primary: #FFFFFF;
+      --accent: #000000;
+
+      --primary-soft: rgba(220, 38, 38, 0.1);
+    }
+
+    .dark[data-framework="stranger"] {
+      --theme-bg: #050505;
+      --theme-surface: #1A0000;
+      --theme-border: #DC2626;
+      --primary: #FF4D4D;
+      --primary-rgb: 255, 77, 77;
+      --on-primary: #FFFFFF;
+      --theme-text: #FFFFFF;
+      --primary-soft: rgba(255, 77, 77, 0.2);
+    }
+
+    /* --- SPIDER-MAN --- */
+    [data-framework="spider"] {
+      --primary: #E23636;
+      --primary-rgb: 226, 54, 54;
+      --on-primary: #FFFFFF;
+      --accent: #3178C6;
+      --primary-soft: rgba(226, 54, 54, 0.1);
+    }
+
+    [data-framework="spider"]:not(.dark) {
+      --theme-bg: #FDF2F2;
+      --theme-surface: #FFFFFF;
+      --theme-border: #FBCFE8;
+    }
+
+    .dark[data-framework="spider"] {
+      --theme-bg: #1A0505;
+      --theme-surface: #2D0A0A;
+      --theme-border: #E23636;
+      --primary: #FF4D4D;
+      --primary-rgb: 255, 77, 77;
+      --on-primary: #FFFFFF;
+      --theme-text: #FAD1D1;
+      --primary-soft: rgba(255, 77, 77, 0.2);
+    }
+
+    /* --- IRON MAN --- */
+    [data-framework="iron"] {
+      --primary: #AA0505;
+      --primary-rgb: 170, 5, 5;
+      --on-primary: #FFFFFF;
+      --accent: #EBC500;
+
+      --primary-soft: rgba(170, 5, 5, 0.1);
+    }
+
+    [data-framework="iron"]:not(.dark) {
+      --theme-bg: #FFFBF0;
+      --theme-surface: #FFFFFF;
+      --theme-border: #FEF3C7;
+    }
+
+    .dark[data-framework="iron"] {
+      --theme-bg: #0F0000;
+      --theme-surface: #1A0000;
+      --theme-border: #AA0505;
+      --primary: #EBC500;
+      --primary-rgb: 235, 197, 0;
+      --on-primary: #1A0000;
+      --theme-text: #EBC500;
+      --glow: rgba(235, 197, 0, 0.3);
+      --primary-soft: rgba(235, 197, 0, 0.2);
+    }
+
+    /* --- CAPTAIN AMERICA --- */
+    [data-framework="captain"] {
+      --primary: #002868;
+      --primary-rgb: 0, 40, 104;
+      --on-primary: #FFFFFF;
+      --accent: #BF0A30;
+      --primary-soft: rgba(0, 40, 104, 0.1);
+    }
+
+    [data-framework="captain"]:not(.dark) {
+      --theme-bg: #F0F4F8;
+      --theme-surface: #FFFFFF;
+      --theme-border: #BF0A30;
+    }
+
+    .dark[data-framework="captain"] {
+      --theme-bg: #000B1A;
+      --theme-surface: #00152E;
+      --theme-border: #BF0A30;
+      --primary: #818CF8;
+      --primary-rgb: 129, 140, 248;
+      --on-primary: #FFFFFF;
+      --theme-text: #FFFFFF;
+      --primary-soft: rgba(129, 140, 248, 0.2);
+    }
+
+    /* --- THOR --- */
+    [data-framework="thor"] {
+      --primary: #5B84B1;
+      --primary-rgb: 91, 132, 177;
+      --on-primary: #FFFFFF;
+      --accent: #E5E5E5;
+
+      --primary-soft: rgba(91, 132, 177, 0.1);
+    }
+
+    .dark[data-framework="thor"] {
+      --theme-bg: #0A0F14;
+      --theme-surface: #141B24;
+      --theme-border: #5B84B1;
+      --primary: #B0C4DE;
+      --primary-rgb: 176, 196, 222;
+      --on-primary: #0A0F14;
+      --theme-text: #E5E5E5;
+      --glow: rgba(255, 255, 255, 0.2);
+      --primary-soft: rgba(176, 196, 222, 0.2);
+    }
+
+    /* --- HULK --- */
+    [data-framework="hulk"] {
+      --primary: #2E8B57;
+      --primary-rgb: 46, 139, 87;
+      --on-primary: #FFFFFF;
+      --accent: #A020F0;
+      --primary-soft: rgba(46, 139, 87, 0.1);
+    }
+
+    .dark[data-framework="hulk"] {
+      --theme-bg: #051009;
+      --theme-surface: #0A1F11;
+      --theme-border: #A020F0;
+      --primary: #98FB98;
+      --primary-rgb: 152, 251, 152;
+      --on-primary: #051009;
+      --theme-text: #98FB98;
+      --primary-soft: rgba(152, 251, 152, 0.2);
+    }
+
+    /* --- DEADPOOL --- */
+    [data-framework="deadpool"] {
+      --primary: #B30000;
+      --primary-rgb: 179, 0, 0;
+      --on-primary: #FFFFFF;
+      --accent: #000000;
+
+      --primary-soft: rgba(179, 0, 0, 0.1);
+    }
+
+    .dark[data-framework="deadpool"] {
+      --theme-bg: #0A0000;
+      --theme-surface: #1A0000;
+      --theme-border: #B30000;
+      --primary: #FF3131;
+      --primary-rgb: 255, 49, 49;
+      --on-primary: #FFFFFF;
+      --theme-text: #FFFFFF;
+      --accent: #FFFFFF;
+      --primary-soft: rgba(255, 49, 49, 0.2);
+    }
+
+    /* --- BATMAN --- */
+    [data-framework="batman"] {
+      --primary: #000000;
+      --primary-rgb: 0, 0, 0;
+      --on-primary: #FFFF00;
+      --accent: #FFFF00;
+      --primary-soft: rgba(0, 0, 0, 0.1);
+    }
+
+    [data-framework="batman"]:not(.dark) {
+      --theme-bg: #E5E5E5;
+      --theme-surface: #FFFFFF;
+      --theme-border: #000000;
+      --theme-text: #000000;
+      --on-primary: #FFFFFF;
+    }
+
+    .dark[data-framework="batman"] {
+      --theme-bg: #000000;
+      --theme-surface: #0D0D0D;
+      --theme-border: #FFFF00;
+      --primary: #FFFF00;
+      --primary-rgb: 255, 255, 0;
+      --on-primary: #000000;
+      --theme-text: #FFFF00;
+      --glow: rgba(255, 255, 0, 0.1);
+      --primary-soft: rgba(255, 255, 0, 0.15);
+    }
+
+    /* Inherit existing transitions and semantic classes */
+    body {
+      background-color: var(--theme-bg) !important;
+      color: var(--theme-text) !important;
+      font-family: var(--font-main) !important;
+      transition: background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s ease, border-color 0.4s ease;
+    }
+
+    .bg-white {
+      background-color: var(--theme-surface) !important;
+      transition: background-color 0.6s ease;
+    }
+
+    .theme-bg {
+      background-color: var(--primary) !important;
+      color: var(--on-primary) !important;
+    }
+
+    .theme-text {
+      color: var(--primary) !important;
+    }
+
+    .theme-border {
+      border-color: var(--theme-border) !important;
+    }
+
+    .theme-glow {
+      box-shadow: 0 10px 30px -5px var(--glow);
+    }
+
+    .theme-bg-soft {
+      background-color: var(--primary-soft) !important;
+    }
+
+    .theme-text-alt {
+      color: var(--accent) !important;
+    }
+
+    .theme-bg-alt {
+      background-color: var(--accent) !important;
+      color: #000 !important;
+    }
+
+    /* Visual Fixes */
+    .backface-hidden {
+      backface-visibility: hidden;
+    }
+
+    .rotate-y-180 {
+      transform: rotateY(180deg);
+    }
+
+    .perspective-1000 {
+      perspective: 1000px;
+    }
+
+    .transform-style-3d {
+      transform-style: preserve-3d;
+    }
+
+    .dark ::placeholder {
+      color: #94a3b8 !important;
+      opacity: 0.7 !important;
+    }
+
+    @keyframes fade-in-up {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
       }
 
-      .dark:root {
-        --theme-bg: #020617;
-        --theme-surface: #0F172A;
-        --theme-border: rgba(255,255,255,0.05);
-        --theme-text: #F8FAF9;
-        --theme-text-muted: #94A3B8;
-        --glow: rgba(79, 70, 229, 0.2);
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-fade-in-up {
+      animation: fade-in-up 0.5s ease-out forwards;
+    }
+
+    @keyframes football-bounce {
+
+      0%,
+      100% {
+        transform: translateY(0) rotate(0deg) scaleX(1.1) scaleY(0.9);
       }
 
-      /* --- GOT (Game of Thrones) --- */
-      [data-framework="got"] {
-        --primary: #78350F;
-        --primary-rgb: 120, 53, 15;
-        --accent: #B45309;
-        --font-main: 'Cinzel', serif;
+      50% {
+        transform: translateY(-60px) rotate(180deg) scaleX(0.9) scaleY(1.1);
       }
-      [data-framework="got"]:not(.dark) {
-        --theme-bg: #FEFBEB;
-        --theme-surface: #FFFDF5;
-        --theme-border: #FDE68A;
-      }
-      .dark[data-framework="got"] {
-        --theme-bg: #1A0F05;
-        --theme-surface: #24180B;
-        --theme-border: #78350F;
-        --theme-text: #FDE68A;
-      }
+    }
 
-      /* --- CYBER GAME --- */
-      [data-framework="game"] {
-        --primary: #EC4899;
-        --primary-rgb: 236, 72, 153;
-        --accent: #66FCF1;
-        --font-main: 'Space Grotesk', sans-serif;
-      }
-      .dark[data-framework="game"] {
-        --theme-bg: #0B0C10;
-        --theme-surface: #1F2833;
-        --theme-border: #66FCF1;
-        --theme-text: #66FCF1;
-        --glow: rgba(102, 252, 241, 0.3);
-      }
+    .animate-football {
+      animation: football-bounce 0.8s infinite;
+    }
 
-      /* --- THE HEIST --- */
-      [data-framework="heist"] {
-        --primary: #991B1B;
-        --primary-rgb: 153, 27, 27;
-        --accent: #FBBF24;
-        --font-main: 'Special Elite', cursive;
-      }
-      [data-framework="heist"]:not(.dark) {
-        --theme-bg: #FEF2F2;
-        --theme-border: #FCA5A5;
-      }
-      .dark[data-framework="heist"] {
-        --theme-bg: #1A0505;
-        --theme-surface: #2D0A0A;
-        --theme-border: #991B1B;
-        --theme-text: #FFFFFF;
-      }
+    .katex {
+      font-size: 1.1em !important;
+    }
 
-      /* --- JUMANJI --- */
-      [data-framework="jumanji"] {
-        --primary: #166534;
-        --primary-rgb: 22, 101, 52;
-        --accent: #84CC16;
-        --font-main: 'MedievalSharp', cursive;
-      }
-      .dark[data-framework="jumanji"] {
-        --theme-bg: #061A0C;
-        --theme-surface: #0E2F1A;
-        --theme-border: #166534;
-        --theme-text: #D9F99D;
-      }
+    .dark .katex {
+      color: var(--theme-text) !important;
+    }
 
-      /* --- HARRY POTTER --- */
-      [data-framework="potter"] {
-        --primary: #1E1B4B;
-        --primary-rgb: 30, 27, 75;
-        --accent: #EAB308;
-        --font-main: 'Cinzel', serif;
-      }
-      .dark[data-framework="potter"] {
-        --theme-bg: #0F172A;
-        --theme-surface: #1E293B;
-        --theme-border: #EAB308;
-        --theme-text: #FDE047;
-      }
+    /* Custom Textures */
+    .parchment-texture {
+      background-image: url('https://www.transparenttextures.com/patterns/parchment.png');
+    }
 
-      /* --- LORD OF THE RINGS --- */
-      [data-framework="lotr"] {
-        --primary: #422006;
-        --primary-rgb: 66, 32, 6;
-        --accent: #FBBF24;
-        --font-main: 'MedievalSharp', cursive;
-      }
-      .dark[data-framework="lotr"] {
-        --theme-bg: #1A0F05;
-        --theme-surface: #2D1A0A;
-        --theme-border: #422006;
-        --theme-text: #FDE68A;
-      }
+    .neon-glow {
+      box-shadow: 0 0 25px rgba(102, 252, 241, 0.4);
+    }
 
-      /* --- STRANGER THINGS --- */
-      [data-framework="stranger"] {
-        --primary: #DC2626;
-        --primary-rgb: 220, 38, 38;
-        --accent: #000000;
-        --font-main: 'Special Elite', cursive;
-      }
-      .dark[data-framework="stranger"] {
-        --theme-bg: #050505;
-        --theme-surface: #1A0000;
-        --theme-border: #DC2626;
-        --theme-text: #FFFFFF;
-      }
+    .mission-board {
+      background-image: radial-gradient(circle at center, #991b1b, #450a0a);
+    }
 
-      /* --- SPIDER-MAN --- */
-      [data-framework="spider"] {
-        --primary: #E23636;
-        --primary-rgb: 226, 54, 54;
-        --accent: #3178C6;
-      }
-      [data-framework="spider"]:not(.dark) {
-        --theme-bg: #FDF2F2;
-        --theme-surface: #FFFFFF;
-        --theme-border: #FBCFE8;
-      }
-      .dark[data-framework="spider"] {
-        --theme-bg: #1A0505;
-        --theme-surface: #2D0A0A;
-        --theme-border: #E23636;
-        --theme-text: #FAD1D1;
-      }
+    .potter-magic {
+      background-image: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+    }
 
-      /* --- IRON MAN --- */
-      [data-framework="iron"] {
-        --primary: #AA0505;
-        --primary-rgb: 170, 5, 5;
-        --accent: #EBC500;
-        --font-main: 'Space Grotesk', sans-serif;
-      }
-      [data-framework="iron"]:not(.dark) {
-        --theme-bg: #FFFBF0;
-        --theme-surface: #FFFFFF;
-        --theme-border: #FEF3C7;
-      }
-      .dark[data-framework="iron"] {
-        --theme-bg: #0F0000;
-        --theme-surface: #1A0000;
-        --theme-border: #AA0505;
-        --theme-text: #EBC500;
-        --glow: rgba(235, 197, 0, 0.3);
-      }
+    .jumanji-board {
+      background-image: url('https://www.transparenttextures.com/patterns/wood-pattern.png');
+    }
 
-      /* --- CAPTAIN AMERICA --- */
-      [data-framework="captain"] {
-        --primary: #002868;
-        --primary-rgb: 0, 40, 104;
-        --accent: #BF0A30;
-      }
-      [data-framework="captain"]:not(.dark) {
-        --theme-bg: #F0F4F8;
-        --theme-surface: #FFFFFF;
-        --theme-border: #BF0A30;
-      }
-      .dark[data-framework="captain"] {
-        --theme-bg: #000B1A;
-        --theme-surface: #00152E;
-        --theme-border: #BF0A30;
-        --theme-text: #FFFFFF;
-      }
-
-      /* --- THOR --- */
-      [data-framework="thor"] {
-        --primary: #5B84B1;
-        --primary-rgb: 91, 132, 177;
-        --accent: #E5E5E5;
-        --font-main: 'MedievalSharp', cursive;
-      }
-      .dark[data-framework="thor"] {
-        --theme-bg: #0A0F14;
-        --theme-surface: #141B24;
-        --theme-border: #5B84B1;
-        --theme-text: #E5E5E5;
-        --glow: rgba(255, 255, 255, 0.2);
-      }
-
-      /* --- HULK --- */
-      [data-framework="hulk"] {
-        --primary: #2E8B57;
-        --primary-rgb: 46, 139, 87;
-        --accent: #A020F0;
-      }
-      .dark[data-framework="hulk"] {
-        --theme-bg: #051009;
-        --theme-surface: #0A1F11;
-        --theme-border: #A020F0;
-        --theme-text: #98FB98;
-      }
-
-      /* --- DEADPOOL --- */
-      [data-framework="deadpool"] {
-        --primary: #B30000;
-        --primary-rgb: 179, 0, 0;
-        --accent: #000000;
-        --font-main: 'Bangers', cursive;
-      }
-      .dark[data-framework="deadpool"] {
-        --theme-bg: #0A0000;
-        --theme-surface: #170000;
-        --theme-border: #B30000;
-        --theme-text: #FFFFFF;
-      }
-
-      /* --- BATMAN --- */
-      [data-framework="batman"] {
-        --primary: #000000;
-        --primary-rgb: 0, 0, 0;
-        --accent: #FFFF00;
-      }
-      [data-framework="batman"]:not(.dark) {
-        --theme-bg: #E5E5E5;
-        --theme-surface: #FFFFFF;
-        --theme-border: #000000;
-        --theme-text: #000000;
-      }
-      .dark[data-framework="batman"] {
-        --theme-bg: #000000;
-        --theme-surface: #080808;
-        --theme-border: #FFFF00;
-        --theme-text: #FFFF00;
-        --glow: rgba(255, 255, 0, 0.1);
-      }
-
-      /* Inherit existing transitions and semantic classes */
-      body {
-        background-color: var(--theme-bg) !important;
-        color: var(--theme-text) !important;
-        font-family: var(--font-main) !important;
-        transition: background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s ease, border-color 0.4s ease;
-      }
-
-      .bg-white { background-color: var(--theme-surface) !important; transition: background-color 0.6s ease; }
-      .theme-bg { background-color: var(--primary) !important; }
-      .theme-text { color: var(--primary) !important; }
-      .theme-border { border-color: var(--theme-border) !important; }
-      .theme-glow { box-shadow: 0 10px 30px -5px var(--glow); }
-      .theme-bg-soft { background-color: rgba(var(--primary-rgb), 0.1) !important; }
-
-      /* Visual Fixes */
-      .backface-hidden { backface-visibility: hidden; }
-      .rotate-y-180 { transform: rotateY(180deg); }
-      .perspective-1000 { perspective: 1000px; }
-      .transform-style-3d { transform-style: preserve-3d; }
-      
-      @keyframes fade-in-up {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
-      .animate-fade-in-up { animation: fade-in-up 0.5s ease-out forwards; }
-      
-      @keyframes football-bounce {
-        0%, 100% { transform: translateY(0) rotate(0deg) scaleX(1.1) scaleY(0.9); }
-        50% { transform: translateY(-60px) rotate(180deg) scaleX(0.9) scaleY(1.1); }
-      }
-      .animate-football { animation: football-bounce 0.8s infinite; }
-      
-      .katex { font-size: 1.1em !important; }
-      .dark .katex { color: var(--theme-text) !important; }
-
-      /* Custom Textures */
-      .parchment-texture { background-image: url('https://www.transparenttextures.com/patterns/parchment.png'); }
-      .neon-glow { box-shadow: 0 0 25px rgba(102, 252, 241, 0.4); }
-      .mission-board { background-image: radial-gradient(circle at center, #991b1b, #450a0a); }
-      .potter-magic { background-image: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); }
-      .jumanji-board { background-image: url('https://www.transparenttextures.com/patterns/wood-pattern.png'); }
-      .lotr-scroll { background-image: url('https://www.transparenttextures.com/patterns/old-map.png'); }
-    </style>
+    .lotr-scroll {
+      background-image: url('https://www.transparenttextures.com/patterns/old-map.png');
+    }
+  </style>
   <script type="importmap">
 {
   "imports": {
@@ -320,13 +516,14 @@
   }
 }
 </script>
-<link rel="stylesheet" href="/index.css">
+  <link rel="stylesheet" href="/index.css">
 </head>
-  <body class="bg-[#F8F9FC] dark:bg-slate-950">
-    <amp-auto-ads type="adsense"
-        data-ad-client="ca-pub-9671489940692715">
-</amp-auto-ads>
-    <div id="root"></div>
+
+<body class="bg-[#F8F9FC] dark:bg-slate-950">
+  <amp-auto-ads type="adsense" data-ad-client="ca-pub-9671489940692715">
+  </amp-auto-ads>
+  <div id="root"></div>
   <script type="module" src="/index.tsx"></script>
 </body>
+
 </html>

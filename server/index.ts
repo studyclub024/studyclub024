@@ -54,7 +54,7 @@ app.post('/api/create-order', async (req: Request, res: Response) => {
     const receipt = `rcpt_${timestamp}_${shortUserId}`.substring(0, 40);
     
     const options = {
-      amount: amount * 100, // Convert to paise
+      amount: amount , //* 100, // Convert to paise
       currency: 'INR',
       receipt: receipt,
       notes: {

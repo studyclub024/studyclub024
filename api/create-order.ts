@@ -44,7 +44,7 @@ export default async function handler(
 
     // Create Razorpay order
     const options = {
-      amount: amount * 100, // Convert to paise
+      amount: amount, // Already in paise
       currency: 'INR',
       receipt: receipt,
       notes: {

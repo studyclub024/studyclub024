@@ -7,7 +7,7 @@ import { auth } from '../../firebaseConfig';
 
 // All features comparison list
 const ALL_FEATURES = [
-  'Course & Question Paper',
+  // 'Course & Question Paper',
   'Notes Upload',
   'Unlimited Flashcards',
   'Unlimited Summaries',
@@ -17,14 +17,14 @@ const ALL_FEATURES = [
   'Share Flashcards',
   'Language Learning',
   'Theme For Fun Learning',
-  'Voice input',
+  'Podcast',
   'Chat'
 ];
 
 // Feature details map for each plan
 const PLAN_FEATURES_MAP: Record<string, Record<string, boolean>> = {
   'crash-course': {
-    'Course & Question Paper': true,
+    // 'Course & Question Paper': true,
     'Notes Upload': false,
     'Unlimited Flashcards': false,
     'Unlimited Summaries': false,
@@ -34,11 +34,11 @@ const PLAN_FEATURES_MAP: Record<string, Record<string, boolean>> = {
     'Share Flashcards': false,
     'Language Learning': false,
     'Theme For Fun Learning': false,
-    'Voice input': false,
+    'Podcast': false,
     'Chat': false,
   },
   'instant-help': {
-    'Course & Question Paper': false,
+    // 'Course & Question Paper': false,
     'Notes Upload': true,
     'Unlimited Flashcards': true,
     'Unlimited Summaries': true,
@@ -48,11 +48,11 @@ const PLAN_FEATURES_MAP: Record<string, Record<string, boolean>> = {
     'Share Flashcards': false,
     'Language Learning': false,
     'Theme For Fun Learning': false,
-    'Voice input': false,
+    'Podcast': false,
     'Chat': false,
   },
   'focused-prep': {
-    'Course & Question Paper': true,
+    // 'Course & Question Paper': true,
     'Notes Upload': true,
     'Unlimited Flashcards': true,
     'Unlimited Summaries': true,
@@ -62,11 +62,11 @@ const PLAN_FEATURES_MAP: Record<string, Record<string, boolean>> = {
     'Share Flashcards': false,
     'Language Learning': true,
     'Theme For Fun Learning': true,
-    'Voice input': false,
+    'Podcast': false,
     'Chat': false,
   },
   'study-pro': {
-    'Course & Question Paper': true,
+    // 'Course & Question Paper': true,
     'Notes Upload': true,
     'Unlimited Flashcards': true,
     'Unlimited Summaries': true,
@@ -76,12 +76,13 @@ const PLAN_FEATURES_MAP: Record<string, Record<string, boolean>> = {
     'Share Flashcards': true,
     'Language Learning': true,
     'Theme For Fun Learning': true,
-    'Voice input': true,
+    'Podcast': true,
     'Chat': true,
   },
 };
 
 export const PLANS: SubscriptionPlan[] = [
+  /*
   {
     id: 'crash-course',
     name: 'Crash Course Plan',
@@ -91,6 +92,7 @@ export const PLANS: SubscriptionPlan[] = [
     features: ['Course & Question Paper'],
     gradient: 'from-blue-400 to-indigo-500'
   },
+  */
   {
     id: 'instant-help',
     name: 'Instant help',
@@ -107,16 +109,16 @@ export const PLANS: SubscriptionPlan[] = [
     price: '₹7',
     period: 'day Billed Monthly',
     description: 'Less than Lays Packet',
-    features: ['Course & Question Paper', '10 Notes Upload/day', 'Unlimited Flashcards', 'Unlimited Summaries', 'Unlimited Test', 'Study Plan', 'Language Learning', 'Theme For Fun Learning'],
+    features: [/*'Course & Question Paper',*/ '10 Notes Upload/day', 'Unlimited Flashcards', 'Unlimited Summaries', 'Unlimited Test', 'Study Plan', 'Language Learning', 'Theme For Fun Learning'],
     gradient: 'from-fuchsia-500 to-rose-500'
   },
   {
     id: 'study-pro',
     name: 'Study Pro ⭐',
-    price: '₹599',
+    price: '₹499',
     period: 'Month Billed Monthly',
     description: 'Less than a Cafe outing',
-    features: ['Course & Question Paper', 'Unlimited Notes Upload', 'Unlimited Flashcards', 'Unlimited Summaries', 'Unlimited Test', 'Study Plan', 'Save Flashcards', 'Share Flashcards', 'Language Learning', 'Theme For Fun Learning', 'Voice input', 'Chat'],
+    features: [/*'Course & Question Paper',*/ 'Unlimited Notes Upload', 'Unlimited Flashcards', 'Unlimited Summaries', 'Unlimited Test', 'Study Plan', 'Save Flashcards', 'Share Flashcards', 'Language Learning', 'Theme For Fun Learning', 'Podcast', 'Chat'],
     gradient: 'from-amber-400 to-yellow-600'
   }
 ];
@@ -132,15 +134,41 @@ const SubscriptionScreen: React.FC<Props> = ({ onSelect, onClose, isLoggedIn = f
   const [loading, setLoading] = useState<string | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
 
+  // Calculate monthly price
+  const getMonthlyPrice = (plan: SubscriptionPlan): string => {
+    const price = parseFloat(plan.price.replace('₹', '').replace(',', ''));
+    if (plan.period.toLowerCase().includes('day')) {
+      const monthlyAmount = price * 30;
+      return `₹${monthlyAmount.toFixed(0)}`;
+    }
+    return plan.price;
+  };
+
+  // Calculate total price with GST
+  const getTotalWithGST = (plan: SubscriptionPlan): string => {
+    const price = parseFloat(plan.price.replace('₹', '').replace(',', ''));
+    let monthlyAmount = price;
+    if (plan.period.toLowerCase().includes('day')) {
+      monthlyAmount = price * 30;
+    }
+    const totalWithGST = monthlyAmount * 1.18;
+    return `₹${Math.round(totalWithGST)}`;
+  };
+
   const handleSelectPlan = async (plan: SubscriptionPlan) => {
+    console.log('🔴 UPGRADE NOW CLICKED! Plan:', plan.id);
+    console.log('🔴 User logged in?', isLoggedIn);
+    
     if (!isLoggedIn) {
       // User not logged in, store the plan and open auth
+      console.log('🔴 User not logged in, opening auth...');
       setSelectedPlan(plan.id);
       if (onOpenAuth) onOpenAuth();
       return;
     }
 
     // User is logged in, proceed with payment
+    console.log('🔴 Setting loading state...');
     setLoading(plan.id);
 
     try {
@@ -215,11 +243,11 @@ const SubscriptionScreen: React.FC<Props> = ({ onSelect, onClose, isLoggedIn = f
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="flex flex-wrap justify-center gap-6">
           {PLANS.map((plan, idx) => (
             <div
               key={plan.id}
-              className={`relative flex flex-col bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border-2 transition-all hover:scale-[1.02] group ${plan.isPopular ? 'border-indigo-600 shadow-2xl shadow-indigo-100 dark:shadow-none ring-4 ring-indigo-50 dark:ring-indigo-900/10' : 'border-gray-50 dark:border-white/5 shadow-xl shadow-gray-100 dark:shadow-none hover:border-indigo-200'}`}
+              className={`relative flex flex-col bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border-2 transition-all hover:scale-[1.02] group w-full md:w-[calc(50%-1.5rem)] lg:w-[calc(25%-1.5rem)] min-w-[280px] ${plan.isPopular ? 'border-indigo-600 shadow-2xl shadow-indigo-100 dark:shadow-none ring-4 ring-indigo-50 dark:ring-indigo-900/10' : 'border-gray-50 dark:border-white/5 shadow-xl shadow-gray-100 dark:shadow-none hover:border-indigo-200'}`}
               style={{ animationDelay: `${idx * 100}ms` }}
             >
               {plan.isPopular && (
@@ -242,10 +270,25 @@ const SubscriptionScreen: React.FC<Props> = ({ onSelect, onClose, isLoggedIn = f
               </div>
 
               <div className="mb-8">
-                <div className="flex items-baseline gap-1">
+                <div className="flex items-baseline gap-1 mb-1">
                   <span className="text-3xl font-black text-gray-900 dark:text-white">{plan.price}</span>
                   <span className="text-gray-400 font-bold text-sm">/{plan.period}</span>
                 </div>
+                {plan.period.toLowerCase().includes('day') && (
+                  <div className="space-y-1">
+                    <div className="text-sm font-bold text-gray-600 dark:text-slate-400">
+                   
+                    </div>
+                    <div className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
+                 
+                    </div>
+                  </div>
+                )}
+                {plan.period.toLowerCase().includes('month') && (
+                  <div className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 mt-1">
+
+                  </div>
+                )}
               </div>
 
               <div className="flex-1 space-y-4 mb-8">

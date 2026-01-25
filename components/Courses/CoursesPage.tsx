@@ -57,11 +57,11 @@ const CoursesPage: React.FC = () => {
 
         const chaptersMap: Record<string, FirebaseChapter[]> = {};
         const topicsMap: Record<string, FirebaseTopic[]> = {};
-        
+
         for (const course of courses) {
           const chapters = await contentService.getChapters(course.id);
           chaptersMap[course.id] = chapters;
-          
+
           // Load topics for each chapter
           for (const chapter of chapters) {
             try {
@@ -73,7 +73,7 @@ const CoursesPage: React.FC = () => {
             }
           }
         }
-        
+
         setFirebaseChapters(chaptersMap);
         setFirebaseTopics(topicsMap);
       } catch (e) {
@@ -182,21 +182,21 @@ const CoursesPage: React.FC = () => {
   // Filter courses based on search and filters
   const filteredCourses = firebaseCourses.filter(course => {
     const searchLower = searchQuery.toLowerCase();
-    
+
     // Search filter
-    const matchesSearch = !searchQuery || 
+    const matchesSearch = !searchQuery ||
       course.subject.toLowerCase().includes(searchLower) ||
       course.board.toLowerCase().includes(searchLower) ||
       `class ${course.class}`.includes(searchLower);
-    
+
     // Board/Exam filter
-    const matchesBoard = selectedExamCategory === 'ALL EXAM/CATEGORYS' || 
+    const matchesBoard = selectedExamCategory === 'ALL EXAM/CATEGORYS' ||
       course.board.toUpperCase() === selectedExamCategory.toUpperCase();
-    
+
     // Class filter
-    const matchesClass = selectedCourseFilter === 'ALL COURSES' || 
+    const matchesClass = selectedCourseFilter === 'ALL COURSES' ||
       `Class ${course.class}` === selectedCourseFilter;
-    
+
     return matchesSearch && matchesBoard && matchesClass;
   });
 
@@ -253,7 +253,7 @@ const CoursesPage: React.FC = () => {
                   <Filter size={16} />
                   <span className="font-bold uppercase tracking-wide">Global Filters</span>
                 </div>
-                
+
                 {/* Exam/Category Filter */}
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1">
@@ -323,7 +323,7 @@ const CoursesPage: React.FC = () => {
                     <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                       {course.subject} {course.class}
                     </h3>
-                    
+
                     <p className="text-sm text-gray-500 dark:text-gray-400 font-semibold">
                       {topicCount} topics
                     </p>

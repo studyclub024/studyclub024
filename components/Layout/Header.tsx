@@ -80,8 +80,8 @@ const Header: React.FC<Props> = ({ isDarkMode, onToggleDarkMode, onProfileClick,
     >
       <div className="container mx-auto px-4 flex items-center justify-between">
         <button onClick={() => onLogoClick?.()} aria-label="Go to homepage" className="flex items-center gap-3 rounded-lg hover:bg-gray-50 p-1 transition-all">
-          <div className="theme-bg p-2 rounded-xl text-white shadow-lg theme-glow shrink-0 transition-all">
-            <GraduationCap size={24} />
+          <div className="p-1 rounded-xl bg-white shadow-md border border-indigo-100 flex items-center justify-center overflow-hidden shrink-0 transition-all hover:scale-105">
+            <img src="https://firebasestorage.googleapis.com/v0/b/my-website-map-470209.firebasestorage.app/o/logos%2Fsc.png?alt=media" alt="SC Logo" className="w-10 h-10 object-contain" />
           </div>
           <div className="hidden xs:block min-w-0 text-left">
             <h1 className="text-xl font-bold tracking-tight truncate">StudyClub24</h1>
@@ -113,6 +113,7 @@ const Header: React.FC<Props> = ({ isDarkMode, onToggleDarkMode, onProfileClick,
               >
                 <ActiveIcon size={18} className="theme-text" />
                 {!canUseThemes && <Lock size={10} className="absolute top-0 right-0 text-amber-500" />}
+                <span className="hidden md:block text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">Fun Themes</span>
                 <ChevronDown size={12} className="text-gray-400 transition-transform" />
               </button>
 
@@ -160,16 +161,15 @@ const Header: React.FC<Props> = ({ isDarkMode, onToggleDarkMode, onProfileClick,
           </div>
 
           <div className="flex items-center gap-2">
-            {hasCoursesAccess && (
+
+
+            {onOpenUpgrade && planId !== 'yearly-pro' && (
               <button
-                onClick={onCoursesClick}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl font-bold text-[10px] uppercase tracking-widest transition-all border shadow-sm ${isActiveCourses
-                  ? 'theme-bg text-white theme-border'
-                  : 'bg-white dark:bg-slate-900 dark:text-white hover:theme-bg-soft hover:theme-text theme-border'
-                  }`}
+                onClick={onOpenUpgrade}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-2xl font-bold text-[10px] uppercase tracking-widest transition-all border shadow-sm theme-bg theme-border hover:opacity-90"
               >
-                <BookOpen size={16} />
-                <span className="hidden sm:inline">Courses</span>
+                <Sparkles size={16} />
+                <span className="hidden sm:inline">Upgrade</span>
               </button>
             )}
 
@@ -177,7 +177,7 @@ const Header: React.FC<Props> = ({ isDarkMode, onToggleDarkMode, onProfileClick,
               <button
                 onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl font-bold text-[10px] uppercase tracking-widest transition-all border shadow-sm ${isActiveProfile || isProfileDropdownOpen
-                  ? 'theme-bg text-white theme-border'
+                  ? 'theme-bg theme-border'
                   : 'bg-white dark:bg-slate-900 dark:text-white hover:theme-bg-soft hover:theme-text theme-border'
                   }`}
               >
@@ -210,20 +210,12 @@ const Header: React.FC<Props> = ({ isDarkMode, onToggleDarkMode, onProfileClick,
                         </span>
                       )}
                     </div>
-                    <div className="text-[10px] font-bold text-gray-400 flex items-center gap-1.5 mb-3">
+                    <div className="text-[10px] font-bold text-gray-400 flex items-center gap-1.5">
                       <Calendar size={12} />
                       Plan Expires: {userProfile?.planExpiry ? new Date(userProfile.planExpiry).toLocaleDateString() : 'Never'}
                     </div>
-
-                    {onOpenUpgrade && planId !== 'yearly-pro' && (
-                      <button
-                        onClick={() => { onOpenUpgrade(); setIsProfileDropdownOpen(false); }}
-                        className="w-full flex items-center justify-center gap-2 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-opacity shadow-lg shadow-indigo-200 dark:shadow-none"
-                      >
-                        <Sparkles size={12} /> Upgrade Plan
-                      </button>
-                    )}
                   </div>
+
 
                   <div className="space-y-1">
                     <button
