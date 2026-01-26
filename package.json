@@ -21,7 +21,9 @@
     "firebase:deploy:hosting": "npm run build && firebase deploy --only hosting",
     "firebase:deploy:functions": "cd functions && npm install && cd .. && firebase deploy --only functions",
     "firebase:emulators": "npm run build && firebase emulators:start",
-    "firebase:logs": "firebase functions:log"
+    "firebase:logs": "firebase functions:log",
+    "seed": "ts-node scripts/seedData.ts",
+    "admin": "open http://localhost:3000?admin=true || start http://localhost:3000?admin=true"
   },
   "dependencies": {
     "@capacitor/android": "^8.0.0",
@@ -29,13 +31,16 @@
     "@capacitor/core": "^8.0.0",
     "@google/genai": "^1.33.0",
     "@types/crypto-js": "^4.2.2",
+    "@types/papaparse": "^5.5.2",
     "cors": "^2.8.5",
     "crypto-js": "^4.2.0",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "firebase": "^12.7.0",
+    "firebase-admin": "^13.6.0",
     "katex": "^0.16.27",
     "lucide-react": "^0.561.0",
+    "papaparse": "^5.5.3",
     "razorpay": "^2.9.6",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
