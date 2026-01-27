@@ -1,9 +1,11 @@
-// Simple Node.js seed script that can run with temporary open rules
+node scripts/seed-simple.cjs
+// Simple Node.js seed script that can run with service account credentials
 const admin = require('firebase-admin');
+const serviceAccount = require('./serviceAccountKey.json');
 
-// Initialize Firebase Admin (without service account for local testing)
 if (!admin.apps.length) {
   admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
     projectId: 'my-website-map-470209',
   });
 }
