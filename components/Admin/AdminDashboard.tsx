@@ -1,11 +1,13 @@
 // Admin Dashboard Component - Quick access to seed data and upload content
 import React, { useState } from 'react';
-import { Database, Upload, BookOpen, FileText, Settings, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { Database, Upload, BookOpen, FileText, Settings, CheckCircle, AlertCircle, Loader2, Layers } from 'lucide-react';
 import { seedInitialData, clearAllData } from '../../scripts/seedData';
 import ContentUploader from './ContentUploader';
+import CourseManagerModal from './CourseManagerModal';
 
 const AdminDashboard: React.FC = () => {
   const [showUploader, setShowUploader] = useState(false);
+  const [showCourseManager, setShowCourseManager] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -151,6 +153,35 @@ const AdminDashboard: React.FC = () => {
             </button>
           </div>
 
+          {/* Manage Courses/Chapters */}
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 bg-violet-100 dark:bg-violet-900/30 rounded-xl flex items-center justify-center">
+                <Layers size={24} className="text-violet-600 dark:text-violet-400" />
+              </div>
+              <div>
+                <h3 className="text-xl font-black text-gray-900 dark:text-white">
+                  Courses & Chapters
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Add course structure from UI
+                </p>
+              </div>
+            </div>
+
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+              Create a new course (subject/class/board) and add chapters without running scripts.
+            </p>
+
+            <button
+              onClick={() => setShowCourseManager(true)}
+              className="w-full py-3 bg-violet-600 text-white rounded-xl font-bold hover:bg-violet-700 transition-colors flex items-center justify-center gap-2"
+            >
+              <Layers size={20} />
+              Manage Courses
+            </button>
+          </div>
+
           {/* Upload Content */}
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
             <div className="flex items-center gap-3 mb-4">
@@ -259,6 +290,13 @@ const AdminDashboard: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Course/Chapter Manager Modal */}
+      {showCourseManager && (
+        <CourseManagerModal
+          onClose={() => setShowCourseManager(false)}
+        />
+      )}
 
       {/* Content Uploader Modal */}
       {showUploader && (
