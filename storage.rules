@@ -1,63 +1,54 @@
 rules_version = '2';
-rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    
-    // Helper functions
     function isSignedIn() {
       return request.auth != null;
     }
-    
+
     function isAdmin() {
-      return request.auth != null && 
-             firestore.exists(/databases/(default)/documents/users/$(request.auth.uid)) &&
-             firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      return request.auth != null &&
+        firestore.exists(/databases/(default)/documents/users/$(request.auth.uid)) &&
+        firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
-    
+
     function isOwner(userId) {
       return request.auth != null && request.auth.uid == userId;
     }
-    
+
     function isValidImage() {
       return request.resource.contentType.matches('image/.*');
     }
-    
+
     function isValidDocument() {
       return request.resource.contentType.matches('text/.*') ||
-             request.resource.contentType.matches('application/.*');
+        request.resource.contentType.matches('application/.*');
     }
-    
+
     function isUnder5MB() {
       return request.resource.size < 5 * 1024 * 1024;
     }
-    
+
     // ==================== COURSE CONTENT ====================
-    // All authenticated users can read
-    // Only admins can write
     match /courses/{courseId}/{allPaths=**} {
       allow read: if isSignedIn();
       allow write: if isAdmin() && (isValidImage() || isValidDocument()) && isUnder5MB();
     }
-    
+
     // ==================== USER UPLOADS ====================
-    // Users can read/write their own uploads
     match /users/{userId}/{allPaths=**} {
-      allow read, write: if isOwner(userId) && isUnder5MB();
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if isOwner(userId) && isUnder5MB();
     }
-    
+
     // ==================== SHARED RESOURCES ====================
-    // Public read for icons, logos, etc.
-    // Admin-only write
     match /shared/{allPaths=**} {
       allow read: if true;
       allow write: if isAdmin();
     }
-    
+
     // ==================== TEMPORARY UPLOADS ====================
-    // For processing before moving to permanent location
     match /temp/{userId}/{allPaths=**} {
       allow read, write: if isOwner(userId) && isUnder5MB();
-      // Auto-delete after 24 hours (implement with Cloud Functions)
     }
   }
 }

@@ -1,155 +1,86 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Helper functions
     function isSignedIn() {
       return request.auth != null;
     }
-    
-    function isAdmin() {
-      return isSignedIn() && 
-             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-    
-    function isPremiumUser() {
-      return isSignedIn() && 
-             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.subscription != 'free';
-    }
-    
+
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
-    
+
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function isAdmin() {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        userDoc().data.role == 'admin';
+    }
+
+    function isPremiumUser() {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        userDoc().data.subscription != 'free';
+    }
+
     // ==================== COURSES ====================
-    // Public read, allow all write operations for development
     match /courses/{courseId} {
       allow read: if true;
-      allow create, update, delete: if true; // Allow all operations for development/seeding
-    }
-    
-    // ==================== CHAPTERS ====================
-    // Public read, allow all write operations for development
-    match /chapters/{chapterId} {
-      allow read: if true;
-      allow create, update, delete: if true; // Allow all operations for development/seeding
+      allow create, update, delete: if isAdmin();
     }
 
-    // TEMP: Allow anyone to read/write any document (for seeding)
-    match /{document=**} {
-      allow read, write: if true;
-    }
-    
-    // ==================== TOPICS ====================
-    // Read: public for free content, premium users for premium content
-    // Write: allow all for development
-    match /topics/{topicId} {
-      allow read: if true || 
-                    (!resource.data.isPremium || isPremiumUser());
-      allow create, update, delete: if true; // Allow all operations for development/seeding
-    }
-    
-    // ==================== FLASHCARDS ====================
-    // Read: authenticated users (respects premium status from topic)
-    // Write: allow all for development
-    match /flashcards/{flashcardId} {
-      allow read: if isSignedIn();
-      allow create, update, delete: if true; // Allow all operations for development/seeding
-    }
-    
-    // ==================== CONTENT SUMMARIES ====================
-    // Read: authenticated users (respects premium status from topic)
-    // Write: allow all for development
-    match /content_summaries/{summaryId} {
-      allow read: if isSignedIn();
-      allow create, update, delete: if true; // Allow all operations for development/seeding
-    }
-    
-    // ==================== USER PROGRESS ====================
-    // Users can only read/write their own progress
-    match /user_progress/{progressId} {
-      allow read, write: if isSignedIn() && 
-                            resource.data.userId == request.auth.uid;
-      allow create: if isSignedIn() && 
-                      request.resource.data.userId == request.auth.uid;
-      allow delete: if true; // Allow delete for development/seeding
-    }
-    
-    // ==================== USERS ====================
-    // Users can read their own profile, admins can read all
-    // Allow list/where queries for leaderboard (authenticated users only)
-    // Users can update their own profile (except role)
-    match /users/{userId} {
-      allow read: if isSignedIn();
-      allow write: if isOwner(userId);
-    }
-    
-    // Courses collection
-    match /courses/{courseId} {
-      allow read: if true;
-      allow create, update, delete: if true; // Allow all operations for development/seeding
-    }
-    
     // ==================== CHAPTERS ====================
-    // Public read, allow all write operations for development
     match /chapters/{chapterId} {
       allow read: if true;
-      allow create, update, delete: if true; // Allow all operations for development/seeding
+      allow create, update, delete: if isAdmin();
     }
 
-    // TEMP: Allow anyone to read/write any document (for seeding)
-    match /{document=**} {
-      allow read, write: if true;
-    }
-    
     // ==================== TOPICS ====================
-    // Read: public for free content, premium users for premium content
-    // Write: allow all for development
     match /topics/{topicId} {
-      allow read: if true || 
-                    (!resource.data.isPremium || isPremiumUser());
-      allow create, update, delete: if true; // Allow all operations for development/seeding
+      allow read: if isAdmin() || !resource.data.isPremium || isPremiumUser();
+      allow create, update, delete: if isAdmin();
     }
-    
+
     // ==================== FLASHCARDS ====================
-    // Read: authenticated users (respects premium status from topic)
-    // Write: allow all for development
     match /flashcards/{flashcardId} {
       allow read: if isSignedIn();
-      allow create, update, delete: if true; // Allow all operations for development/seeding
+      allow create, update, delete: if isAdmin();
     }
-    
+
     // ==================== CONTENT SUMMARIES ====================
-    // Read: authenticated users (respects premium status from topic)
-    // Write: allow all for development
     match /content_summaries/{summaryId} {
       allow read: if isSignedIn();
-      allow create, update, delete: if true; // Allow all operations for development/seeding
+      allow create, update, delete: if isAdmin();
     }
-    
+
     // ==================== USER PROGRESS ====================
-    // Users can only read/write their own progress
     match /user_progress/{progressId} {
-      allow read, write: if isSignedIn() && 
-                            resource.data.userId == request.auth.uid;
-      allow create: if isSignedIn() && 
-                      request.resource.data.userId == request.auth.uid;
-      allow delete: if true; // Allow delete for development/seeding
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow read, update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
     }
-    
+
+    // ==================== SUBSCRIPTIONS ====================
+    // Written by backend/admin processes; users can read their own.
+    match /subscriptions/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
     // ==================== USERS ====================
-    // Users can read their own profile, admins can read all
-    // Allow list/where queries for leaderboard (authenticated users only)
-    // Users can update their own profile (except role)
+    // Users can update their own profile but cannot change their role.
     match /users/{userId} {
       allow get: if isOwner(userId) || isAdmin();
-      allow list: if isSignedIn(); // Allow leaderboard queries
+      allow list: if isSignedIn();
       allow create: if isOwner(userId);
-      allow update: if isOwner(userId) && 
-                      request.resource.data.role == resource.data.role; // Can't change own role
+      allow update: if isOwner(userId) && request.resource.data.role == resource.data.role;
       allow delete: if isAdmin();
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

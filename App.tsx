@@ -155,12 +155,50 @@ const App: React.FC = () => {
 
   // Admin page state (accessed via ?admin=true in URL)
   const [showAdmin, setShowAdmin] = useState(false);
+  const [adminAccessChecked, setAdminAccessChecked] = useState(false);
+  const [adminAllowed, setAdminAllowed] = useState(false);
+
+  const clearAdminParam = useCallback(() => {
+    const url = new URL(window.location.href);
+    url.searchParams.delete('admin');
+    window.history.replaceState({}, '', url.toString());
+    setShowAdmin(false);
+    setAdminAccessChecked(false);
+    setAdminAllowed(false);
+  }, []);
 
   // Check URL for admin parameter
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     setShowAdmin(params.get('admin') === 'true');
   }, []);
+
+  // If admin was requested, verify the current user is actually an admin.
+  useEffect(() => {
+    if (!showAdmin) return;
+
+    setAdminAccessChecked(false);
+    setAdminAllowed(false);
+
+    if (!currentUser) {
+      setAdminAccessChecked(true);
+      return;
+    }
+
+    db.collection('users')
+      .doc(currentUser.uid)
+      .get()
+      .then((doc) => {
+        const role = doc.exists ? (doc.data() as any)?.role : null;
+        setAdminAllowed(role === 'admin');
+        setAdminAccessChecked(true);
+      })
+      .catch((err) => {
+        console.error('Failed to verify admin access', err);
+        setAdminAllowed(false);
+        setAdminAccessChecked(true);
+      });
+  }, [showAdmin, currentUser]);
 
   // Notification modal state
   const [notification, setNotification] = useState<{ type: 'success' | 'error' | 'warning'; title: string; message: string } | null>(null);
@@ -850,7 +888,37 @@ const App: React.FC = () => {
   }, []);
 
   // Admin Dashboard Route - accessible via ?admin=true
+  // IMPORTANT: this must be protected by both client-side gating and Firestore security rules.
   if (showAdmin) {
+    if (authLoading || !adminAccessChecked) {
+      return (
+        <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex items-center justify-center p-4">
+          <Loader2 className="animate-spin text-indigo-600" size={48} />
+        </div>
+      );
+    }
+
+    if (!currentUser || !adminAllowed) {
+      return (
+        <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex items-center justify-center p-4">
+          <div className="max-w-lg w-full bg-white dark:bg-slate-900 border border-gray-100 dark:border-white/5 rounded-2xl p-6 shadow-lg">
+            <h2 className="text-xl font-black text-gray-900 dark:text-white">Admin access denied</h2>
+            <p className="text-sm text-gray-600 dark:text-slate-400 mt-2">
+              This admin page is restricted to users with <code>role: "admin"</code> in Firestore.
+            </p>
+            <div className="mt-5 flex gap-3">
+              <button
+                onClick={clearAdminParam}
+                className="px-4 py-2 rounded-xl theme-bg text-white text-xs font-black uppercase tracking-widest"
+              >
+                Go back
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return <AdminDashboard />;
   }
 
