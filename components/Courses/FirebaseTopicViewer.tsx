@@ -243,108 +243,116 @@ const FirebaseTopicViewer: React.FC<Props> = ({ topic, onBack }) => {
               ) : (
                 <>
                   {/* Flash Cards Tab */}
-                  {activeTab === 'flashcards' && flashcards.length > 0 && (
-                    <div className="space-y-6">
-                      {/* Progress */}
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="font-semibold theme-text">
-                          Card {currentCardIndex + 1} of {flashcards.length}
-                        </span>
-                        <button
-                          onClick={handleReset}
-                          className="flex items-center gap-1 px-3 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 theme-text transition-colors"
-                        >
-                          <RotateCcw size={14} />
-                          Reset
-                        </button>
-                      </div>
-
-                      {/* Progress Bar */}
-                      <div className="w-full h-2 bg-gray-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-gradient-to-r from-indigo-500 to-purple-600 transition-all duration-300"
-                          style={{ width: `${((currentCardIndex + 1) / flashcards.length) * 100}%` }}
-                        />
-                      </div>
-
-                      {/* Flashcard */}
-                      <div className="relative">
-                        <div
-                          onClick={() => setIsFlipped(!isFlipped)}
-                          className="relative min-h-[300px] cursor-pointer perspective-1000"
-                        >
-                          <div
-                            className={`relative w-full min-h-[300px] transition-transform duration-500 transform-style-3d ${
-                              isFlipped ? 'rotate-y-180' : ''
-                            }`}
+                  {activeTab === 'flashcards' && (
+                    flashcards.length > 0 ? (
+                      <div className="space-y-6">
+                        {/* Progress */}
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="font-semibold theme-text">
+                            Card {currentCardIndex + 1} of {flashcards.length}
+                          </span>
+                          <button
+                            onClick={handleReset}
+                            className="flex items-center gap-1 px-3 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 theme-text transition-colors"
                           >
-                            {/* Front */}
-                            <div className="absolute inset-0 backface-hidden">
-                              <div className="h-full bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-8 flex flex-col items-center justify-center text-white shadow-2xl">
-                                <div className="text-xs font-bold uppercase tracking-wider opacity-75 mb-4">
-                                  Question
-                                </div>
-                                <div className="text-2xl font-bold text-center mb-6">
-                                  {currentCard.front}
-                                </div>
-                                {currentCard.hint && (
-                                  <div className="mt-auto pt-4 text-sm opacity-75 text-center">
-                                    💡 Hint: {currentCard.hint}
+                            <RotateCcw size={14} />
+                            Reset
+                          </button>
+                        </div>
+
+                        {/* Progress Bar */}
+                        <div className="w-full h-2 bg-gray-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-gradient-to-r from-indigo-500 to-purple-600 transition-all duration-300"
+                            style={{ width: `${((currentCardIndex + 1) / flashcards.length) * 100}%` }}
+                          />
+                        </div>
+
+                        {/* Flashcard */}
+                        <div className="relative">
+                          <div
+                            onClick={() => setIsFlipped(!isFlipped)}
+                            className="relative min-h-[300px] cursor-pointer perspective-1000"
+                          >
+                            <div
+                              className={`relative w-full min-h-[300px] transition-transform duration-500 transform-style-3d ${
+                                isFlipped ? 'rotate-y-180' : ''
+                              }`}
+                            >
+                              {/* Front */}
+                              <div className="absolute inset-0 backface-hidden">
+                                <div className="h-full bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-8 flex flex-col items-center justify-center text-white shadow-2xl">
+                                  <div className="text-xs font-bold uppercase tracking-wider opacity-75 mb-4">
+                                    Question
                                   </div>
-                                )}
-                                <div className="mt-4 text-sm opacity-75">
-                                  Click to flip
+                                  <div className="text-2xl font-bold text-center mb-6">
+                                    {currentCard.front}
+                                  </div>
+                                  {currentCard.hint && (
+                                    <div className="mt-auto pt-4 text-sm opacity-75 text-center">
+                                      💡 Hint: {currentCard.hint}
+                                    </div>
+                                  )}
+                                  <div className="mt-4 text-sm opacity-75">
+                                    Click to flip
+                                  </div>
                                 </div>
                               </div>
-                            </div>
 
-                            {/* Back */}
-                            <div className="absolute inset-0 backface-hidden rotate-y-180">
-                              <div className="h-full bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-8 flex flex-col items-center justify-center text-white shadow-2xl">
-                                <div className="text-xs font-bold uppercase tracking-wider opacity-75 mb-4">
-                                  Answer
-                                </div>
-                                <div className="text-2xl font-bold text-center mb-6">
-                                  {currentCard.back}
-                                </div>
-                                {currentCard.imageUrl && (
-                                  <div className="mt-4 max-w-xs">
-                                    <img
-                                      src={currentCard.imageUrl}
-                                      alt="Flashcard"
-                                      className="rounded-lg shadow-lg"
-                                    />
+                              {/* Back */}
+                              <div className="absolute inset-0 backface-hidden rotate-y-180">
+                                <div className="h-full bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-8 flex flex-col items-center justify-center text-white shadow-2xl">
+                                  <div className="text-xs font-bold uppercase tracking-wider opacity-75 mb-4">
+                                    Answer
                                   </div>
-                                )}
-                                <div className="mt-auto text-sm opacity-75">
-                                  Click to flip back
+                                  <div className="text-2xl font-bold text-center mb-6">
+                                    {currentCard.back}
+                                  </div>
+                                  {currentCard.imageUrl && (
+                                    <div className="mt-4 max-w-xs">
+                                      <img
+                                        src={currentCard.imageUrl}
+                                        alt="Flashcard"
+                                        className="rounded-lg shadow-lg"
+                                      />
+                                    </div>
+                                  )}
+                                  <div className="mt-auto text-sm opacity-75">
+                                    Click to flip back
+                                  </div>
                                 </div>
                               </div>
                             </div>
                           </div>
                         </div>
-                      </div>
 
-                      {/* Navigation */}
-                      <div className="flex items-center justify-between pt-4">
-                        <button
-                          onClick={handlePrevious}
-                          disabled={currentCardIndex === 0}
-                          className="flex items-center gap-2 px-6 py-3 rounded-xl bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 font-bold text-sm theme-text hover:bg-gray-50 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                          <ArrowLeft size={18} />
-                          Previous
-                        </button>
-                        <button
-                          onClick={handleNext}
-                          disabled={currentCardIndex === flashcards.length - 1}
-                          className="flex items-center gap-2 px-6 py-3 rounded-xl bg-indigo-600 text-white font-bold text-sm hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                          Next
-                          <ArrowRight size={18} />
-                        </button>
+                        {/* Navigation */}
+                        <div className="flex items-center justify-between pt-4">
+                          <button
+                            onClick={handlePrevious}
+                            disabled={currentCardIndex === 0}
+                            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 font-bold text-sm theme-text hover:bg-gray-50 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          >
+                            <ArrowLeft size={18} />
+                            Previous
+                          </button>
+                          <button
+                            onClick={handleNext}
+                            disabled={currentCardIndex === flashcards.length - 1}
+                            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-indigo-600 text-white font-bold text-sm hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          >
+                            Next
+                            <ArrowRight size={18} />
+                          </button>
+                        </div>
                       </div>
-                    </div>
+                    ) : (
+                      <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                        <Layers size={48} className="mx-auto mb-4 text-gray-300 dark:text-gray-600" />
+                        <div className="text-lg font-bold mb-2">No flashcards available</div>
+                        <div className="text-sm">Flashcards for this topic are not available yet. Please check back later.</div>
+                      </div>
+                    )
                   )}
 
                   {/* Topper's Notes Tab */}
