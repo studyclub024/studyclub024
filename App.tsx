@@ -140,6 +140,7 @@ const App: React.FC = () => {
   const streamRef = useRef<MediaStream | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
 
+
   const [currentAchievement, setCurrentAchievement] = useState<AchievementBadge | null>(null);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -218,6 +219,90 @@ const App: React.FC = () => {
       item.mode.toLowerCase().includes(librarySearchQuery.toLowerCase())
     );
   }, [savedMaterials, librarySearchQuery]);
+
+  const handlePlanUpgrade = async (plan: SubscriptionPlan) => {
+    if (currentUser) {
+      try {
+        // Updated Firestore query to compat style
+        const userDocRef = db.collection('users').doc(currentUser.uid);
+
+        // FIXED: Calculate expiry based on selected plan duration
+        const now = new Date();
+        let daysToAdd = 0;
+        switch (plan.id) {
+          case 'crash-course':
+          case 'instant-help':
+          case 'focused-prep':
+          case 'study-pro':
+            daysToAdd = 30;
+            break;
+          default: daysToAdd = 365;
+        }
+
+        now.setDate(now.getDate() + daysToAdd);
+        const expiryStr = now.toLocaleDateString(undefined, {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        });
+
+        // Update Firestore with new plan and expiry
+        await userDocRef.update({
+          subscriptionPlanId: plan.id,
+          planExpiry: expiryStr,
+          'stats.lastActiveDate': Date.now() // Track upgrade timestamp
+        });
+
+        // Immediately update local state to reflect plan change
+        // This ensures UI updates instantly without waiting for onSnapshot
+        setUserProfile(prev => prev ? {
+          ...prev,
+          subscriptionPlanId: plan.id,
+          planExpiry: expiryStr
+        } : null);
+
+        // Show success feedback
+        setError(null);
+      } catch (err: any) {
+        console.error("Plan upgrade failed:", err);
+        setError(`Failed to upgrade plan: ${err.message || 'Please try again.'}`);
+      }
+    }
+    setShowUpgradeModal(false);
+  };
+
+  const globalModals = (
+    <>
+      {showUpgradeModal && (
+        <SubscriptionScreen
+          isLoggedIn={!!currentUser}
+          onOpenAuth={() => setShowAuthModal(true)}
+          onSelect={handlePlanUpgrade}
+          onClose={() => setShowUpgradeModal(false)}
+        />
+      )}
+
+      {/* Notification Modal */}
+      {notification && (
+        <NotificationModal
+          isOpen={true}
+          onClose={() => setNotification(null)}
+          type={notification.type}
+          title={notification.title}
+          message={notification.message}
+        />
+      )}
+
+      {showAuthModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={() => setShowAuthModal(false)}>
+          <div className="absolute inset-0 bg-black/40" />
+          <div className="w-full max-w-md mx-4 relative" onClick={(e) => e.stopPropagation()}>
+            <AuthScreen onClose={() => setShowAuthModal(false)} isModal={true} />
+          </div>
+        </div>
+      )}
+    </>
+  );
 
   // Premium Gating Functions
   const userPlan = userProfile?.subscriptionPlanId || 'free';
@@ -952,6 +1037,7 @@ const App: React.FC = () => {
           />
           <main className="container mx-auto px-4 py-8 flex-grow"><Privacy onBack={() => setLegalPage(null)} /></main>
           <Footer onOpenLegal={(s) => setLegalPage(s)} />
+          {globalModals}
         </div>
       );
       if (legalPage === 'terms') return (
@@ -974,6 +1060,7 @@ const App: React.FC = () => {
           />
           <main className="container mx-auto px-4 py-8 flex-grow"><Terms onBack={() => setLegalPage(null)} /></main>
           <Footer onOpenLegal={(s) => setLegalPage(s)} />
+          {globalModals}
         </div>
       );
       if (legalPage === 'contact') return (
@@ -996,6 +1083,7 @@ const App: React.FC = () => {
           />
           <main className="container mx-auto px-4 py-8 flex-grow"><Contact onBack={() => setLegalPage(null)} /></main>
           <Footer onOpenLegal={(s) => setLegalPage(s)} />
+          {globalModals}
         </div>
       );
       if (legalPage === 'refund') return (
@@ -1018,6 +1106,7 @@ const App: React.FC = () => {
           />
           <main className="container mx-auto px-4 py-8 flex-grow"><Refund onBack={() => setLegalPage(null)} /></main>
           <Footer onOpenLegal={(s) => setLegalPage(s)} />
+          {globalModals}
         </div>
       );
 
@@ -1029,14 +1118,7 @@ const App: React.FC = () => {
             onOpenUpgrade={() => setShowUpgradeModal(true)}
             isLoggedIn={!!userProfile}
           />
-          {showAuthModal && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={() => setShowAuthModal(false)}>
-              <div className="absolute inset-0 bg-black/40" />
-              <div className="w-full max-w-md mx-4 relative" onClick={(e) => e.stopPropagation()}>
-                <AuthScreen onClose={() => setShowAuthModal(false)} isModal={true} />
-              </div>
-            </div>
-          )}
+          {globalModals}
         </>
       );
     }
@@ -1062,6 +1144,7 @@ const App: React.FC = () => {
       />
       <main className="container mx-auto px-4 py-8 flex-grow"><Privacy onBack={() => setLegalPage(null)} /></main>
       <Footer onOpenLegal={(s) => setLegalPage(s)} />
+      {globalModals}
     </div>
   );
   if (legalPage === 'terms') return (
@@ -1083,6 +1166,7 @@ const App: React.FC = () => {
       />
       <main className="container mx-auto px-4 py-8 flex-grow"><Terms onBack={() => setLegalPage(null)} /></main>
       <Footer onOpenLegal={(s) => setLegalPage(s)} />
+      {globalModals}
     </div>
   );
   if (legalPage === 'contact') return (
@@ -1104,6 +1188,7 @@ const App: React.FC = () => {
       />
       <main className="container mx-auto px-4 py-8 flex-grow"><Contact onBack={() => setLegalPage(null)} /></main>
       <Footer onOpenLegal={(s) => setLegalPage(s)} />
+      {globalModals}
     </div>
   );
   if (legalPage === 'refund') return (
@@ -1125,6 +1210,7 @@ const App: React.FC = () => {
       />
       <main className="container mx-auto px-4 py-8 flex-grow"><Refund onBack={() => setLegalPage(null)} /></main>
       <Footer onOpenLegal={(s) => setLegalPage(s)} />
+      {globalModals}
     </div>
   );
 
@@ -1153,6 +1239,7 @@ const App: React.FC = () => {
           </ErrorBoundary>
         </div>
         <Footer onOpenLegal={(s) => setLegalPage(s)} />
+        {globalModals}
       </div>
     );
   }
@@ -1225,6 +1312,7 @@ const App: React.FC = () => {
           </div>
         </main>
         <Footer onOpenLegal={(s) => setLegalPage(s)} />
+        {globalModals}
       </div>
     );
   }
@@ -1704,74 +1792,8 @@ const App: React.FC = () => {
         />
       )}
 
-      {showUpgradeModal && (
-        <SubscriptionScreen
-          isLoggedIn={!!currentUser}
-          onOpenAuth={() => setShowAuth(true)}
-          onSelect={async (plan) => {
-            if (currentUser) {
-              try {
-                // Updated Firestore query to compat style
-                const userDocRef = db.collection('users').doc(currentUser.uid);
-
-                // FIXED: Calculate expiry based on selected plan duration
-                const now = new Date();
-                let daysToAdd = 0;
-                switch (plan.id) {
-                  case 'crash-course':
-                  case 'instant-help':
-                  case 'focused-prep':
-                  case 'study-pro':
-                    daysToAdd = 30;
-                    break;
-                  default: daysToAdd = 365;
-                }
-
-                now.setDate(now.getDate() + daysToAdd);
-                const expiryStr = now.toLocaleDateString(undefined, {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                });
-
-                // Update Firestore with new plan and expiry
-                await userDocRef.update({
-                  subscriptionPlanId: plan.id,
-                  planExpiry: expiryStr,
-                  'stats.lastActiveDate': Date.now() // Track upgrade timestamp
-                });
-
-                // Immediately update local state to reflect plan change
-                // This ensures UI updates instantly without waiting for onSnapshot
-                setUserProfile(prev => prev ? {
-                  ...prev,
-                  subscriptionPlanId: plan.id,
-                  planExpiry: expiryStr
-                } : null);
-
-                // Show success feedback
-                setError(null);
-              } catch (err: any) {
-                console.error("Plan upgrade failed:", err);
-                setError(`Failed to upgrade plan: ${err.message || 'Please try again.'}`);
-              }
-            }
-            setShowUpgradeModal(false);
-          }}
-          onClose={() => setShowUpgradeModal(false)}
-        />
-      )}
-
-      {/* Notification Modal */}
-      {notification && (
-        <NotificationModal
-          isOpen={true}
-          onClose={() => setNotification(null)}
-          type={notification.type}
-          title={notification.title}
-          message={notification.message}
-        />
-      )}
+      {/* Replaced manual modal rendering with globalModals */}
+      {globalModals}
 
       <Footer onOpenLegal={(s) => setLegalPage(s)} />
     </div>
