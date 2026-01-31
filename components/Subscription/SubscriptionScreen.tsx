@@ -202,10 +202,9 @@ const SubscriptionScreen: React.FC<Props> = ({ onSelect, onClose, isLoggedIn = f
       };
 
       // Initiate Razorpay payment
-      await razorpayService.initiatePayment(plan, userDetails);
-
-      // Call the onSelect callback
-      onSelect(plan);
+      await razorpayService.initiatePayment(plan, userDetails, (successfulPlan) => {
+        onSelect(successfulPlan);
+      });
     } catch (error) {
       console.error('Payment error:', error);
       alert('Something went wrong. Please try again.');
@@ -229,8 +228,9 @@ const SubscriptionScreen: React.FC<Props> = ({ onSelect, onClose, isLoggedIn = f
               email: user?.email || undefined,
               phone: user?.phoneNumber || undefined,
             };
-            await razorpayService.initiatePayment(plan, userDetails);
-            onSelect(plan);
+            await razorpayService.initiatePayment(plan, userDetails, (successfulPlan) => {
+              onSelect(successfulPlan);
+            });
           } catch (error) {
             console.error('Payment error:', error);
             alert('Something went wrong. Please try again.');

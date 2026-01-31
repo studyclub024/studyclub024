@@ -223,10 +223,8 @@ const App: React.FC = () => {
   const handlePlanUpgrade = async (plan: SubscriptionPlan) => {
     if (currentUser) {
       try {
-        // Updated Firestore query to compat style
-        const userDocRef = db.collection('users').doc(currentUser.uid);
-
-        // FIXED: Calculate expiry based on selected plan duration
+        // FIXED: Calculate expiry based on selected plan duration for LOCAL UI UPDATE ONLY
+        // The service layer handles database update
         const now = new Date();
         let daysToAdd = 0;
         switch (plan.id) {
@@ -246,15 +244,7 @@ const App: React.FC = () => {
           day: 'numeric'
         });
 
-        // Update Firestore with new plan and expiry
-        await userDocRef.update({
-          subscriptionPlanId: plan.id,
-          planExpiry: expiryStr,
-          'stats.lastActiveDate': Date.now() // Track upgrade timestamp
-        });
-
         // Immediately update local state to reflect plan change
-        // This ensures UI updates instantly without waiting for onSnapshot
         setUserProfile(prev => prev ? {
           ...prev,
           subscriptionPlanId: plan.id,
@@ -264,8 +254,7 @@ const App: React.FC = () => {
         // Show success feedback
         setError(null);
       } catch (err: any) {
-        console.error("Plan upgrade failed:", err);
-        setError(`Failed to upgrade plan: ${err.message || 'Please try again.'}`);
+        console.error("Plan upgrade UI update failed:", err);
       }
     }
     setShowUpgradeModal(false);

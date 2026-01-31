@@ -109,7 +109,8 @@ class RazorpayService {
   // Initialize payment
   async initiatePayment(
     plan: SubscriptionPlan,
-    userDetails: { name?: string; email?: string; phone?: string } = {}
+    userDetails: { name?: string; email?: string; phone?: string } = {},
+    onSuccess?: (plan: SubscriptionPlan) => void
   ): Promise<void> {
     console.log('🔵 Initiating payment for plan:', plan.id);
 
@@ -137,7 +138,8 @@ class RazorpayService {
           razorpay_order_id: 'free_order',
           razorpay_signature: 'free_signature'
         },
-        plan
+        plan,
+        onSuccess
       );
       return;
     }
@@ -202,7 +204,7 @@ class RazorpayService {
         handler: async (response: RazorpayResponse) => {
           // Only process if we have a valid response and it's for the current order
           if (response.razorpay_payment_id && response.razorpay_order_id === this.currentOrderId) {
-            this.handlePaymentSuccess(response, plan);
+            this.handlePaymentSuccess(response, plan, onSuccess);
           }
         },
       };
@@ -258,7 +260,7 @@ class RazorpayService {
   }
 
   // Handle successful payment
-  private async handlePaymentSuccess(response: RazorpayResponse, plan: SubscriptionPlan) {
+  private async handlePaymentSuccess(response: RazorpayResponse, plan: SubscriptionPlan, onSuccess?: (plan: SubscriptionPlan) => void) {
     // Prevent double processing
     if (this.isProcessingPayment) {
       console.log('Payment already being processed, skipping...');
@@ -328,6 +330,11 @@ class RazorpayService {
       this.currentOrderId = null;
 
       // No page reload - let Firestore listener update the UI automatically
+
+      // Execute callback to update UI immediately
+      if (onSuccess) {
+        onSuccess(plan);
+      }
     } catch (error: any) {
       console.error('Error saving subscription:', error);
       this.showNotification('error', 'Subscription Error', `Failed to save subscription: ${error.message || 'Unknown error'}. Please contact support.`);
