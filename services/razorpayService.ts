@@ -58,7 +58,7 @@ class RazorpayService {
     // For testing, you can use test key: rzp_test_xxxxx
     // For production, use live key: rzp_live_xxxxx
     this.key = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_xxxxx';
-    
+
     // NOTE: In production, signature verification MUST be done on backend
     // This is for demo purposes only - never expose key_secret in frontend
     this.keySecret = import.meta.env.VITE_RAZORPAY_KEY_SECRET || '';
@@ -93,16 +93,16 @@ class RazorpayService {
   getPriceInPaise(priceString: string, period: string): number {
     // Remove ₹ symbol and convert to number
     const dailyPrice = parseFloat(priceString.replace('₹', '').replace(',', ''));
-    
+
     // If it's a daily rate, multiply by 30 days for monthly billing
     let monthlyPrice = dailyPrice;
     if (period.toLowerCase().includes('day')) {
       monthlyPrice = dailyPrice * 30;
     }
-    
+
     // Add 18% GST
     const priceWithGST = monthlyPrice * 1.18;
-    
+
     return Math.round(priceWithGST); // Convert to paise
   }
 
@@ -112,15 +112,15 @@ class RazorpayService {
     userDetails: { name?: string; email?: string; phone?: string } = {}
   ): Promise<void> {
     console.log('🔵 Initiating payment for plan:', plan.id);
-    
+
     // Reset payment processing flag and order ID for new payment
     this.isProcessingPayment = false;
     this.currentOrderId = null;
-    
+
     // Load Razorpay script
     console.log('🔵 Loading Razorpay script...');
     const scriptLoaded = await this.loadScript();
-    
+
     if (!scriptLoaded) {
       console.error('❌ Failed to load Razorpay script');
       this.showNotification('error', 'Connection Error', 'Failed to load Razorpay SDK. Please check your internet connection.');
@@ -132,11 +132,11 @@ class RazorpayService {
     if (plan.id === 'free') {
       console.log('🔵 Free plan selected, skipping payment');
       this.handlePaymentSuccess(
-        { 
-          razorpay_payment_id: 'free_plan', 
-          razorpay_order_id: 'free_order', 
-          razorpay_signature: 'free_signature' 
-        }, 
+        {
+          razorpay_payment_id: 'free_plan',
+          razorpay_order_id: 'free_order',
+          razorpay_signature: 'free_signature'
+        },
         plan
       );
       return;
@@ -154,14 +154,12 @@ class RazorpayService {
       const amount = this.getPriceInPaise(plan.price, plan.period);
 
       // Create order on backend - Use Firebase Functions URL
-      const isLocalhost = window.location.hostname === 'localhost';
-      const API_URL = isLocalhost 
-        ? 'https://us-central1-my-website-map-470209.cloudfunctions.net'
-        : window.location.origin;
+      // Use the Cloud Function URL directly for both dev and production to avoid routing issues
+      const API_URL = 'https://us-central1-my-website-map-470209.cloudfunctions.net';
       console.log('🔵 API URL:', API_URL);
       console.log('🔵 Creating order...');
-      
-      const orderResponse = await fetch(`${API_URL}/api/create-order`, {
+
+      const orderResponse = await fetch(`${API_URL}/createOrder`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -182,7 +180,7 @@ class RazorpayService {
 
       const orderData = await orderResponse.json();
       console.log('✅ Order created:', orderData);
-      
+
       // Store current order ID to track this payment instance
       this.currentOrderId = orderData.orderId;
 
@@ -210,7 +208,7 @@ class RazorpayService {
       };
 
       const razorpay = new window.Razorpay(options);
-      
+
       razorpay.on('payment.failed', (response: any) => {
         // Only process failure if it's for the current order
         if (response.error?.metadata?.order_id === this.currentOrderId) {
@@ -228,13 +226,10 @@ class RazorpayService {
   private async verifyPaymentOnBackend(response: RazorpayResponse): Promise<boolean> {
     try {
       console.log('Verifying payment on backend...');
-      const isLocalhost = window.location.hostname === 'localhost';
-      const API_URL = isLocalhost 
-        ? 'https://us-central1-my-website-map-470209.cloudfunctions.net'
-        : window.location.origin;
+      const API_URL = 'https://us-central1-my-website-map-470209.cloudfunctions.net';
       console.log('API URL:', API_URL);
-      
-      const verifyResponse = await fetch(`${API_URL}/api/verify-payment`, {
+
+      const verifyResponse = await fetch(`${API_URL}/verifyPayment`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -269,12 +264,12 @@ class RazorpayService {
       console.log('Payment already being processed, skipping...');
       return;
     }
-    
+
     this.isProcessingPayment = true;
-    
+
     try {
       const currentUser = auth.currentUser;
-      
+
       if (!currentUser) {
         this.showNotification('error', 'Authentication Error', 'Please log in and try again.');
         return;
@@ -311,12 +306,12 @@ class RazorpayService {
 
       // Update user profile with new plan
       const expiryDate = new Date(subscriptionData.expiryDate);
-      const expiryStr = expiryDate.toLocaleDateString(undefined, { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
+      const expiryStr = expiryDate.toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
       });
-      
+
       await db.collection('users').doc(currentUser.uid).update({
         subscriptionPlanId: plan.id,
         planExpiry: expiryStr,
@@ -328,10 +323,10 @@ class RazorpayService {
 
       // Show success message
       this.showNotification('success', 'Payment Successful! 🎉', `Your ${plan.name} is now active.`);
-      
+
       // Clear current order ID after successful processing
       this.currentOrderId = null;
-      
+
       // No page reload - let Firestore listener update the UI automatically
     } catch (error: any) {
       console.error('Error saving subscription:', error);
@@ -350,7 +345,7 @@ class RazorpayService {
       console.log('Success already being processed, skipping failure notification');
       return;
     }
-    
+
     const errorMsg = response.error?.description || 'Payment failed. Please try again.';
     this.showNotification('error', 'Payment Failed', errorMsg);
   }
@@ -358,7 +353,7 @@ class RazorpayService {
   // Calculate expiry date based on plan
   private calculateExpiryDate(planId: string): string {
     const now = new Date();
-    
+
     switch (planId) {
       case 'crash-course':
       case 'instant-help':
@@ -370,7 +365,7 @@ class RazorpayService {
         // Free plan - never expires
         now.setFullYear(now.getFullYear() + 100);
     }
-    
+
     return now.toISOString();
   }
 
@@ -378,17 +373,17 @@ class RazorpayService {
   async isSubscriptionActive(): Promise<boolean> {
     try {
       const currentUser = auth.currentUser;
-      
+
       if (!currentUser) return false;
 
       const subscriptionDoc = await db.collection('subscriptions').doc(currentUser.uid).get();
-      
+
       if (!subscriptionDoc.exists) return false;
-      
+
       const subscription = subscriptionDoc.data() as SubscriptionData;
       const expiryDate = new Date(subscription.expiryDate);
       const now = new Date();
-      
+
       return subscription.status === 'active' && expiryDate > now;
     } catch (error) {
       return false;
@@ -399,23 +394,23 @@ class RazorpayService {
   async getCurrentPlan(): Promise<string> {
     try {
       const currentUser = auth.currentUser;
-      
+
       if (!currentUser) return 'free';
 
       const subscriptionDoc = await db.collection('subscriptions').doc(currentUser.uid).get();
-      
+
       if (!subscriptionDoc.exists) return 'free';
-      
+
       const subscription = subscriptionDoc.data() as SubscriptionData;
-      
+
       // Check if expired
       const expiryDate = new Date(subscription.expiryDate);
       const now = new Date();
-      
+
       if (subscription.status === 'active' && expiryDate > now) {
         return subscription.planId;
       }
-      
+
       return 'free';
     } catch (error) {
       return 'free';
@@ -426,13 +421,13 @@ class RazorpayService {
   async getSubscriptionDetails(): Promise<SubscriptionData | null> {
     try {
       const currentUser = auth.currentUser;
-      
+
       if (!currentUser) return null;
 
       const subscriptionDoc = await db.collection('subscriptions').doc(currentUser.uid).get();
-      
+
       if (!subscriptionDoc.exists) return null;
-      
+
       return subscriptionDoc.data() as SubscriptionData;
     } catch (error) {
       return null;
@@ -443,7 +438,7 @@ class RazorpayService {
   async cancelSubscription(): Promise<void> {
     try {
       const currentUser = auth.currentUser;
-      
+
       if (!currentUser) {
         this.showNotification('error', 'Authentication Error', 'User not authenticated.');
         return;
