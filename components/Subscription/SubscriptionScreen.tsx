@@ -38,7 +38,7 @@ const PLAN_FEATURES_MAP: Record<string, Record<string, boolean>> = {
     'Chat': false,
   },
   'crash-course': {
-    // 'Course & Question Paper': true,
+    'Course & Question Paper': true,
     'Notes Upload': false,
     'Unlimited Flashcards': false,
     'Unlimited Summaries': false,
@@ -47,7 +47,7 @@ const PLAN_FEATURES_MAP: Record<string, Record<string, boolean>> = {
     'Save Flashcards': false,
     'Share Flashcards': false,
     'Language Learning': false,
-    'Theme For Fun Learning': false,
+    'Theme For Fun Learning': true,
     'Podcast': false,
     'Chat': false,
   },
@@ -104,6 +104,15 @@ export const PLANS: SubscriptionPlan[] = [
     description: 'Start your journey',
     features: ['3 Uploads/day', 'Course & Question Paper', 'Flashcards', 'Summaries', 'Test', 'Study Plan', 'Save & Share Cards', 'Language Learning', 'Fun Themes'],
     gradient: 'from-gray-400 to-slate-500'
+  },
+  {
+    id: 'crash-course',
+    name: 'Crash Course Plan',
+    price: '₹0.99',
+    period: 'day Billed Monthly',
+    description: 'Less Than a Chocolate',
+    features: ['Course & Question Paper', 'Fun Themes'],
+    gradient: 'from-blue-400 to-indigo-500'
   },
   {
     id: 'instant-help',
