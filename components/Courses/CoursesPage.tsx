@@ -57,11 +57,11 @@ const CoursesPage: React.FC = () => {
 
         const chaptersMap: Record<string, FirebaseChapter[]> = {};
         const topicsMap: Record<string, FirebaseTopic[]> = {};
-        
+
         for (const course of courses) {
           const chapters = await contentService.getChapters(course.id);
           chaptersMap[course.id] = chapters;
-          
+
           // Load topics for each chapter
           for (const chapter of chapters) {
             try {
@@ -73,7 +73,7 @@ const CoursesPage: React.FC = () => {
             }
           }
         }
-        
+
         setFirebaseChapters(chaptersMap);
         setFirebaseTopics(topicsMap);
       } catch (e) {
@@ -176,27 +176,27 @@ const CoursesPage: React.FC = () => {
   /* ---------------- main page ---------------- */
 
   // Get unique boards and classes for filters
-  const uniqueBoards = Array.from(new Set(firebaseCourses.map(c => c.board))).sort();
+  const uniqueBoards = Array.from(new Set([...firebaseCourses.map(c => c.board), 'JEE Main'])).sort();
   const uniqueClasses = Array.from(new Set(firebaseCourses.map(c => c.class))).sort();
 
   // Filter courses based on search and filters
   const filteredCourses = firebaseCourses.filter(course => {
     const searchLower = searchQuery.toLowerCase();
-    
+
     // Search filter
-    const matchesSearch = !searchQuery || 
+    const matchesSearch = !searchQuery ||
       course.subject.toLowerCase().includes(searchLower) ||
       course.board.toLowerCase().includes(searchLower) ||
       `class ${course.class}`.includes(searchLower);
-    
+
     // Board/Exam filter
-    const matchesBoard = selectedExamCategory === 'ALL EXAM/CATEGORYS' || 
+    const matchesBoard = selectedExamCategory === 'ALL EXAM/CATEGORYS' ||
       course.board.toUpperCase() === selectedExamCategory.toUpperCase();
-    
+
     // Class filter
-    const matchesClass = selectedCourseFilter === 'ALL COURSES' || 
+    const matchesClass = selectedCourseFilter === 'ALL COURSES' ||
       `Class ${course.class}` === selectedCourseFilter;
-    
+
     return matchesSearch && matchesBoard && matchesClass;
   });
 
@@ -253,7 +253,7 @@ const CoursesPage: React.FC = () => {
                   <Filter size={16} />
                   <span className="font-bold uppercase tracking-wide">Global Filters</span>
                 </div>
-                
+
                 {/* Exam/Category Filter */}
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1">
@@ -387,9 +387,6 @@ const CoursesPage: React.FC = () => {
                     </div>
                     <div className="flex-1">
                       <h2 className="text-xl font-bold text-gray-900 dark:text-white">{chapter.title}</h2>
-                      {chapter.description && (
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{chapter.description}</p>
-                      )}
                     </div>
                     <span className="text-sm font-semibold text-gray-500 dark:text-gray-400">
                       {topics.length} topics
@@ -417,11 +414,6 @@ const CoursesPage: React.FC = () => {
                               <p className="font-bold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
                                 {topic.title}
                               </p>
-                              {topic.description && (
-                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                  {topic.description}
-                                </p>
-                              )}
                             </div>
                           </div>
                           <div className="flex items-center gap-3">

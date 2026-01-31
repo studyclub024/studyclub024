@@ -107,30 +107,7 @@ const FirebaseTopicViewer: React.FC<Props> = ({ topic, onBack }) => {
             <ChevronLeft size={16} /> Back to Courses
           </button>
 
-          {/* Topic Header */}
-          <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl p-8 text-white shadow-xl">
-            <h1 className="text-3xl font-black mb-2">{topic.title}</h1>
-            {topic.description && (
-              <p className="text-lg opacity-90">{topic.description}</p>
-            )}
-            <div className="mt-4 flex flex-wrap gap-3">
-              <span className="px-3 py-1 bg-white/20 rounded-full text-sm font-semibold">
-                📊 {topic.difficulty}
-              </span>
-              {topic.isPremium && (
-                <span className="px-3 py-1 bg-amber-400 text-amber-900 rounded-full text-sm font-bold">
-                  ⭐ Premium
-                </span>
-              )}
-              {topic.tags.map(tag => (
-                <span key={tag} className="px-3 py-1 bg-white/20 rounded-full text-sm">
-                  #{tag}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* Content Overview - Clickable Cards */}
+          {/* Available Study Materials */}
           <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg">
             <h2 className="text-xl font-black mb-4 theme-text">📚 Available Study Materials</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -139,10 +116,10 @@ const FirebaseTopicViewer: React.FC<Props> = ({ topic, onBack }) => {
                 onClick={() => topic.content.flashcardsRef && setActiveTab('flashcards')}
                 disabled={!topic.content.flashcardsRef}
                 className={`p-4 rounded-xl border-2 transition-all text-left ${topic.content.flashcardsRef
-                    ? activeTab === 'flashcards'
-                      ? 'border-emerald-600 bg-emerald-100 dark:bg-emerald-900/40 shadow-lg scale-105'
-                      : 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 hover:scale-105 hover:shadow-md cursor-pointer'
-                    : 'border-gray-200 dark:border-slate-700 opacity-50 cursor-not-allowed'
+                  ? activeTab === 'flashcards'
+                    ? 'border-emerald-600 bg-emerald-100 dark:bg-emerald-900/40 shadow-lg scale-105'
+                    : 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 hover:scale-105 hover:shadow-md cursor-pointer'
+                  : 'border-gray-200 dark:border-slate-700 opacity-50 cursor-not-allowed'
                   }`}
               >
                 <div className="flex items-center gap-2 mb-2">
@@ -163,10 +140,10 @@ const FirebaseTopicViewer: React.FC<Props> = ({ topic, onBack }) => {
                 onClick={() => topic.content.toppersNotesRefs && topic.content.toppersNotesRefs.length > 0 && setActiveTab('toppersNotes')}
                 disabled={!topic.content.toppersNotesRefs || topic.content.toppersNotesRefs.length === 0}
                 className={`p-4 rounded-xl border-2 transition-all text-left ${topic.content.toppersNotesRefs && topic.content.toppersNotesRefs.length > 0
-                    ? activeTab === 'toppersNotes'
-                      ? 'border-blue-600 bg-blue-100 dark:bg-blue-900/40 shadow-lg scale-105'
-                      : 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 hover:scale-105 hover:shadow-md cursor-pointer'
-                    : 'border-gray-200 dark:border-slate-700 opacity-50 cursor-not-allowed'
+                  ? activeTab === 'toppersNotes'
+                    ? 'border-blue-600 bg-blue-100 dark:bg-blue-900/40 shadow-lg scale-105'
+                    : 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 hover:scale-105 hover:shadow-md cursor-pointer'
+                  : 'border-gray-200 dark:border-slate-700 opacity-50 cursor-not-allowed'
                   }`}
               >
                 <div className="flex items-center gap-2 mb-2">
@@ -187,10 +164,10 @@ const FirebaseTopicViewer: React.FC<Props> = ({ topic, onBack }) => {
                 onClick={() => topic.content.lastMinuteRevisionRef && setActiveTab('revision')}
                 disabled={!topic.content.lastMinuteRevisionRef}
                 className={`p-4 rounded-xl border-2 transition-all text-left ${topic.content.lastMinuteRevisionRef
-                    ? activeTab === 'revision'
-                      ? 'border-purple-600 bg-purple-100 dark:bg-purple-900/40 shadow-lg scale-105'
-                      : 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 hover:scale-105 hover:shadow-md cursor-pointer'
-                    : 'border-gray-200 dark:border-slate-700 opacity-50 cursor-not-allowed'
+                  ? activeTab === 'revision'
+                    ? 'border-purple-600 bg-purple-100 dark:bg-purple-900/40 shadow-lg scale-105'
+                    : 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 hover:scale-105 hover:shadow-md cursor-pointer'
+                  : 'border-gray-200 dark:border-slate-700 opacity-50 cursor-not-allowed'
                   }`}
               >
                 <div className="flex items-center gap-2 mb-2">
@@ -211,10 +188,10 @@ const FirebaseTopicViewer: React.FC<Props> = ({ topic, onBack }) => {
                 onClick={() => topic.content.cheatSheetRef && setActiveTab('cheatSheet')}
                 disabled={!topic.content.cheatSheetRef}
                 className={`p-4 rounded-xl border-2 transition-all text-left ${topic.content.cheatSheetRef
-                    ? activeTab === 'cheatSheet'
-                      ? 'border-amber-600 bg-amber-100 dark:bg-amber-900/40 shadow-lg scale-105'
-                      : 'border-amber-500 bg-amber-50 dark:bg-amber-900/20 hover:scale-105 hover:shadow-md cursor-pointer'
-                    : 'border-gray-200 dark:border-slate-700 opacity-50 cursor-not-allowed'
+                  ? activeTab === 'cheatSheet'
+                    ? 'border-amber-600 bg-amber-100 dark:bg-amber-900/40 shadow-lg scale-105'
+                    : 'border-amber-500 bg-amber-50 dark:bg-amber-900/20 hover:scale-105 hover:shadow-md cursor-pointer'
+                  : 'border-gray-200 dark:border-slate-700 opacity-50 cursor-not-allowed'
                   }`}
               >
                 <div className="flex items-center gap-2 mb-2">
@@ -231,6 +208,8 @@ const FirebaseTopicViewer: React.FC<Props> = ({ topic, onBack }) => {
               </button>
             </div>
           </div>
+
+
 
           {/* Content Display */}
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg overflow-hidden">
@@ -320,11 +299,11 @@ const FirebaseTopicViewer: React.FC<Props> = ({ topic, onBack }) => {
                                     {currentCard.back}
                                   </div>
                                   {currentCard.imageUrl && (
-                                    <div className="mt-4 max-w-xs">
+                                    <div className="mt-4 w-full h-48 flex items-center justify-center">
                                       <img
                                         src={currentCard.imageUrl}
                                         alt="Flashcard"
-                                        className="rounded-lg shadow-lg"
+                                        className="max-w-full max-h-full rounded-lg shadow-lg object-contain"
                                       />
                                     </div>
                                   )}
@@ -376,11 +355,11 @@ const FirebaseTopicViewer: React.FC<Props> = ({ topic, onBack }) => {
                       </div>
 
                       {/* Image Display */}
-                      <div className="relative bg-gray-100 dark:bg-slate-900 rounded-2xl overflow-hidden shadow-lg">
+                      <div className="relative bg-gray-100 dark:bg-slate-900 rounded-2xl overflow-hidden shadow-lg h-[60vh] flex items-center justify-center">
                         <img
                           src={topic.content.toppersNotesRefs[currentImageIndex]}
                           alt={`Topper's notes page ${currentImageIndex + 1}`}
-                          className="w-full h-auto max-h-[70vh] object-contain"
+                          className="w-full h-full object-contain"
                         />
                       </div>
 
@@ -411,8 +390,8 @@ const FirebaseTopicViewer: React.FC<Props> = ({ topic, onBack }) => {
                             key={idx}
                             onClick={() => setCurrentImageIndex(idx)}
                             className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${idx === currentImageIndex
-                                ? 'border-indigo-600 shadow-lg scale-105'
-                                : 'border-gray-300 dark:border-slate-600 hover:border-indigo-400'
+                              ? 'border-indigo-600 shadow-lg scale-105'
+                              : 'border-gray-300 dark:border-slate-600 hover:border-indigo-400'
                               }`}
                           >
                             <img
@@ -468,11 +447,11 @@ const FirebaseTopicViewer: React.FC<Props> = ({ topic, onBack }) => {
                         </p>
 
                         {/* Image Display */}
-                        <div className="w-full bg-gray-100 dark:bg-slate-900 rounded-2xl overflow-hidden shadow-lg">
+                        <div className="w-full bg-gray-100 dark:bg-slate-900 rounded-2xl overflow-hidden shadow-lg h-[70vh] flex items-center justify-center">
                           <img
                             src={topic.content.cheatSheetRef}
                             alt="Cheat Sheet"
-                            className="w-full h-auto max-h-[80vh] object-contain"
+                            className="w-full h-full object-contain"
                           />
                         </div>
 
@@ -492,6 +471,29 @@ const FirebaseTopicViewer: React.FC<Props> = ({ topic, onBack }) => {
                   )}
                 </>
               )}
+            </div>
+          </div>
+
+          {/* Topic Header */}
+          <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl p-8 text-white shadow-xl">
+            <h1 className="text-3xl font-black mb-2">{topic.title}</h1>
+            {topic.description && (
+              <p className="text-lg opacity-90">{topic.description}</p>
+            )}
+            <div className="mt-4 flex flex-wrap gap-3">
+              <span className="px-3 py-1 bg-white/20 rounded-full text-sm font-semibold">
+                📊 {topic.difficulty}
+              </span>
+              {topic.isPremium && (
+                <span className="px-3 py-1 bg-amber-400 text-amber-900 rounded-full text-sm font-bold">
+                  ⭐ Premium
+                </span>
+              )}
+              {topic.tags.map(tag => (
+                <span key={tag} className="px-3 py-1 bg-white/20 rounded-full text-sm">
+                  #{tag}
+                </span>
+              ))}
             </div>
           </div>
         </div>
