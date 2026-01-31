@@ -6,7 +6,7 @@ import razorpayService from '../../services/razorpayService';
 import { auth } from '../../firebaseConfig';
 
 // All features comparison list
-const ALL_FEATURES = [
+export const ALL_FEATURES = [
   'Course & Question Paper',
   'Notes Upload',
   'Unlimited Flashcards',
@@ -22,7 +22,7 @@ const ALL_FEATURES = [
 ];
 
 // Feature details map for each plan
-const PLAN_FEATURES_MAP: Record<string, Record<string, boolean>> = {
+export const PLAN_FEATURES_MAP: Record<string, Record<string, boolean>> = {
   'free': {
     'Course & Question Paper': true,
     'Notes Upload': true,

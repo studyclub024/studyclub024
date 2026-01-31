@@ -2,85 +2,12 @@ import React, { useState, useRef, useEffect } from 'react';
 import { GraduationCap, Rocket, ArrowRight, Layers, Calculator, Languages, Brain, Globe, Shield, Zap, Star, Trophy, Crown, Check, FileText, X } from 'lucide-react';
 import ModeSelector from './Input/ModeSelector';
 import Footer from './Layout/Footer';
-import { PLANS } from './Subscription/SubscriptionScreen';
+import { PLANS, ALL_FEATURES, PLAN_FEATURES_MAP } from './Subscription/SubscriptionScreen';
 import { MODE_CONFIG } from '../constants';
 import { StudyMode } from '../types';
 
 // All features comparison list
-const ALL_FEATURES = [
-  // 'Course & Question Paper',
-  'Notes Upload',
-  'Unlimited Flashcards',
-  'Unlimited Summaries',
-  'Unlimited Test',
-  'Study Plan',
-  'Save Flashcards',
-  'Share Flashcards',
-  'Language Learning',
-  'Theme For Fun Learning',
-  'Podcast',
-  'Chat'
-];
 
-// Feature details map for each plan
-const PLAN_FEATURES_MAP: Record<string, Record<string, boolean>> = {
-  'crash-course': {
-    // 'Course & Question Paper': true,
-    'Notes Upload': false,
-    'Unlimited Flashcards': false,
-    'Unlimited Summaries': false,
-    'Unlimited Test': false,
-    'Study Plan': false,
-    'Save Flashcards': false,
-    'Share Flashcards': false,
-    'Language Learning': false,
-    'Theme For Fun Learning': false,
-    'Podcast': false,
-    'Chat': false,
-  },
-  'instant-help': {
-    // 'Course & Question Paper': false,
-    'Notes Upload': true,
-    'Unlimited Flashcards': true,
-    'Unlimited Summaries': true,
-    'Unlimited Test': true,
-    'Study Plan': true,
-    'Save Flashcards': false,
-    'Share Flashcards': false,
-    'Language Learning': false,
-    'Theme For Fun Learning': false,
-    'Podcast': false,
-    'Chat': false,
-  },
-  'focused-prep': {
-    // 'Course & Question Paper': true,
-    'Notes Upload': true,
-    'Unlimited Flashcards': true,
-    'Unlimited Summaries': true,
-    'Unlimited Test': true,
-    'Study Plan': true,
-    'Save Flashcards': false,
-    'Share Flashcards': false,
-    'Language Learning': true,
-    'Theme For Fun Learning': true,
-    'Podcast': false,
-    'Chat': false,
-  },
-  'study-pro': {
-    // 'Course & Question Paper': true,
-    'Notes Upload': true,
-    'Unlimited Flashcards': true,
-    'Unlimited Summaries': true,
-    'Unlimited Test': true,
-    'Study Plan': true,
-    'Save Flashcards': true,
-    'Share Flashcards': true,
-    'Language Learning': true,
-    'Theme For Fun Learning': true,
-    'Podcast': true,
-    'Chat': true,
-  },
-};
 
 type HomepageProps = {
   onOpenAuth?: () => void;
@@ -113,13 +40,13 @@ const scrollToSection = (e: React.MouseEvent, id: string) => {
 };
 
 const Homepage: React.FC<HomepageProps> = ({ onOpenAuth, onGetStarted, onOpenUpgrade, onOpenSelectMode, isLoggedIn = false, onOpenLegal }) => {
-    // Preview demo states
-    const [previewUsedOnce, setPreviewUsedOnce] = useState(false);
-    const [previewFileName, setPreviewFileName] = useState<string>('');
-    const [previewText, setPreviewText] = useState<string>('');
-    const [previewStatus, setPreviewStatus] = useState<string>('');
-    const [previewOpen, setPreviewOpen] = useState(false);
-    const fileInputRef = useRef<HTMLInputElement>(null);
+  // Preview demo states
+  const [previewUsedOnce, setPreviewUsedOnce] = useState(false);
+  const [previewFileName, setPreviewFileName] = useState<string>('');
+  const [previewText, setPreviewText] = useState<string>('');
+  const [previewStatus, setPreviewStatus] = useState<string>('');
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
 
   const handleLogin = () => {
