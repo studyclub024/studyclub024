@@ -25,6 +25,7 @@ const FirebaseTopicViewer: React.FC<Props> = ({ topic, onBack }) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Determine which tab to show first
   useEffect(() => {
@@ -45,11 +46,14 @@ const FirebaseTopicViewer: React.FC<Props> = ({ topic, onBack }) => {
       if (topic.content.flashcardsRef) {
         const response = await fetch(topic.content.flashcardsRef);
         const csvText = await response.text();
-        
+
         Papa.parse(csvText, {
           header: true,
           skipEmptyLines: true,
           complete: (results) => {
+            if (results.errors.length > 0) {
+              console.error('CSV Parsing errors:', results.errors);
+            }
             const cards = results.data.map((row: any) => ({
               front: row.front || '',
               back: row.back || '',
@@ -57,13 +61,14 @@ const FirebaseTopicViewer: React.FC<Props> = ({ topic, onBack }) => {
               imageUrl: row.imageUrl || undefined,
               difficulty: (row.difficulty?.toLowerCase() || 'medium') as 'easy' | 'medium' | 'hard',
             })).filter(card => card.front && card.back);
-            
+
             setFlashcards(cards);
           },
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading content:', error);
+      setError(error.message || 'Failed to load content');
     } finally {
       setLoading(false);
     }
@@ -133,13 +138,12 @@ const FirebaseTopicViewer: React.FC<Props> = ({ topic, onBack }) => {
               <button
                 onClick={() => topic.content.flashcardsRef && setActiveTab('flashcards')}
                 disabled={!topic.content.flashcardsRef}
-                className={`p-4 rounded-xl border-2 transition-all text-left ${
-                  topic.content.flashcardsRef 
+                className={`p-4 rounded-xl border-2 transition-all text-left ${topic.content.flashcardsRef
                     ? activeTab === 'flashcards'
-                      ? 'border-emerald-600 bg-emerald-100 dark:bg-emerald-900/40 shadow-lg scale-105' 
+                      ? 'border-emerald-600 bg-emerald-100 dark:bg-emerald-900/40 shadow-lg scale-105'
                       : 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 hover:scale-105 hover:shadow-md cursor-pointer'
                     : 'border-gray-200 dark:border-slate-700 opacity-50 cursor-not-allowed'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-2 mb-2">
                   <Layers size={20} className={topic.content.flashcardsRef ? 'text-emerald-600' : 'text-gray-400'} />
@@ -158,13 +162,12 @@ const FirebaseTopicViewer: React.FC<Props> = ({ topic, onBack }) => {
               <button
                 onClick={() => topic.content.toppersNotesRefs && topic.content.toppersNotesRefs.length > 0 && setActiveTab('toppersNotes')}
                 disabled={!topic.content.toppersNotesRefs || topic.content.toppersNotesRefs.length === 0}
-                className={`p-4 rounded-xl border-2 transition-all text-left ${
-                  topic.content.toppersNotesRefs && topic.content.toppersNotesRefs.length > 0
+                className={`p-4 rounded-xl border-2 transition-all text-left ${topic.content.toppersNotesRefs && topic.content.toppersNotesRefs.length > 0
                     ? activeTab === 'toppersNotes'
                       ? 'border-blue-600 bg-blue-100 dark:bg-blue-900/40 shadow-lg scale-105'
                       : 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 hover:scale-105 hover:shadow-md cursor-pointer'
                     : 'border-gray-200 dark:border-slate-700 opacity-50 cursor-not-allowed'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-2 mb-2">
                   <ImageIcon size={20} className={topic.content.toppersNotesRefs && topic.content.toppersNotesRefs.length > 0 ? 'text-blue-600' : 'text-gray-400'} />
@@ -183,13 +186,12 @@ const FirebaseTopicViewer: React.FC<Props> = ({ topic, onBack }) => {
               <button
                 onClick={() => topic.content.lastMinuteRevisionRef && setActiveTab('revision')}
                 disabled={!topic.content.lastMinuteRevisionRef}
-                className={`p-4 rounded-xl border-2 transition-all text-left ${
-                  topic.content.lastMinuteRevisionRef
+                className={`p-4 rounded-xl border-2 transition-all text-left ${topic.content.lastMinuteRevisionRef
                     ? activeTab === 'revision'
                       ? 'border-purple-600 bg-purple-100 dark:bg-purple-900/40 shadow-lg scale-105'
                       : 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 hover:scale-105 hover:shadow-md cursor-pointer'
                     : 'border-gray-200 dark:border-slate-700 opacity-50 cursor-not-allowed'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-2 mb-2">
                   <FileText size={20} className={topic.content.lastMinuteRevisionRef ? 'text-purple-600' : 'text-gray-400'} />
@@ -208,13 +210,12 @@ const FirebaseTopicViewer: React.FC<Props> = ({ topic, onBack }) => {
               <button
                 onClick={() => topic.content.cheatSheetRef && setActiveTab('cheatSheet')}
                 disabled={!topic.content.cheatSheetRef}
-                className={`p-4 rounded-xl border-2 transition-all text-left ${
-                  topic.content.cheatSheetRef
+                className={`p-4 rounded-xl border-2 transition-all text-left ${topic.content.cheatSheetRef
                     ? activeTab === 'cheatSheet'
                       ? 'border-amber-600 bg-amber-100 dark:bg-amber-900/40 shadow-lg scale-105'
                       : 'border-amber-500 bg-amber-50 dark:bg-amber-900/20 hover:scale-105 hover:shadow-md cursor-pointer'
                     : 'border-gray-200 dark:border-slate-700 opacity-50 cursor-not-allowed'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-2 mb-2">
                   <BookOpen size={20} className={topic.content.cheatSheetRef ? 'text-amber-600' : 'text-gray-400'} />
@@ -239,6 +240,17 @@ const FirebaseTopicViewer: React.FC<Props> = ({ topic, onBack }) => {
                 <div className="text-center py-12">
                   <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4" />
                   <p className="text-gray-600 dark:text-gray-400">Loading content...</p>
+                </div>
+              ) : error ? (
+                <div className="text-center py-12 text-red-500">
+                  <p className="font-bold mb-2">Error loading flashcards</p>
+                  <p className="text-sm opacity-75 mb-4">{error}</p>
+                  <button
+                    onClick={loadContent}
+                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold uppercase transition-transform active:scale-95"
+                  >
+                    Try Again
+                  </button>
                 </div>
               ) : (
                 <>
@@ -275,9 +287,8 @@ const FirebaseTopicViewer: React.FC<Props> = ({ topic, onBack }) => {
                             className="relative min-h-[300px] cursor-pointer perspective-1000"
                           >
                             <div
-                              className={`relative w-full min-h-[300px] transition-transform duration-500 transform-style-3d ${
-                                isFlipped ? 'rotate-y-180' : ''
-                              }`}
+                              className={`relative w-full min-h-[300px] transition-transform duration-500 transform-style-3d ${isFlipped ? 'rotate-y-180' : ''
+                                }`}
                             >
                               {/* Front */}
                               <div className="absolute inset-0 backface-hidden">
@@ -399,11 +410,10 @@ const FirebaseTopicViewer: React.FC<Props> = ({ topic, onBack }) => {
                           <button
                             key={idx}
                             onClick={() => setCurrentImageIndex(idx)}
-                            className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
-                              idx === currentImageIndex
+                            className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${idx === currentImageIndex
                                 ? 'border-indigo-600 shadow-lg scale-105'
                                 : 'border-gray-300 dark:border-slate-600 hover:border-indigo-400'
-                            }`}
+                              }`}
                           >
                             <img
                               src={imgUrl}
@@ -436,7 +446,7 @@ const FirebaseTopicViewer: React.FC<Props> = ({ topic, onBack }) => {
                           Download
                         </a>
                       </div>
-                      
+
                       {/* PDF Viewer */}
                       <div className="w-full bg-gray-100 dark:bg-slate-900 rounded-2xl overflow-hidden shadow-lg">
                         <iframe
@@ -456,7 +466,7 @@ const FirebaseTopicViewer: React.FC<Props> = ({ topic, onBack }) => {
                         <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                           Quick reference guide with all essential formulas and concepts
                         </p>
-                        
+
                         {/* Image Display */}
                         <div className="w-full bg-gray-100 dark:bg-slate-900 rounded-2xl overflow-hidden shadow-lg">
                           <img
