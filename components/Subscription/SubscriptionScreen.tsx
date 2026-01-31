@@ -7,7 +7,7 @@ import { auth } from '../../firebaseConfig';
 
 // All features comparison list
 const ALL_FEATURES = [
-  // 'Course & Question Paper',
+  'Course & Question Paper',
   'Notes Upload',
   'Unlimited Flashcards',
   'Unlimited Summaries',
@@ -23,6 +23,20 @@ const ALL_FEATURES = [
 
 // Feature details map for each plan
 const PLAN_FEATURES_MAP: Record<string, Record<string, boolean>> = {
+  'free': {
+    'Course & Question Paper': true,
+    'Notes Upload': true,
+    'Unlimited Flashcards': true,
+    'Unlimited Summaries': true,
+    'Unlimited Test': true,
+    'Study Plan': true,
+    'Save Flashcards': true,
+    'Share Flashcards': true,
+    'Language Learning': true,
+    'Theme For Fun Learning': true,
+    'Podcast': false,
+    'Chat': false,
+  },
   'crash-course': {
     // 'Course & Question Paper': true,
     'Notes Upload': false,
@@ -82,17 +96,15 @@ const PLAN_FEATURES_MAP: Record<string, Record<string, boolean>> = {
 };
 
 export const PLANS: SubscriptionPlan[] = [
-  /*
   {
-    id: 'crash-course',
-    name: 'Crash Course Plan',
-    price: '₹0.99',
-    period: 'day Billed Monthly',
-    description: 'Less Than a Chocolate',
-    features: ['Course & Question Paper'],
-    gradient: 'from-blue-400 to-indigo-500'
+    id: 'free',
+    name: 'Free Plan',
+    price: '₹0',
+    period: 'for 3 Days',
+    description: 'Start your journey',
+    features: ['3 Uploads/day', 'Course & Question Paper', 'Flashcards', 'Summaries', 'Test', 'Study Plan', 'Save & Share Cards', 'Language Learning', 'Fun Themes'],
+    gradient: 'from-gray-400 to-slate-500'
   },
-  */
   {
     id: 'instant-help',
     name: 'Instant help',
@@ -158,7 +170,7 @@ const SubscriptionScreen: React.FC<Props> = ({ onSelect, onClose, isLoggedIn = f
   const handleSelectPlan = async (plan: SubscriptionPlan) => {
     console.log('🔴 UPGRADE NOW CLICKED! Plan:', plan.id);
     console.log('🔴 User logged in?', isLoggedIn);
-    
+
     if (!isLoggedIn) {
       // User not logged in, store the plan and open auth
       console.log('🔴 User not logged in, opening auth...');
@@ -277,10 +289,10 @@ const SubscriptionScreen: React.FC<Props> = ({ onSelect, onClose, isLoggedIn = f
                 {plan.period.toLowerCase().includes('day') && (
                   <div className="space-y-1">
                     <div className="text-sm font-bold text-gray-600 dark:text-slate-400">
-                   
+
                     </div>
                     <div className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
-                 
+
                     </div>
                   </div>
                 )}
