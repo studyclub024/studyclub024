@@ -1527,23 +1527,23 @@ const App: React.FC = () => {
                         <div className="w-full text-left text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-400 dark:text-slate-400 mb-2">
                           Select Your Input Method
                         </div>
-                        <div className="flex flex-wrap gap-3 md:gap-4 w-full">
+                        <div className="flex flex-nowrap items-center gap-2 w-full overflow-x-auto no-scrollbar pb-2">
                           <button
                             onClick={() => setActiveInputTool('text')}
-                            className={`flex-1 flex items-center justify-center gap-2 md:gap-3 px-4 md:px-8 py-3 md:py-4 rounded-xl text-[10px] md:text-sm font-black uppercase tracking-widest transition-all border-2 ${activeInputTool === 'text' ? 'theme-bg text-white border-transparent shadow-sm' : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200 border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-slate-600'}`}
+                            className={`flex-none flex items-center justify-center gap-1.5 px-3 py-3 rounded-xl text-[10px] md:text-sm font-black uppercase tracking-widest transition-all border-2 ${activeInputTool === 'text' ? 'theme-bg text-white border-transparent shadow-sm' : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200 border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-slate-600'}`}
                             aria-label="Switch to text input mode"
                           >
-                            <Type size={18} /> Text
+                            <Type size={16} /> Text
                           </button>
                           <button
                             onClick={() => {
                               if (isInstantHelp || isFocusedPrep || isStudyPro) setActiveInputTool('url');
                               else setShowUpgradeModal(true);
                             }}
-                            className={`flex-1 flex items-center justify-center gap-2 md:gap-3 px-4 md:px-8 py-3 md:py-4 rounded-xl text-[10px] md:text-sm font-black uppercase tracking-widest transition-all border-2 ${activeInputTool === 'url' ? 'theme-bg text-white border-transparent shadow-sm' : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200 border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-slate-600'}`}
+                            className={`flex-none flex items-center justify-center gap-1.5 px-3 py-3 rounded-xl text-[10px] md:text-sm font-black uppercase tracking-widest transition-all border-2 ${activeInputTool === 'url' ? 'theme-bg text-white border-transparent shadow-sm' : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200 border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-slate-600'}`}
                             aria-label="Switch to link input mode"
                           >
-                            {!(isInstantHelp || isFocusedPrep || isStudyPro) && <Lock size={18} />} <LinkIcon size={18} /> Link
+                            {!(isInstantHelp || isFocusedPrep || isStudyPro) && <Lock size={14} />} <LinkIcon size={16} /> Link
                           </button>
                           <button
                             onClick={() => {
@@ -1557,10 +1557,10 @@ const App: React.FC = () => {
                               }
                             }}
                             disabled={extractingSource === 'voice'}
-                            className={`flex-1 flex items-center justify-center gap-2 md:gap-3 px-4 md:px-8 py-3 md:py-4 rounded-xl text-[10px] md:text-sm font-black uppercase tracking-widest transition-all border-2 ${isRecording ? 'bg-red-500 text-white border-transparent shadow-xl shadow-red-200 scale-105' : (activeInputTool === 'voice' ? 'theme-bg text-white border-transparent shadow-sm' : (extractingSource === 'voice' ? 'bg-white dark:bg-slate-700 text-gray-400 border-gray-100 dark:border-white/5 opacity-70 cursor-not-allowed' : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200 border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-slate-600'))}`}
+                            className={`flex-none flex items-center justify-center gap-1.5 px-3 py-3 rounded-xl text-[10px] md:text-sm font-black uppercase tracking-widest transition-all border-2 ${isRecording ? 'bg-red-500 text-white border-transparent shadow-xl shadow-red-200 scale-105' : (activeInputTool === 'voice' ? 'theme-bg text-white border-transparent shadow-sm' : (extractingSource === 'voice' ? 'bg-white dark:bg-slate-700 text-gray-400 border-gray-100 dark:border-white/5 opacity-70 cursor-not-allowed' : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200 border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-slate-600'))}`}
                             aria-label={isRecording ? "Stop podcast recording" : "Start podcast recording"}
                           >
-                            {isRecording ? <StopCircle size={18} /> : (hasVoiceAccess ? <Mic size={18} /> : <Lock size={18} />)} {isRecording ? 'Stop' : 'Podcast'}
+                            {isRecording ? <StopCircle size={16} /> : (hasVoiceAccess ? <Mic size={16} /> : <Lock size={14} />)} {isRecording ? 'Stop' : 'Podcast'}
                           </button>
                           <button
                             onClick={() => {
@@ -1571,10 +1571,10 @@ const App: React.FC = () => {
                                 setShowUpgradeModal(true);
                               }
                             }}
-                            className={`flex-1 flex items-center justify-center gap-2 md:gap-3 px-4 md:px-8 py-3 md:py-4 rounded-xl text-[10px] md:text-sm font-black uppercase tracking-widest transition-all border-2 ${activeInputTool === 'image' ? 'theme-bg text-white border-transparent shadow-sm' : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200 border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-slate-600'}`}
+                            className={`flex-none flex items-center justify-center gap-1.5 px-3 py-3 rounded-xl text-[10px] md:text-sm font-black uppercase tracking-widest transition-all border-2 ${activeInputTool === 'image' ? 'theme-bg text-white border-transparent shadow-sm' : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200 border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-slate-600'}`}
                             aria-label="Scan image for text"
                           >
-                            {!(isInstantHelp || isFocusedPrep || isStudyPro) && <Lock size={18} />} <Camera size={18} /> Scan
+                            {!(isInstantHelp || isFocusedPrep || isStudyPro) && <Lock size={14} />} <Camera size={16} /> Scan
                           </button>
                           <button
                             onClick={() => {
@@ -1585,18 +1585,18 @@ const App: React.FC = () => {
                                 setShowUpgradeModal(true);
                               }
                             }}
-                            className={`flex-1 flex items-center justify-center gap-2 md:gap-3 px-4 md:px-8 py-3 md:py-4 rounded-xl text-[10px] md:text-sm font-black uppercase tracking-widest transition-all border-2 ${activeInputTool === 'pdf' ? 'theme-bg text-white border-transparent shadow-sm' : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200 border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-slate-600'}`}
+                            className={`flex-none flex items-center justify-center gap-1.5 px-3 py-3 rounded-xl text-[10px] md:text-sm font-black uppercase tracking-widest transition-all border-2 ${activeInputTool === 'pdf' ? 'theme-bg text-white border-transparent shadow-sm' : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200 border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-slate-600'}`}
                             aria-label="Upload PDF document"
                           >
-                            {!(isInstantHelp || isFocusedPrep || isStudyPro) && <Lock size={18} />} <FileText size={18} /> Docs
+                            {!(isInstantHelp || isFocusedPrep || isStudyPro) && <Lock size={14} />} <FileText size={16} /> Upload Docs
                           </button>
+                          <div className="w-px h-6 bg-gray-200 dark:bg-white/10 mx-1 flex-none ml-auto"></div>
+                          <button onClick={handleResetCurrentTab} className="flex-none p-3 text-gray-300 dark:text-slate-500 hover:text-red-500 transition-colors active:scale-90" aria-label="Clear current input"><Trash2 size={20} /></button>
                         </div>
                       </>
                     )}
 
-                    {!isProcessed && (
-                      <button onClick={handleResetCurrentTab} className="p-3 md:p-4 text-gray-300 dark:text-slate-700 hover:text-red-500 ml-auto transition-colors active:scale-90" aria-label="Clear current input"><Trash2 size={20} /></button>
-                    )}
+
 
                     <input type="file" ref={imageInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
                     <input type="file" ref={pdfInputRef} className="hidden" accept="application/pdf" onChange={handleFileChange} />

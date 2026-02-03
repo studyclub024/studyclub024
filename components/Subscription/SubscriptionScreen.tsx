@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { SubscriptionPlan } from '../../types';
 import { Check, Zap, Star, Shield, Trophy, Crown, ArrowRight, X, Loader } from 'lucide-react';
 import razorpayService from '../../services/razorpayService';
-import { auth } from '../../firebaseConfig';
+import { auth, db } from '../../firebaseConfig';
 
 // All features comparison list
 export const ALL_FEATURES = [
@@ -37,20 +37,7 @@ export const PLAN_FEATURES_MAP: Record<string, Record<string, boolean>> = {
     'Podcast': false,
     'Chat': false,
   },
-  'crash-course': {
-    'Course & Question Paper': true,
-    'Notes Upload': false,
-    'Unlimited Flashcards': false,
-    'Unlimited Summaries': false,
-    'Unlimited Test': false,
-    'Study Plan': false,
-    'Save Flashcards': false,
-    'Share Flashcards': false,
-    'Language Learning': false,
-    'Theme For Fun Learning': true,
-    'Podcast': false,
-    'Chat': false,
-  },
+
   'instant-help': {
     // 'Course & Question Paper': false,
     'Notes Upload': true,
@@ -105,15 +92,7 @@ export const PLANS: SubscriptionPlan[] = [
     features: ['3 Uploads/day', 'Course & Question Paper', 'Flashcards', 'Summaries', 'Test', 'Study Plan', 'Save & Share Cards', 'Language Learning', 'Fun Themes'],
     gradient: 'from-gray-400 to-slate-500'
   },
-  {
-    id: 'crash-course',
-    name: 'Crash Course Plan',
-    price: '₹0.99',
-    period: 'day Billed Monthly',
-    description: 'Less Than a Chocolate',
-    features: ['Course & Question Paper', 'Fun Themes'],
-    gradient: 'from-blue-400 to-indigo-500'
-  },
+
   {
     id: 'instant-help',
     name: 'Instant help',
@@ -154,6 +133,28 @@ interface Props {
 const SubscriptionScreen: React.FC<Props> = ({ onSelect, onClose, isLoggedIn = false, onOpenAuth }) => {
   const [loading, setLoading] = useState<string | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const [userPhone, setUserPhone] = useState<string | undefined>(undefined);
+
+  // Fetch user phone from Firestore
+  useEffect(() => {
+    const fetchUserPhone = async () => {
+      if (isLoggedIn && auth.currentUser) {
+        try {
+          const userDoc = await db.collection('users').doc(auth.currentUser.uid).get();
+          if (userDoc.exists) {
+            const userData = userDoc.data();
+            if (userData?.phoneNumber) {
+              setUserPhone(userData.phoneNumber);
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching user phone from Firestore:", error);
+        }
+      }
+    };
+
+    fetchUserPhone();
+  }, [isLoggedIn]);
 
   // Calculate monthly price
   const getMonthlyPrice = (plan: SubscriptionPlan): string => {
@@ -198,7 +199,7 @@ const SubscriptionScreen: React.FC<Props> = ({ onSelect, onClose, isLoggedIn = f
       const userDetails = {
         name: user?.displayName || undefined,
         email: user?.email || undefined,
-        phone: user?.phoneNumber || undefined,
+        phone: userPhone || user?.phoneNumber || undefined, // Prioritize Firestore phone
       };
 
       // Initiate Razorpay payment
@@ -223,10 +224,21 @@ const SubscriptionScreen: React.FC<Props> = ({ onSelect, onClose, isLoggedIn = f
           setLoading(selectedPlan);
           try {
             const user = auth.currentUser;
+            // Re-fetch phone number if not yet available (edge case where login happens quickly)
+            let phoneToUse = userPhone;
+            if (!phoneToUse && user) {
+              try {
+                const userDoc = await db.collection('users').doc(user.uid).get();
+                if (userDoc.exists) {
+                  phoneToUse = userDoc.data()?.phoneNumber;
+                }
+              } catch (e) { console.error("Quick fetch error", e); }
+            }
+
             const userDetails = {
               name: user?.displayName || undefined,
               email: user?.email || undefined,
-              phone: user?.phoneNumber || undefined,
+              phone: phoneToUse || user?.phoneNumber || undefined,
             };
             await razorpayService.initiatePayment(plan, userDetails, (successfulPlan) => {
               onSelect(successfulPlan);
@@ -242,7 +254,7 @@ const SubscriptionScreen: React.FC<Props> = ({ onSelect, onClose, isLoggedIn = f
         return () => clearTimeout(timer);
       }
     }
-  }, [isLoggedIn, selectedPlan]);
+  }, [isLoggedIn, selectedPlan, userPhone]);
 
   return (
     <div className="fixed inset-0 z-[1000] bg-[#F8F9FC] dark:bg-slate-950 overflow-y-auto py-16 px-4 animate-fade-in">
@@ -279,7 +291,7 @@ const SubscriptionScreen: React.FC<Props> = ({ onSelect, onClose, isLoggedIn = f
 
               <div className="mb-6">
                 <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${plan.gradient} flex items-center justify-center text-white mb-6 shadow-lg group-hover:rotate-6 transition-transform`}>
-                  {plan.id === 'crash-course' && <Zap size={24} />}
+
                   {plan.id === 'instant-help' && <Shield size={24} />}
                   {plan.id === 'focused-prep' && <Trophy size={24} />}
                   {plan.id === 'study-pro' && <Crown size={24} />}

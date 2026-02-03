@@ -3,10 +3,10 @@ import React, { useState } from 'react';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import { auth, db, googleProvider } from '../../firebaseConfig';
-import { 
-  GraduationCap, 
-  Mail, 
-  Lock, 
+import {
+  GraduationCap,
+  Mail,
+  Lock,
   AlertCircle,
   Loader2,
   ArrowRight,
@@ -17,7 +17,8 @@ import {
   ShieldAlert,
   Info,
   LogIn,
-  ChevronLeft
+  ChevronLeft,
+  Phone
 } from 'lucide-react';
 import { FootballIcon } from '../../App';
 
@@ -36,11 +37,13 @@ const AuthScreen: React.FC<{ onClose?: () => void; isModal?: boolean }> = ({ onC
   const [isResetMode, setIsResetMode] = useState(false);
   const [resetSent, setResetSent] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
-  
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
+
   const [lastName, setLastName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [selectedAvatar, setSelectedAvatar] = useState(PREBUILT_AVATARS[0]);
   const [error, setError] = useState<React.ReactNode | null>(null);
   const [loading, setLoading] = useState(false);
@@ -53,20 +56,21 @@ const AuthScreen: React.FC<{ onClose?: () => void; isModal?: boolean }> = ({ onC
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const syncUserToFirestore = async (user: any, name?: string, photo?: string) => {
+  const syncUserToFirestore = async (user: any, name?: string, photo?: string, phone?: string) => {
     try {
       // Updated Firestore query to compat style
       const userDocRef = db.collection('users').doc(user.uid);
       const userSnapshot = await userDocRef.get();
-      
+
       if (!userSnapshot.exists) {
         const expiryDate = new Date();
         expiryDate.setDate(expiryDate.getDate() + 365);
-        
+
         await userDocRef.set({
           userId: user.uid,
           displayName: name || user.displayName || 'Learner',
           email: user.email,
+          phoneNumber: phone || user.phoneNumber || null,
           photoURL: photo || user.photoURL || PREBUILT_AVATARS[0],
           planExpiry: expiryDate.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }),
           preferences: {
@@ -137,8 +141,8 @@ const AuthScreen: React.FC<{ onClose?: () => void; isModal?: boolean }> = ({ onC
               </div>
             </div>
             <div className="bg-amber-50 border border-amber-100 p-4 rounded-2xl flex gap-3 items-start">
-               <Info size={16} className="text-amber-600 mt-0.5 shrink-0" />
-               <p className="text-[11px] leading-relaxed text-amber-900 font-medium">Google requires whitelisting this preview URL.</p>
+              <Info size={16} className="text-amber-600 mt-0.5 shrink-0" />
+              <p className="text-[11px] leading-relaxed text-amber-900 font-medium">Google requires whitelisting this preview URL.</p>
             </div>
             <div className="space-y-4">
               <div className="flex flex-col gap-2">
@@ -163,12 +167,20 @@ const AuthScreen: React.FC<{ onClose?: () => void; isModal?: boolean }> = ({ onC
     }
   };
 
+  const checkPhoneNumberExists = async (phone: string) => {
+    const snapshot = await db.collection('users').where('phoneNumber', '==', phone).get();
+    return !snapshot.empty;
+  };
+
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     if (!auth) return;
     if (password.length < 6) { setError("Password must be at least 6 characters."); return; }
     if (!isLogin && (!firstName.trim() || !lastName.trim())) { setError("Please provide both First and Last name."); return; }
+    if (!isLogin) {
+      if (!phoneNumber.trim() || phoneNumber.length < 10) { setError("Please enter a valid phone number."); return; }
+    }
 
     setLoading(true);
     try {
@@ -178,22 +190,30 @@ const AuthScreen: React.FC<{ onClose?: () => void; isModal?: boolean }> = ({ onC
         await syncUserToFirestore(result.user);
         if (onClose) onClose();
       } else {
+        // Check uniqueness
+        const exists = await checkPhoneNumberExists(phoneNumber.trim());
+        if (exists) {
+          setError("This phone number is already registered.");
+          setLoading(false);
+          return;
+        }
+
         const fullName = `${firstName.trim()} ${lastName.trim()}`;
         // Replaced modular createUserWithEmailAndPassword with compat instance method
         const userCredential = await auth.createUserWithEmailAndPassword(email.trim(), password);
         // Replaced modular updateProfile with compat instance method
         if (userCredential.user) {
-            await userCredential.user.updateProfile({
-                displayName: fullName,
-                photoURL: selectedAvatar
-            });
-            await syncUserToFirestore(userCredential.user, fullName, selectedAvatar);
-            if (onClose) onClose();
+          await userCredential.user.updateProfile({
+            displayName: fullName,
+            photoURL: selectedAvatar
+          });
+          await syncUserToFirestore(userCredential.user, fullName, selectedAvatar, phoneNumber.trim());
+          if (onClose) onClose();
         }
       }
     } catch (err: any) {
       console.error("Auth Exception:", err);
-      
+
       // Friendly message mapping
       if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
         setError("Login Failed: Incorrect email or password. Please verify your credentials.");
@@ -235,7 +255,7 @@ const AuthScreen: React.FC<{ onClose?: () => void; isModal?: boolean }> = ({ onC
 
           <div className="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-2xl shadow-indigo-100/50 border border-gray-100 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-full -mr-16 -mt-16 opacity-50" />
-            
+
             <div className="relative z-10">
               {resetSent ? (
                 <div className="text-center py-6">
@@ -244,9 +264,9 @@ const AuthScreen: React.FC<{ onClose?: () => void; isModal?: boolean }> = ({ onC
                   </div>
                   <h2 className="text-2xl font-bold text-gray-900 mb-4">Email Sent</h2>
                   <p className="text-gray-500 text-sm mb-8 leading-relaxed">
-                    We sent you a password change link to <br/><span className="font-bold text-indigo-600">{email}</span>. Please check your inbox and spam folder.
+                    We sent you a password change link to <br /><span className="font-bold text-indigo-600">{email}</span>. Please check your inbox and spam folder.
                   </p>
-                  <button 
+                  <button
                     onClick={() => { setIsResetMode(false); setResetSent(false); setIsLogin(true); }}
                     className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all flex items-center justify-center gap-2"
                   >
@@ -255,7 +275,7 @@ const AuthScreen: React.FC<{ onClose?: () => void; isModal?: boolean }> = ({ onC
                 </div>
               ) : (
                 <>
-                  <button 
+                  <button
                     onClick={() => setIsResetMode(false)}
                     className="mb-6 flex items-center gap-2 text-gray-400 hover:text-indigo-600 transition-colors text-sm font-bold group"
                   >
@@ -276,18 +296,18 @@ const AuthScreen: React.FC<{ onClose?: () => void; isModal?: boolean }> = ({ onC
                   <form onSubmit={handleForgotPassword} className="space-y-4">
                     <div className="relative">
                       <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                      <input 
-                        type="email" 
-                        required 
-                        placeholder="Email Address" 
-                        value={email} 
-                        onChange={(e) => setEmail(e.target.value)} 
-                        className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-medium text-gray-800 text-sm" 
+                      <input
+                        type="email"
+                        required
+                        placeholder="Email Address"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-medium text-gray-800 text-sm"
                       />
                     </div>
-                    <button 
-                      type="submit" 
-                      disabled={loading} 
+                    <button
+                      type="submit"
+                      disabled={loading}
                       className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-70"
                     >
                       {loading ? <FootballIcon size={18} className="text-white" /> : "Get Reset Link"}
@@ -351,6 +371,22 @@ const AuthScreen: React.FC<{ onClose?: () => void; isModal?: boolean }> = ({ onC
                       <input type="text" required placeholder="First Name" value={firstName} onChange={(e) => setFirstName(e.target.value)} className="w-full pl-5 pr-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-medium text-gray-800 text-sm" />
                       <input type="text" required placeholder="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)} className="w-full pl-5 pr-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-medium text-gray-800 text-sm" />
                     </div>
+
+                    <div className="mb-4">
+                      <label className="text-xs font-bold text-gray-600 block mb-1.5 ml-1">Phone Number</label>
+                      <div className="relative">
+                        <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                        <input
+                          type="tel"
+                          required
+                          placeholder="Enter your mobile number"
+                          autoComplete="tel"
+                          value={phoneNumber}
+                          onChange={(e) => setPhoneNumber(e.target.value)}
+                          className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-medium text-gray-800 text-sm"
+                        />
+                      </div>
+                    </div>
                   </>
                 )}
 
@@ -366,7 +402,7 @@ const AuthScreen: React.FC<{ onClose?: () => void; isModal?: boolean }> = ({ onC
 
                 {isLogin && (
                   <div className="text-right">
-                    <button 
+                    <button
                       type="button"
                       onClick={() => { setIsResetMode(true); setError(null); }}
                       className="text-[11px] font-black text-indigo-600 uppercase tracking-widest hover:text-indigo-700 transition-colors"
@@ -387,7 +423,7 @@ const AuthScreen: React.FC<{ onClose?: () => void; isModal?: boolean }> = ({ onC
                 <div className="flex-1 h-px bg-gray-200" />
               </div>
 
-              <button 
+              <button
                 type="button"
                 onClick={handleGoogleSignIn}
                 disabled={loading || googleLoading}
@@ -398,10 +434,10 @@ const AuthScreen: React.FC<{ onClose?: () => void; isModal?: boolean }> = ({ onC
                 ) : (
                   <>
                     <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
-                      <path d="M9.003 18c2.43 0 4.467-.806 5.956-2.18L12.05 13.56c-.806.54-1.836.86-3.047.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9.003 18z" fill="#34A853"/>
-                      <path d="M3.964 10.712c-.18-.54-.282-1.117-.282-1.71 0-.593.102-1.17.282-1.71V4.96H.957C.347 6.175 0 7.55 0 9.002c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
-                      <path d="M9.003 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.464.891 11.426 0 9.003 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29c.708-2.127 2.692-3.71 5.036-3.71z" fill="#EA4335"/>
+                      <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4" />
+                      <path d="M9.003 18c2.43 0 4.467-.806 5.956-2.18L12.05 13.56c-.806.54-1.836.86-3.047.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9.003 18z" fill="#34A853" />
+                      <path d="M3.964 10.712c-.18-.54-.282-1.117-.282-1.71 0-.593.102-1.17.282-1.71V4.96H.957C.347 6.175 0 7.55 0 9.002c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05" />
+                      <path d="M9.003 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.464.891 11.426 0 9.003 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29c.708-2.127 2.692-3.71 5.036-3.71z" fill="#EA4335" />
                     </svg>
                     {isLogin ? "Sign in with Google" : "Sign up with Google"}
                   </>
@@ -436,7 +472,7 @@ const AuthScreen: React.FC<{ onClose?: () => void; isModal?: boolean }> = ({ onC
 
         <div className="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-2xl shadow-indigo-100/50 border border-gray-100 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-full -mr-16 -mt-16 opacity-50" />
-          
+
           <div className="relative z-10">
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
               {isLogin ? "Welcome Back" : "Create Account"}
@@ -474,9 +510,26 @@ const AuthScreen: React.FC<{ onClose?: () => void; isModal?: boolean }> = ({ onC
                       ))}
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+
+                  <div className="grid grid-cols-2 gap-3 pb-1">
                     <input type="text" required placeholder="First Name" value={firstName} onChange={(e) => setFirstName(e.target.value)} className="w-full pl-5 pr-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-medium text-gray-800 text-sm" />
                     <input type="text" required placeholder="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)} className="w-full pl-5 pr-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-medium text-gray-800 text-sm" />
+                  </div>
+
+                  <div className="mb-4">
+                    <label className="text-xs font-bold text-gray-600 block mb-1.5 ml-1">Phone Number</label>
+                    <div className="relative">
+                      <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                      <input
+                        type="tel"
+                        required
+                        placeholder="Enter your mobile number"
+                        autoComplete="tel"
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value)}
+                        className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-medium text-gray-800 text-sm"
+                      />
+                    </div>
                   </div>
                 </>
               )}
@@ -493,7 +546,7 @@ const AuthScreen: React.FC<{ onClose?: () => void; isModal?: boolean }> = ({ onC
 
               {isLogin && (
                 <div className="text-right">
-                  <button 
+                  <button
                     type="button"
                     onClick={() => { setIsResetMode(true); setError(null); }}
                     className="text-[11px] font-black text-indigo-600 uppercase tracking-widest hover:text-indigo-700 transition-colors"
@@ -514,7 +567,7 @@ const AuthScreen: React.FC<{ onClose?: () => void; isModal?: boolean }> = ({ onC
               <div className="flex-1 h-px bg-gray-200" />
             </div>
 
-            <button 
+            <button
               type="button"
               onClick={handleGoogleSignIn}
               disabled={loading || googleLoading}
@@ -525,10 +578,10 @@ const AuthScreen: React.FC<{ onClose?: () => void; isModal?: boolean }> = ({ onC
               ) : (
                 <>
                   <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
-                    <path d="M9.003 18c2.43 0 4.467-.806 5.956-2.18L12.05 13.56c-.806.54-1.836.86-3.047.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9.003 18z" fill="#34A853"/>
-                    <path d="M3.964 10.712c-.18-.54-.282-1.117-.282-1.71 0-.593.102-1.17.282-1.71V4.96H.957C.347 6.175 0 7.55 0 9.002c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
-                    <path d="M9.003 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.464.891 11.426 0 9.003 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29c.708-2.127 2.692-3.71 5.036-3.71z" fill="#EA4335"/>
+                    <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4" />
+                    <path d="M9.003 18c2.43 0 4.467-.806 5.956-2.18L12.05 13.56c-.806.54-1.836.86-3.047.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9.003 18z" fill="#34A853" />
+                    <path d="M3.964 10.712c-.18-.54-.282-1.117-.282-1.71 0-.593.102-1.17.282-1.71V4.96H.957C.347 6.175 0 7.55 0 9.002c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05" />
+                    <path d="M9.003 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.464.891 11.426 0 9.003 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29c.708-2.127 2.692-3.71 5.036-3.71z" fill="#EA4335" />
                   </svg>
                   {isLogin ? "Sign in with Google" : "Sign up with Google"}
                 </>

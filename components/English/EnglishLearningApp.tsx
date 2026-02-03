@@ -284,6 +284,12 @@ const EnglishLearningApp: React.FC<Props> = ({ onBack, embedded = false }) => {
             }
         } catch (err) {
             console.error(err);
+            const errorMsg: ChatMessage = {
+                id: Date.now() + 1,
+                role: 'ai',
+                text: "Sorry, I couldn't generate a lesson right now. Please try again.",
+            };
+            setMessages(prev => [...prev, errorMsg]);
         } finally {
             setIsLoading(false);
         }

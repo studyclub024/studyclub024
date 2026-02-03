@@ -80,11 +80,8 @@ const Header: React.FC<Props> = ({ isDarkMode, onToggleDarkMode, onProfileClick,
     >
       <div className="container mx-auto px-4 flex items-center justify-between">
         <button onClick={() => onLogoClick?.()} aria-label="Go to homepage" className="flex items-center gap-3 rounded-lg hover:bg-gray-50 p-1 transition-all">
-          <div className="p-1 rounded-xl bg-white shadow-md border border-indigo-100 flex items-center justify-center overflow-hidden shrink-0 transition-all hover:scale-105">
-            <img src="https://firebasestorage.googleapis.com/v0/b/my-website-map-470209.firebasestorage.app/o/logos%2Fsc.png?alt=media" alt="SC Logo" className="w-10 h-10 object-contain" />
-          </div>
+          <img src="/studyclub-logo.jpg" alt="StudyClub24" className="h-10 w-auto object-contain" />
           <div className="hidden xs:block min-w-0 text-left">
-            <h1 className="text-xl font-bold tracking-tight truncate">StudyClub24</h1>
             <div className="flex items-center gap-1.5 overflow-hidden">
               <span className="text-[10px] theme-text font-black uppercase tracking-widest truncate">{frameworkConfig.label}</span>
               <div className="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-600 shrink-0" />

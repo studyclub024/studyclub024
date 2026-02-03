@@ -152,10 +152,7 @@ const Homepage: React.FC<HomepageProps> = ({ onOpenAuth, onGetStarted, onOpenUpg
       <nav className="fixed top-0 w-full z-[1000] bg-white/80 backdrop-blur-xl border-b border-gray-100 py-4">
         <div className="container mx-auto px-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="bg-white p-1 rounded-xl shadow-md border border-indigo-50 flex items-center justify-center overflow-hidden">
-              <img src="https://firebasestorage.googleapis.com/v0/b/my-website-map-470209.firebasestorage.app/o/logos%2Fsc.png?alt=media" alt="SC Logo" className="w-8 h-8 object-contain" />
-            </div>
-            <span className="text-xl font-black tracking-tight text-gray-900">StudyClub24</span>
+            <img src="/studyclub-logo.jpg" alt="StudyClub24" className="h-12 w-auto object-contain" />
           </div>
 
           <div className="hidden md:flex items-center gap-10">

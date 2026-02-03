@@ -615,7 +615,7 @@ export const generateEnglishLesson = async (input: string, nativeLanguage: strin
     try {
       const aiClient = requireAI();
       response = await aiClient.models.generateContent({
-        model: "gemini-3-pro-preview",
+        model: "gemini-3-flash-preview",
         contents: `Create an English lesson for a ${nativeLanguage} speaker. Context: ${context}. Topic/Input: ${input}`,
         config: {
           responseMimeType: "application/json",
@@ -677,8 +677,7 @@ export const generateEnglishLesson = async (input: string, nativeLanguage: strin
               exam_tip: { type: Type.STRING }
             },
             required: ['title', 'context', 'vocabulary']
-          },
-          thinkingConfig: { thinkingBudget: 4000 }
+          }
         }
       });
     } catch (apiError) {

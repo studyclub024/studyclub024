@@ -362,7 +362,7 @@ class RazorpayService {
     const now = new Date();
 
     switch (planId) {
-      case 'crash-course':
+
       case 'instant-help':
       case 'focused-prep':
       case 'study-pro':

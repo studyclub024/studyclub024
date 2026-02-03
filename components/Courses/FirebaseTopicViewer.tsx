@@ -415,15 +415,7 @@ const FirebaseTopicViewer: React.FC<Props> = ({ topic, onBack }) => {
                             Quick revision guide for exam preparation
                           </p>
                         </div>
-                        {/* Download Button */}
-                        <a
-                          href={topic.content.lastMinuteRevisionRef}
-                          download
-                          className="flex items-center gap-2 px-6 py-3 rounded-xl bg-indigo-600 text-white font-bold text-sm hover:bg-indigo-700 transition-colors shadow-lg"
-                        >
-                          <FileText size={18} />
-                          Download
-                        </a>
+
                       </div>
 
                       {/* PDF Viewer */}
@@ -455,17 +447,7 @@ const FirebaseTopicViewer: React.FC<Props> = ({ topic, onBack }) => {
                           />
                         </div>
 
-                        {/* Download Button */}
-                        <a
-                          href={topic.content.cheatSheetRef}
-                          download
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 px-8 py-4 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition-colors shadow-lg"
-                        >
-                          <ImageIcon size={20} />
-                          Download Cheat Sheet
-                        </a>
+
                       </div>
                     </div>
                   )}
