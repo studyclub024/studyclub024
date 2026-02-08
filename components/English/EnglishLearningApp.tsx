@@ -363,22 +363,22 @@ const EnglishLearningApp: React.FC<Props> = ({ onBack, embedded = false }) => {
                     </button>
                 )}
 
-                <div className="bg-white rounded-[2.5rem] shadow-2xl p-10 max-w-md w-full text-center border border-pink-100 relative overflow-hidden animate-fade-in-up">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-pink-50 rounded-full -mr-16 -mt-16 opacity-50" />
+                <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl p-10 max-w-md w-full text-center border border-pink-100 dark:border-white/10 relative overflow-hidden animate-fade-in-up">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-pink-50 dark:bg-pink-900/20 rounded-full -mr-16 -mt-16 opacity-50" />
 
                     <div className="relative z-10">
-                        <div className="w-20 h-20 bg-pink-50 rounded-full flex items-center justify-center mx-auto mb-6 text-pink-500 shadow-inner">
+                        <div className="w-20 h-20 bg-pink-50 dark:bg-pink-900/20 rounded-full flex items-center justify-center mx-auto mb-6 text-pink-500 shadow-inner">
                             <Languages size={40} />
                         </div>
-                        <h2 className="text-3xl font-black text-gray-900 mb-2 tracking-tight">English Prep</h2>
-                        <p className="text-gray-500 mb-10 font-medium leading-relaxed">Select your native language for better learning and personalized translations.</p>
+                        <h2 className="text-3xl font-black text-gray-900 dark:text-white mb-2 tracking-tight">English Prep</h2>
+                        <p className="text-gray-500 dark:text-slate-400 mb-10 font-medium leading-relaxed">Select your native language for better learning and personalized translations.</p>
 
                         <div className="grid grid-cols-2 gap-3">
                             {NATIVE_LANGUAGES.map(lang => (
                                 <button
                                     key={lang}
                                     onClick={() => setNativeLanguage(lang)}
-                                    className="p-4 rounded-2xl border-2 border-gray-50 hover:border-pink-500 hover:bg-pink-50 text-gray-700 font-black text-xs uppercase tracking-widest transition-all hover:scale-[1.03] active:scale-95"
+                                    className="p-4 rounded-2xl border-2 border-gray-50 dark:border-white/10 hover:border-pink-500 dark:hover:border-pink-500 hover:bg-pink-50 dark:hover:bg-pink-900/20 text-gray-700 dark:text-slate-200 font-black text-xs uppercase tracking-widest transition-all hover:scale-[1.03] active:scale-95"
                                 >
                                     {lang}
                                 </button>

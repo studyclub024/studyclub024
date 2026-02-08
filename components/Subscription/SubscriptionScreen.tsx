@@ -142,7 +142,7 @@ export const US_PLANS: SubscriptionPlan[] = [
     currency: 'USD',
     period: '/mo',
     description: '$36.99 Billed Annually',
-    features: ['5 Notes Upload/day', 'Unlimited Flashcards', 'Unlimited Summaries', 'Unlimited Test', 'Study Plan', 'No Save/Share', 'No Language/Themes', 'No Courses'],
+    features: ['5 Notes Upload/day', 'Unlimited Flashcards', 'Unlimited Summaries', 'Unlimited Test', 'Study Plan', 'Fun Themes', 'No Save/Share', 'No Language', 'No Courses'],
     gradient: 'from-violet-500 to-fuchsia-500',
     billingAmount: 3699
   },

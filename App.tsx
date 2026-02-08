@@ -316,15 +316,17 @@ const App: React.FC = () => {
 
   // Premium Gating Functions
   const userPlan = userProfile?.subscriptionPlanId || 'free';
-  const isFree = userPlan === 'free';
+  const isFree = userPlan === 'free' || userPlan === 'us-free-trial';
   const isCrashCourse = userPlan === 'crash-course';
-  const isInstantHelp = userPlan === 'instant-help';
+  const isInstantHelp = userPlan === 'instant-help' || userPlan === 'us-instant-help-annual';
   const isFocusedPrep = userPlan === 'focused-prep';
-  const isStudyPro = userPlan === 'study-pro';
+  const isStudyPro = userPlan === 'study-pro' || userPlan === 'us-ultra-unlimited-monthly' || userPlan === 'us-ultra-unlimited-annual';
   const hasVoiceAccess = isInstantHelp || isFocusedPrep || isStudyPro;
 
   const canUseFeature = (feature: 'themes' | 'save' | 'english' | 'sharing' | 'tts' | 'regen' | 'courses' | 'flashcards' | 'summaries' | 'test' | 'studyplan'): boolean => {
     if (isStudyPro) return true;
+    if (userPlan === 'us-free-trial') return true; // Free trial has access to everything for limited time
+
     const totalGen = userProfile?.stats.totalGenerations || 0;
     const isFirstTimeTrial = isFree && totalGen < 1;
     // Special check for viewing the result of the trial
@@ -336,7 +338,7 @@ const App: React.FC = () => {
       case 'summaries':
       case 'test': return isFirstTimeTrial || isInstantHelp || isFocusedPrep || isStudyPro;
       case 'studyplan': return isFirstTimeTrial || isInstantHelp || isFocusedPrep || isStudyPro;
-      case 'themes': return isFirstTimeTrial || isViewingTrialResult || isFocusedPrep || isStudyPro;
+      case 'themes': return isFirstTimeTrial || isViewingTrialResult || isInstantHelp || isFocusedPrep || isStudyPro; // Instant Help gets themes now
       case 'english': return isFocusedPrep || isStudyPro;
       case 'save':
       case 'sharing': return isStudyPro;
@@ -348,7 +350,8 @@ const App: React.FC = () => {
 
   const getInputLimits = () => {
     if (isStudyPro) return Infinity;
-    if (isFree) return 1; // One-time trial
+    if (userPlan === 'us-free-trial') return Infinity; // Unlimited for trial duration
+    if (isFree) return 1; // One-time trial for standard free plan
     if (isCrashCourse) return 0; // No notes upload for Crash Course
     if (isInstantHelp) return 5; // 5 per day
     if (isFocusedPrep) return 10; // 10 per day
@@ -360,7 +363,7 @@ const App: React.FC = () => {
     const dailyGen = userProfile?.stats.dailyGenerations || 0;
     const limit = getInputLimits();
 
-    if (isFree) {
+    if (isFree && userPlan !== 'us-free-trial') {
       if (totalGen >= 1) {
         return { allowed: false, reason: "Your one-time trial has ended. Upgrade to a premium plan to continue generating high-quality study materials." };
       }
@@ -371,7 +374,7 @@ const App: React.FC = () => {
       return { allowed: false, reason: "Notes upload is not available on the Crash Course plan. Upgrade to unlock." };
     }
 
-    if (!isStudyPro && limit > 0 && dailyGen >= limit) {
+    if (!isStudyPro && userPlan !== 'us-free-trial' && limit > 0 && dailyGen >= limit) {
       return { allowed: false, reason: `You've reached your daily limit of ${limit} notes uploads. Upgrade to Study Pro for unlimited access.` };
     }
 
@@ -1374,11 +1377,11 @@ const App: React.FC = () => {
           {/* <Leaderboard user={currentUser} onAchievement={handleAchievementUpdate} /> */}
 
           <div className="space-y-6 md:space-y-8 animate-fade-in-up px-1 md:px-0">
-            {isFree && (
+            {/* {isFree && (
               <div className="bg-gradient-to-r from-slate-100 to-slate-50 dark:from-slate-900 dark:to-slate-800 p-4 rounded-3xl border border-slate-200 dark:border-white/5 flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-widest text-slate-400">
                 <span className="w-2 h-2 rounded-full bg-slate-300 animate-pulse" /> Sponsored Content Placeholder
               </div>
-            )}
+            )} */}
 
             {error && (
               <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-[2.5rem] p-8 shadow-xl shadow-amber-100/50 animate-fade-in text-amber-900 dark:text-amber-200">
