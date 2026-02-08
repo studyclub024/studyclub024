@@ -41,7 +41,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.onSubscriptionUpdated = exports.health = exports.verifyPayment = exports.createOrder = exports.onSubscriptionCreated = exports.manualCheckExpiredSubscriptions = exports.checkExpiredSubscriptions = void 0;
+exports.verifySubscription = exports.createSubscription = exports.health = exports.verifyPayment = exports.createOrder = exports.onSubscriptionCreated = exports.manualCheckExpiredSubscriptions = exports.checkExpiredSubscriptions = void 0;
 const functions = __importStar(require("firebase-functions"));
 const admin = __importStar(require("firebase-admin"));
 const crypto = __importStar(require("crypto"));
@@ -187,8 +187,8 @@ exports.createOrder = functions.https.onRequest(async (req, res) => {
         return;
     }
     try {
-        const { amount, planId, userId } = req.body;
-        console.log('Create order request:', { amount, planId, userId });
+        const { amount, planId, userId, currency = 'INR' } = req.body;
+        console.log('Create order request:', { amount, planId, userId, currency });
         if (!amount || !planId || !userId) {
             res.status(400).json({
                 error: 'Missing required fields: amount, planId, userId'
@@ -202,7 +202,7 @@ exports.createOrder = functions.https.onRequest(async (req, res) => {
         const receipt = `rcpt_${timestamp}_${shortUserId}`.substring(0, 40);
         const options = {
             amount: amount, //* 100,
-            currency: 'INR',
+            currency: currency,
             receipt: receipt,
             notes: { planId, userId },
         };
@@ -284,24 +284,145 @@ exports.health = functions.https.onRequest(async (req, res) => {
     });
 });
 /**
- * Function triggered when a subscription is updated
- * Can be used for monitoring status changes
+ * Internal Plan Mapping for Security
  */
-exports.onSubscriptionUpdated = functions.firestore
-    .document('subscriptions/{userId}')
-    .onUpdate(async (change, context) => {
-    const before = change.before.data();
-    const after = change.after.data();
-    const userId = context.params.userId;
-    // Check if status changed
-    if (before.status !== after.status) {
-        console.log(`Subscription status changed for user ${userId}:`, {
-            from: before.status,
-            to: after.status
-        });
-        // TODO: Send notification to user
-        // TODO: Track analytics event
+const PLAN_DETAILS = {
+    'us-ultra-unlimited-monthly': {
+        amount: 1099, // $10.99
+        currency: 'USD',
+        period: 'monthly',
+        name: 'Student Ultra Unlimited (Monthly)'
+    },
+    'us-ultra-unlimited-annual': {
+        amount: 6999, // $69.99
+        currency: 'USD',
+        period: 'yearly',
+        name: 'Student Ultra Unlimited (Annual)'
+    },
+    'us-instant-help-annual': {
+        amount: 3699, // $36.99
+        currency: 'USD',
+        period: 'yearly',
+        name: 'Student Instant Help (Annual)'
+    },
+    // Legacy or other plans can be added here
+};
+/**
+ * HTTP Function: Create Razorpay Subscription with Trial
+ */
+exports.createSubscription = functions.https.onRequest(async (req, res) => {
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    if (req.method === 'OPTIONS') {
+        res.status(204).send('');
+        return;
     }
-    return null;
+    if (req.method !== 'POST') {
+        res.status(405).json({ error: 'Method not allowed' });
+        return;
+    }
+    try {
+        const { planId, userId } = req.body;
+        if (!planId || !userId) {
+            res.status(400).json({ error: 'Missing required fields: planId, userId' });
+            return;
+        }
+        const planDetails = PLAN_DETAILS[planId];
+        if (!planDetails) {
+            // Fallback or error? For now, error to prevent abuse
+            res.status(400).json({ error: 'Invalid plan ID' });
+            return;
+        }
+        const Razorpay = require('razorpay');
+        const razorpay = new Razorpay(getRazorpayConfig());
+        // 1. Create a Razorpay Plan
+        // Note: In a real prod environment, you should cache these IDs or create them once in dashboard.
+        // For this implementation, we'll try to create it dynamically.
+        const planOptions = {
+            period: planDetails.period,
+            interval: 1,
+            item: {
+                name: planDetails.name,
+                amount: planDetails.amount, // Amount in smallest currency unit (cents/paise)
+                currency: planDetails.currency,
+                description: `Subscription for ${planDetails.name}`
+            }
+        };
+        console.log('Creating Razorpay plan:', planOptions);
+        const rzpPlan = await razorpay.plans.create(planOptions);
+        console.log('Razorpay Plan created:', rzpPlan.id);
+        // 2. Create Subscription with 3-day trial
+        // start_at should be unix timestamp
+        const trialDays = 3;
+        const startAt = Math.floor(Date.now() / 1000) + (trialDays * 24 * 60 * 60);
+        const subOptions = {
+            plan_id: rzpPlan.id,
+            total_count: 120, // 10 years (recurring indefinitely essentially)
+            quantity: 1,
+            customer_notify: 1,
+            start_at: startAt,
+            notes: {
+                internalPlanId: planId,
+                userId: userId
+            }
+        };
+        console.log('Creating Razorpay subscription:', subOptions);
+        const subscription = await razorpay.subscriptions.create(subOptions);
+        console.log('Subscription created:', subscription.id);
+        res.json({
+            subscriptionId: subscription.id,
+            planId: rzpPlan.id,
+            amount: planDetails.amount,
+            currency: planDetails.currency,
+            trialEnd: startAt
+        });
+    }
+    catch (error) {
+        console.error('Error creating subscription:', error);
+        res.status(500).json({
+            error: 'Failed to create subscription',
+            message: error.message
+        });
+    }
+});
+/**
+ * HTTP Function: Verify Razorpay Subscription
+ */
+exports.verifySubscription = functions.https.onRequest(async (req, res) => {
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    if (req.method === 'OPTIONS') {
+        res.status(204).send('');
+        return;
+    }
+    if (req.method !== 'POST') {
+        res.status(405).json({ error: 'Method not allowed' });
+        return;
+    }
+    try {
+        const { subscriptionId, paymentId, signature } = req.body;
+        if (!subscriptionId || !paymentId || !signature) {
+            res.status(400).json({ error: 'Missing fields' });
+            return;
+        }
+        // verification: hmac_sha256(payment_id + "|" + subscription_id, secret);
+        const data = `${paymentId}|${subscriptionId}`;
+        const generatedSignature = crypto
+            .createHmac('sha256', getRazorpayConfig().key_secret)
+            .update(data)
+            .digest('hex');
+        if (generatedSignature === signature) {
+            res.json({ verified: true });
+        }
+        else {
+            res.status(400).json({ verified: false, error: 'Invalid signature' });
+        }
+    }
+    catch (error) {
+        console.error('Error verifying subscription:', error);
+        res.status(500).json({ error: error.message });
+    }
 });
 //# sourceMappingURL=index.js.map

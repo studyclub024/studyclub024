@@ -34,7 +34,7 @@ export const checkExpiredSubscriptions = functions.pubsub
   .timeZone('UTC')
   .onRun(async (context) => {
     const now = new Date();
-    
+
     try {
       // Query all active subscriptions
       const subscriptionsRef = db.collection('subscriptions');
@@ -57,13 +57,13 @@ export const checkExpiredSubscriptions = functions.pubsub
         // Check if subscription has expired
         if (expiryDate <= now) {
           console.log(`Expiring subscription for user: ${doc.id}`);
-          
+
           // Update subscription status to expired
           batch.update(doc.ref, {
             status: 'expired',
             updatedAt: now.toISOString()
           });
-          
+
           expiredCount++;
         }
       });
@@ -90,7 +90,7 @@ export const checkExpiredSubscriptions = functions.pubsub
 export const manualCheckExpiredSubscriptions = functions.https.onRequest(
   async (req, res) => {
     const now = new Date();
-    
+
     try {
       const subscriptionsRef = db.collection('subscriptions');
       const snapshot = await subscriptionsRef
@@ -165,7 +165,7 @@ export const createOrder = functions.https.onRequest(async (req, res) => {
   res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.set('Access-Control-Max-Age', '3600');
-  
+
   if (req.method === 'OPTIONS') {
     res.status(204).send('');
     return;
@@ -177,9 +177,9 @@ export const createOrder = functions.https.onRequest(async (req, res) => {
   }
 
   try {
-    const { amount, planId, userId } = req.body;
+    const { amount, planId, userId, currency = 'INR' } = req.body;
 
-    console.log('Create order request:', { amount, planId, userId });
+    console.log('Create order request:', { amount, planId, userId, currency });
 
     if (!amount || !planId || !userId) {
       res.status(400).json({
@@ -196,8 +196,8 @@ export const createOrder = functions.https.onRequest(async (req, res) => {
     const receipt = `rcpt_${timestamp}_${shortUserId}`.substring(0, 40);
 
     const options = {
-      amount: amount ,//* 100,
-      currency: 'INR',
+      amount: amount,//* 100,
+      currency: currency,
       receipt: receipt,
       notes: { planId, userId },
     };
@@ -228,7 +228,7 @@ export const verifyPayment = functions.https.onRequest(async (req, res) => {
   res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.set('Access-Control-Max-Age', '3600');
-  
+
   if (req.method === 'OPTIONS') {
     res.status(204).send('');
     return;

@@ -158,7 +158,7 @@ const Homepage: React.FC<HomepageProps> = ({ onOpenAuth, onGetStarted, onOpenUpg
           <div className="hidden md:flex items-center gap-10">
             <a href="#about" onClick={(e) => scrollToSection(e, 'about')} className="text-sm font-black uppercase tracking-wide text-gray-500 hover:text-indigo-600 transition-all">About</a>
             <a href="#features" onClick={(e) => scrollToSection(e, 'features')} className="text-sm font-black uppercase tracking-wide text-gray-500 hover:text-indigo-600 transition-all">Our Features</a>
-            <a href="#pricing" onClick={(e) => scrollToSection(e, 'pricing')} className="text-sm font-black uppercase tracking-wide text-gray-500 hover:text-indigo-600 transition-all">Pricing</a>
+            {/* <a href="#pricing" onClick={(e) => scrollToSection(e, 'pricing')} className="text-sm font-black uppercase tracking-wide text-gray-500 hover:text-indigo-600 transition-all">Pricing</a> */}
             <a href="#impact" onClick={(e) => scrollToSection(e, 'impact')} className="text-sm font-black uppercase tracking-wide text-gray-500 hover:text-indigo-600 transition-all">Feedbacks</a>
           </div>
 
@@ -512,160 +512,166 @@ const Homepage: React.FC<HomepageProps> = ({ onOpenAuth, onGetStarted, onOpenUpg
         </section>
 
         {/* Pricing (shared with Subscription modal) */}
-        <section id="pricing" className="py-16 bg-white">
+        {/* Pricing (Hidden as requested) */}
+        {/* <section id="pricing" className="py-16 bg-white">
           <div className="container mx-auto px-6">
             <div className="text-center mb-12">
               <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-600">The Membership</h2>
               <h3 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight">Flexible Plans for Every Learner</h3>
               <p className="text-gray-500 font-medium max-w-2xl mx-auto">Choose the protocol that matches your academic ambition. Unlock the full power of StudyClub24 today.</p>
             </div>
-
-            <div className="flex flex-wrap justify-center gap-6">
-              {PLANS.map((plan, idx) => (
-                <div
-                  key={plan.id}
-                  className={`relative flex flex-col bg-white rounded-[2.5rem] p-8 border-2 transition-all hover:scale-[1.02] group w-full md:w-[calc(50%-1.5rem)] lg:w-[calc(25%-1.5rem)] min-w-[280px] ${plan.isPopular ? 'border-indigo-600 shadow-2xl shadow-indigo-100 ring-4 ring-indigo-50' : 'border-gray-50 shadow-xl shadow-gray-100 hover:border-indigo-200'}`}
-                  style={{ animationDelay: `${idx * 80}ms` }}
-                >
-                  {plan.isPopular && (
-                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-indigo-600 text-white px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg">
-                      Best Value
-                    </div>
-                  )}
-
-                  <div className="mb-6">
-                    <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${plan.gradient} flex items-center justify-center text-white mb-6 shadow-lg group-hover:rotate-6 transition-transform`}>
-                      {plan.id === 'crash-course' && <Zap size={24} />}
-                      {plan.id === 'instant-help' && <Shield size={24} />}
-                      {plan.id === 'focused-prep' && <Trophy size={24} />}
-                      {plan.id === 'study-pro' && <Crown size={24} />}
-                    </div>
-                    <h3 className="text-xl font-black text-gray-900 mb-2">{plan.name}</h3>
-                    <p className="text-xs text-gray-400 font-medium leading-relaxed min-h-[3rem]">{plan.description}</p>
-                  </div>
-
-                  <div className="mb-8">
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-3xl font-black text-gray-900">{plan.price}</span>
-                      <span className="text-gray-400 font-bold text-sm">/{plan.period}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex-1 space-y-4 mb-8">
-                    {plan.features.map((feature, fIdx) => (
-                      <div key={fIdx} className="flex gap-3">
-                        <div className="flex-shrink-0 w-5 h-5 rounded-full bg-indigo-50 flex items-center justify-center">
-                          <Check size={12} className="text-indigo-600" strokeWidth={3} />
-                        </div>
-                        <span className="text-xs font-bold text-gray-600 leading-tight">{feature}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <button
-                    onClick={() => handleUpgradePlan(plan.id)}
-                    className={`w-full py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 group/btn active:scale-95 ${plan.isPopular
-                      ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-200 hover:bg-indigo-700 hover:shadow-indigo-300 hover:-translate-y-1'
-                      : 'bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-600 hover:text-white hover:shadow-xl hover:shadow-indigo-200 hover:-translate-y-1'
-                      }`}
-                  >
-                    Upgrade Now <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
-                  </button>
-                </div>
-              ))}
-            </div>
-
-            {/* Feature Comparison Table */}
-            <div className="mt-20 mb-16">
-              <h3 className="text-2xl font-black text-gray-900 text-center mb-12">Detailed Feature Comparison</h3>
-
-              <div className="overflow-x-auto rounded-3xl border border-gray-200 bg-white">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="px-6 py-6 text-left text-sm font-black text-gray-900 bg-gray-50 min-w-[250px]">
-                        Feature / Plan
-                      </th>
-                      {PLANS.map((plan) => (
-                        <th key={plan.id} className="px-6 py-6 text-center text-xs font-black text-gray-900 bg-gray-50 min-w-[140px]">
-                          <div className="text-sm">{plan.name}</div>
-                          <div className="text-base mt-2">{plan.price}<span className="text-xs">/{plan.period}</span></div>
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {ALL_FEATURES.map((feature, idx) => (
-                      <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                        <td className="px-6 py-4 text-sm font-bold text-gray-700">
-                          {feature}
-                        </td>
-                        {PLANS.map((plan) => (
-                          <td key={plan.id} className="px-6 py-4 text-center">
-                            {PLAN_FEATURES_MAP[plan.id][feature] ? (
-                              <div className="flex justify-center">
-                                <div className="w-6 h-6 rounded-full bg-green-50 flex items-center justify-center">
-                                  <Check size={16} className="text-green-600" strokeWidth={3} />
-                                </div>
-                              </div>
-                            ) : (
-                              <div className="flex justify-center">
-                                <div className="w-6 h-6 rounded-full bg-red-50 flex items-center justify-center">
-                                  <X size={16} className="text-red-600" strokeWidth={3} />
-                                </div>
-                              </div>
-                            )}
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                    {/* Upgrade Now Buttons Row */}
-                    <tr className="bg-gray-50">
-                      <td className="px-6 py-6 text-sm font-black text-gray-900">
-                        Choose Plan
-                      </td>
-                      {PLANS.map((plan) => (
-                        <td key={plan.id} className="px-6 py-4 text-center">
-                          <button
-                            onClick={() => handleUpgradePlan(plan.id)}
-                            className={`w-full px-4 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 group/btn active:scale-95 ${plan.isPopular
-                              ? 'bg-indigo-600 text-white shadow-lg hover:bg-indigo-700 hover:shadow-xl hover:shadow-indigo-300 hover:-translate-y-1'
-                              : 'bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-600 hover:text-white hover:shadow-xl hover:shadow-indigo-200 hover:-translate-y-1'
-                              }`}
-                          >
-                            Upgrade Now
-                            <ArrowRight size={12} className="group-hover/btn:translate-x-1 transition-transform" />
-                          </button>
-                        </td>
-                      ))}
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <div className="mt-20 text-center space-y-6">
-              <div className="flex flex-wrap justify-center gap-12 text-gray-400">
-                <div className="flex items-center gap-2">
-                  <Shield size={20} />
-                  <span className="text-xs font-bold uppercase tracking-widest">Secure Activation</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Check size={20} />
-                  <span className="text-xs font-bold uppercase tracking-widest">Instant Upgrade</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Zap size={20} />
-                  <span className="text-xs font-bold uppercase tracking-widest">Cancel Anytime</span>
-                </div>
-              </div>
-              <p className="text-[10px] text-gray-400 font-medium">Pricing shown is in INR. Taxes may apply. By selecting a plan, you agree to our Terms of Protocol and Privacy Policy.</p>
+            
+            <div className="flex flex-col items-center justify-center py-12">
+               <p className="text-gray-500">Pricing options are available in the app.</p>
             </div>
           </div>
-        </section>
+        </section> */}
+
+        {/* <div className="flex flex-wrap justify-center gap-6">
+          {PLANS.map((plan, idx) => (
+            <div
+              key={plan.id}
+              className={`relative flex flex-col bg-white rounded-[2.5rem] p-8 border-2 transition-all hover:scale-[1.02] group w-full md:w-[calc(50%-1.5rem)] lg:w-[calc(25%-1.5rem)] min-w-[280px] ${plan.isPopular ? 'border-indigo-600 shadow-2xl shadow-indigo-100 ring-4 ring-indigo-50' : 'border-gray-50 shadow-xl shadow-gray-100 hover:border-indigo-200'}`}
+              style={{ animationDelay: `${idx * 80}ms` }}
+            >
+              {plan.isPopular && (
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-indigo-600 text-white px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg">
+                  Best Value
+                </div>
+              )}
+
+              <div className="mb-6">
+                <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${plan.gradient} flex items-center justify-center text-white mb-6 shadow-lg group-hover:rotate-6 transition-transform`}>
+                  {plan.id === 'crash-course' && <Zap size={24} />}
+                  {plan.id === 'instant-help' && <Shield size={24} />}
+                  {plan.id === 'focused-prep' && <Trophy size={24} />}
+                  {plan.id === 'study-pro' && <Crown size={24} />}
+                </div>
+                <h3 className="text-xl font-black text-gray-900 mb-2">{plan.name}</h3>
+                <p className="text-xs text-gray-400 font-medium leading-relaxed min-h-[3rem]">{plan.description}</p>
+              </div>
+
+              <div className="mb-8">
+                <div className="flex items-baseline gap-1">
+                  <span className="text-3xl font-black text-gray-900">{plan.price}</span>
+                  <span className="text-gray-400 font-bold text-sm">/{plan.period}</span>
+                </div>
+              </div>
+
+              <div className="flex-1 space-y-4 mb-8">
+                {plan.features.map((feature, fIdx) => (
+                  <div key={fIdx} className="flex gap-3">
+                    <div className="flex-shrink-0 w-5 h-5 rounded-full bg-indigo-50 flex items-center justify-center">
+                      <Check size={12} className="text-indigo-600" strokeWidth={3} />
+                    </div>
+                    <span className="text-xs font-bold text-gray-600 leading-tight">{feature}</span>
+                  </div>
+                ))}
+              </div>
+
+              <button
+                onClick={() => handleUpgradePlan(plan.id)}
+                className={`w-full py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 group/btn active:scale-95 ${plan.isPopular
+                  ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-200 hover:bg-indigo-700 hover:shadow-indigo-300 hover:-translate-y-1'
+                  : 'bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-600 hover:text-white hover:shadow-xl hover:shadow-indigo-200 hover:-translate-y-1'
+                  }`}
+              >
+                Upgrade Now <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-20 mb-16">
+          <h3 className="text-2xl font-black text-gray-900 text-center mb-12">Detailed Feature Comparison</h3>
+
+          <div className="overflow-x-auto rounded-3xl border border-gray-200 bg-white">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="px-6 py-6 text-left text-sm font-black text-gray-900 bg-gray-50 min-w-[250px]">
+                    Feature / Plan
+                  </th>
+                  {PLANS.map((plan) => (
+                    <th key={plan.id} className="px-6 py-6 text-center text-xs font-black text-gray-900 bg-gray-50 min-w-[140px]">
+                      <div className="text-sm">{plan.name}</div>
+                      <div className="text-base mt-2">{plan.price}<span className="text-xs">/{plan.period}</span></div>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {ALL_FEATURES.map((feature, idx) => (
+                  <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 text-sm font-bold text-gray-700">
+                      {feature}
+                    </td>
+                    {PLANS.map((plan) => (
+                      <td key={plan.id} className="px-6 py-4 text-center">
+                        {PLAN_FEATURES_MAP[plan.id][feature] ? (
+                          <div className="flex justify-center">
+                            <div className="w-6 h-6 rounded-full bg-green-50 flex items-center justify-center">
+                              <Check size={16} className="text-green-600" strokeWidth={3} />
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex justify-center">
+                            <div className="w-6 h-6 rounded-full bg-red-50 flex items-center justify-center">
+                              <X size={16} className="text-red-600" strokeWidth={3} />
+                            </div>
+                          </div>
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+                
+                <tr className="bg-gray-50">
+                  <td className="px-6 py-6 text-sm font-black text-gray-900">
+                    Choose Plan
+                  </td>
+                  {PLANS.map((plan) => (
+                    <td key={plan.id} className="px-6 py-4 text-center">
+                      <button
+                        onClick={() => handleUpgradePlan(plan.id)}
+                        className={`w-full px-4 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 group/btn active:scale-95 ${plan.isPopular
+                          ? 'bg-indigo-600 text-white shadow-lg hover:bg-indigo-700 hover:shadow-xl hover:shadow-indigo-300 hover:-translate-y-1'
+                          : 'bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-600 hover:text-white hover:shadow-xl hover:shadow-indigo-200 hover:-translate-y-1'
+                          }`}
+                      >
+                        Upgrade Now
+                        <ArrowRight size={12} className="group-hover/btn:translate-x-1 transition-transform" />
+                      </button>
+                    </td>
+                  ))}
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="mt-20 text-center space-y-6">
+          <div className="flex flex-wrap justify-center gap-12 text-gray-400">
+            <div className="flex items-center gap-2">
+              <Shield size={20} />
+              <span className="text-xs font-bold uppercase tracking-widest">Secure Activation</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Check size={20} />
+              <span className="text-xs font-bold uppercase tracking-widest">Instant Upgrade</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Zap size={20} />
+              <span className="text-xs font-bold uppercase tracking-widest">Cancel Anytime</span>
+            </div>
+          </div>
+          <p className="text-[10px] text-gray-400 font-medium">Pricing shown is in INR. Taxes may apply. By selecting a plan, you agree to our Terms of Protocol and Privacy Policy.</p>
+        </div>
+    </div>
+        </section > */}
 
         {/* Why We Exist, By Students For Students, The Promise */}
-        <section className="py-20 bg-gradient-to-b from-gray-50 to-white">
+        < section className="py-20 bg-gradient-to-b from-gray-50 to-white" >
           <div className="container mx-auto px-6">
             {/* Section Header */}
             <div className="text-center mb-16">
@@ -784,10 +790,10 @@ const Homepage: React.FC<HomepageProps> = ({ onOpenAuth, onGetStarted, onOpenUpg
 
             </div>
           </div>
-        </section>
+        </section >
 
         {/* Feedbacks */}
-        <section id="impact" className="py-16 bg-white">
+        < section id="impact" className="py-16 bg-white" >
           <div className="container mx-auto px-6 text-center">
             <div className="mb-6">
               <h3 className="text-xl font-black mb-2">Study Club is Free for Every Student</h3>
@@ -806,20 +812,20 @@ const Homepage: React.FC<HomepageProps> = ({ onOpenAuth, onGetStarted, onOpenUpg
               </div>
             </div>
           </div>
-        </section>
+        </section >
 
         {/* CTA */}
-        <section className="py-16 bg-gradient-to-r from-indigo-700 to-pink-500 text-white">
+        < section className="py-16 bg-gradient-to-r from-indigo-700 to-pink-500 text-white" >
           <div className="container mx-auto px-6 text-center">
             <h2 className="text-3xl font-black mb-2">Our goal is simple</h2>
             <p className="mb-6 text-gray-100">No paywalls to start, No barriers to learning, Make studying easier and accessible for everyone.</p>
             <button onClick={handleLogin} className="px-8 py-3 bg-white text-indigo-700 rounded-full font-bold">Start Free Protocol</button>
           </div>
-        </section>
-      </main>
+        </section >
+      </main >
 
       <Footer onOpenLegal={onOpenLegal} />
-    </div>
+    </div >
   );
 };
 

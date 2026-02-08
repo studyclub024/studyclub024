@@ -32,14 +32,16 @@ export enum FlashcardTheme {
 }
 
 export interface SubscriptionPlan {
-  id: 'free' | 'crash-course' | 'instant-help' | 'focused-prep' | 'study-pro';
+  id: string;
   name: string;
   price: string;
+  currency?: string; // e.g. 'INR', 'USD'
   period: string;
   description: string;
   features: string[];
   isPopular?: boolean;
   gradient: string;
+  billingAmount?: number; // Total amount to charge in minor units (cents/paise)
 }
 
 export interface AchievementBadge {
@@ -401,7 +403,7 @@ export interface UserProfile {
   displayName: string;
   email?: string;
   planExpiry?: string;
-  subscriptionPlanId: 'free' | 'crash-course' | 'instant-help' | 'focused-prep' | 'study-pro';
+  subscriptionPlanId: string;
   photoURL?: string;
   preferences: {
     flashcardTheme: FlashcardTheme;

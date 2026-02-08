@@ -90,20 +90,33 @@ class RazorpayService {
   }
 
   // Convert price string to paise and calculate monthly amount with GST
-  getPriceInPaise(priceString: string, period: string): number {
-    // Remove ₹ symbol and convert to number
-    const dailyPrice = parseFloat(priceString.replace('₹', '').replace(',', ''));
+  getPriceInPaise(priceString: string, period: string, currency: string = 'INR'): number {
+    // Remove symbols and convert to number
+    const price = parseFloat(priceString.replace(/[₹$,]/g, ''));
 
-    // If it's a daily rate, multiply by 30 days for monthly billing
-    let monthlyPrice = dailyPrice;
-    if (period.toLowerCase().includes('day')) {
-      monthlyPrice = dailyPrice * 30;
+    // If it's a daily rate (only for INR plans usually), multiply by 30
+    let finalAmount = price;
+    if (period.toLowerCase().includes('day') && currency !== 'USD') {
+      finalAmount = price * 30;
     }
 
-    // Add 18% GST
-    const priceWithGST = monthlyPrice * 1.18 * 100;
+    // Annual billing handling for US plans (price per year is in the string usually or calculated)
+    // The price string in US_PLANS is monthly but bill text says ($36.99/yr). 
+    // We need to parse the actual billing amount if it's an annual plan.
+    if (period.includes('/yr')) {
+      // Extract annual price from text like "($36.99/yr)"
+      const match = period.match(/\$([\d.]+)\/yr/);
+      if (match) {
+        finalAmount = parseFloat(match[1]);
+      }
+    }
 
-    return Math.round(priceWithGST); // Convert to paise
+    // Add GST for INR
+    if (currency === 'INR') {
+      finalAmount = finalAmount * 1.18;
+    }
+
+    return Math.round(finalAmount * 100); // Convert to minor unit (paise/cents)
   }
 
   // Initialize payment
@@ -130,7 +143,7 @@ class RazorpayService {
     console.log('✅ Razorpay script loaded successfully');
 
     // Skip payment for free plan
-    if (plan.id === 'free') {
+    if (plan.id === 'free' || plan.billingAmount === 0) {
       console.log('🔵 Free plan selected, skipping payment');
       this.handlePaymentSuccess(
         {
@@ -153,7 +166,10 @@ class RazorpayService {
       }
       console.log('🔵 User logged in:', currentUser.uid);
 
-      const amount = this.getPriceInPaise(plan.price, plan.period);
+      const currency = plan.currency || 'INR';
+      const amount = plan.billingAmount !== undefined
+        ? plan.billingAmount
+        : this.getPriceInPaise(plan.price, plan.period, currency);
 
       // Create order on backend - Use Firebase Functions URL
       // Use the Cloud Function URL directly for both dev and production to avoid routing issues
@@ -161,16 +177,22 @@ class RazorpayService {
       console.log('🔵 API URL:', API_URL);
       console.log('🔵 Creating order...');
 
+      const payload = {
+        amount,
+        planId: plan.id,
+        userId: currentUser.uid,
+        currency
+      };
+
+      console.log('🔵 Payload:', payload);
+      // alert('DEBUG: Sending Payload: ' + JSON.stringify(payload)); // Enable for debugging if needed
+
       const orderResponse = await fetch(`${API_URL}/createOrder`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          amount, // Send paise directly
-          planId: plan.id,
-          userId: currentUser.uid,
-        }),
+        body: JSON.stringify(payload),
       });
 
       console.log('🔵 Order response status:', orderResponse.status);
@@ -182,6 +204,7 @@ class RazorpayService {
 
       const orderData = await orderResponse.json();
       console.log('✅ Order created:', orderData);
+      // alert('DEBUG: Order Response: ' + JSON.stringify(orderData)); // Enable for debugging if needed
 
       // Store current order ID to track this payment instance
       this.currentOrderId = orderData.orderId;
@@ -280,12 +303,11 @@ class RazorpayService {
       // Verify payment on backend first
       const isBackendVerified = await this.verifyPaymentOnBackend(response);
 
-      if (!isBackendVerified && plan.id !== 'free') {
-        console.error('Backend verification failed');
-        this.showNotification('error', 'Verification Failed', 'Payment verification failed. Please contact support.');
+      if (!isBackendVerified && plan.id !== 'free' && plan.billingAmount !== 0) {
+        this.showNotification('error', 'Payment Verification Failed', 'Could not verify payment securely. Please contact support.');
+        this.isProcessingPayment = false;
         return;
       }
-
       console.log('Payment verified successfully');
 
       // Prepare subscription data

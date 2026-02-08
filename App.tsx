@@ -23,7 +23,7 @@ import { generateStudyMaterial, extractTextFromMedia, processUrlInput, detectEqu
 import { GoogleGenAI, LiveServerMessage, Modality, Blob as GenAIBlob } from '@google/genai';
 import {
   Loader2, Image as ImageIcon, Camera,
-  FileText, Link as LinkIcon, Trash2, GraduationCap,
+  FileText, Link as LinkIcon, Trash2, GraduationCap, Upload, Youtube, Clipboard,
   Landmark, Microscope, Languages, BookOpen, Bookmark, FolderOpen, Search, Sparkles, Calculator, LogOut, ScanLine, Type, Wand2, Scroll, Gamepad2, ShieldAlert, Users, Globe, ArrowRight, Target, ChevronRight, User as UserIcon, Calendar, X, Circle, Info, ShieldAlert as ShieldIcon, Copy, Check, ExternalLink, Share2,
   Trophy, Crown, Zap, Flame, Rocket, ChevronLeft, Play, Grid, Mic, StopCircle, Focus, Eye, Edit3, Lock
 } from 'lucide-react';
@@ -49,7 +49,7 @@ const TABS = [
   { id: 'crash-courses', label: 'Crash Courses', mobileLabel: 'Courses', icon: Rocket, premium: false },
   { id: 'exams', label: 'Exams', mobileLabel: 'Exams', icon: GraduationCap, premium: false },
   { id: 'equations', label: 'Equations', mobileLabel: 'Math', icon: Calculator, premium: false },
-  { id: 'english', label: 'English', mobileLabel: 'Lang', icon: Languages, premium: true },
+  { id: 'english', label: 'Language Learning', mobileLabel: 'Lang', icon: Languages, premium: true },
 ];
 
 type InputToolType = 'text' | 'image' | 'pdf' | 'url' | 'voice';
@@ -267,7 +267,28 @@ const App: React.FC = () => {
           isLoggedIn={!!currentUser}
           onOpenAuth={() => setShowAuthModal(true)}
           onSelect={handlePlanUpgrade}
-          onClose={() => setShowUpgradeModal(false)}
+          onClose={() => {
+            // prevented closing if strict gating is required?
+            // For now allow close so they can logout or navigate if needed, but the prompt says "Users cannot bypass"
+            // Maybe we only allow close if they click logout?
+            // Let's keep it closeable for now to avoiding getting stuck in dev, but in prod we might remove onClose.
+            // Requirement: "Users cannot bypass the plan screen"
+            // We can check if `userProfile?.subscriptionPlanId === 'free'` to prevent close?
+            if (userProfile?.subscriptionPlanId !== 'free') {
+              setShowUpgradeModal(false);
+            }
+          }}
+          currentPlanId={userProfile?.subscriptionPlanId || 'free'}
+        />
+      )}
+
+      {/* Blocking Plan Selection for New Users */}
+      {currentUser && !authLoading && isHydrated && userProfile && !userProfile.subscriptionPlanId && (
+        <SubscriptionScreen
+          isLoggedIn={true}
+          cancellable={false}
+          onSelect={handlePlanUpgrade}
+          currentPlanId=""
         />
       )}
 
@@ -1350,7 +1371,7 @@ const App: React.FC = () => {
             ))}
           </div>
 
-          <Leaderboard user={currentUser} onAchievement={handleAchievementUpdate} />
+          {/* <Leaderboard user={currentUser} onAchievement={handleAchievementUpdate} /> */}
 
           <div className="space-y-6 md:space-y-8 animate-fade-in-up px-1 md:px-0">
             {isFree && (
@@ -1527,23 +1548,23 @@ const App: React.FC = () => {
                         <div className="w-full text-left text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-400 dark:text-slate-400 mb-2">
                           Select Your Input Method
                         </div>
-                        <div className="flex flex-nowrap items-center gap-2 w-full overflow-x-auto no-scrollbar pb-2">
+                        <div className="flex flex-wrap items-center gap-2 w-full pb-2">
                           <button
                             onClick={() => setActiveInputTool('text')}
-                            className={`flex-none flex items-center justify-center gap-1.5 px-3 py-3 rounded-xl text-[10px] md:text-sm font-black uppercase tracking-widest transition-all border-2 ${activeInputTool === 'text' ? 'theme-bg text-white border-transparent shadow-sm' : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200 border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-slate-600'}`}
+                            className={`flex-none flex items-center justify-center gap-1.5 px-4 py-3 rounded-full text-[10px] md:text-sm font-black uppercase tracking-widest transition-all border-2 ${activeInputTool === 'text' ? 'theme-bg text-white border-transparent shadow-sm' : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200 border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-slate-600'}`}
                             aria-label="Switch to text input mode"
                           >
-                            <Type size={16} /> Text
+                            <Clipboard size={16} /> Copied text
                           </button>
                           <button
                             onClick={() => {
                               if (isInstantHelp || isFocusedPrep || isStudyPro) setActiveInputTool('url');
                               else setShowUpgradeModal(true);
                             }}
-                            className={`flex-none flex items-center justify-center gap-1.5 px-3 py-3 rounded-xl text-[10px] md:text-sm font-black uppercase tracking-widest transition-all border-2 ${activeInputTool === 'url' ? 'theme-bg text-white border-transparent shadow-sm' : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200 border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-slate-600'}`}
+                            className={`flex-none flex items-center justify-center gap-1.5 px-4 py-3 rounded-full text-[10px] md:text-sm font-black uppercase tracking-widest transition-all border-2 ${activeInputTool === 'url' ? 'theme-bg text-white border-transparent shadow-sm' : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200 border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-slate-600'}`}
                             aria-label="Switch to link input mode"
                           >
-                            {!(isInstantHelp || isFocusedPrep || isStudyPro) && <Lock size={14} />} <LinkIcon size={16} /> Link
+                            {!(isInstantHelp || isFocusedPrep || isStudyPro) && <Lock size={14} />} <LinkIcon size={16} /> <Youtube size={16} className="text-red-600" /> Websites
                           </button>
                           <button
                             onClick={() => {
@@ -1557,7 +1578,7 @@ const App: React.FC = () => {
                               }
                             }}
                             disabled={extractingSource === 'voice'}
-                            className={`flex-none flex items-center justify-center gap-1.5 px-3 py-3 rounded-xl text-[10px] md:text-sm font-black uppercase tracking-widest transition-all border-2 ${isRecording ? 'bg-red-500 text-white border-transparent shadow-xl shadow-red-200 scale-105' : (activeInputTool === 'voice' ? 'theme-bg text-white border-transparent shadow-sm' : (extractingSource === 'voice' ? 'bg-white dark:bg-slate-700 text-gray-400 border-gray-100 dark:border-white/5 opacity-70 cursor-not-allowed' : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200 border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-slate-600'))}`}
+                            className={`flex-none flex items-center justify-center gap-1.5 px-4 py-3 rounded-full text-[10px] md:text-sm font-black uppercase tracking-widest transition-all border-2 ${isRecording ? 'bg-red-500 text-white border-transparent shadow-xl shadow-red-200 scale-105' : (activeInputTool === 'voice' ? 'theme-bg text-white border-transparent shadow-sm' : (extractingSource === 'voice' ? 'bg-white dark:bg-slate-700 text-gray-400 border-gray-100 dark:border-white/5 opacity-70 cursor-not-allowed' : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200 border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-slate-600'))}`}
                             aria-label={isRecording ? "Stop podcast recording" : "Start podcast recording"}
                           >
                             {isRecording ? <StopCircle size={16} /> : (hasVoiceAccess ? <Mic size={16} /> : <Lock size={14} />)} {isRecording ? 'Stop' : 'Podcast'}
@@ -1571,7 +1592,7 @@ const App: React.FC = () => {
                                 setShowUpgradeModal(true);
                               }
                             }}
-                            className={`flex-none flex items-center justify-center gap-1.5 px-3 py-3 rounded-xl text-[10px] md:text-sm font-black uppercase tracking-widest transition-all border-2 ${activeInputTool === 'image' ? 'theme-bg text-white border-transparent shadow-sm' : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200 border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-slate-600'}`}
+                            className={`flex-none flex items-center justify-center gap-1.5 px-4 py-3 rounded-full text-[10px] md:text-sm font-black uppercase tracking-widest transition-all border-2 ${activeInputTool === 'image' ? 'theme-bg text-white border-transparent shadow-sm' : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200 border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-slate-600'}`}
                             aria-label="Scan image for text"
                           >
                             {!(isInstantHelp || isFocusedPrep || isStudyPro) && <Lock size={14} />} <Camera size={16} /> Scan
@@ -1585,10 +1606,10 @@ const App: React.FC = () => {
                                 setShowUpgradeModal(true);
                               }
                             }}
-                            className={`flex-none flex items-center justify-center gap-1.5 px-3 py-3 rounded-xl text-[10px] md:text-sm font-black uppercase tracking-widest transition-all border-2 ${activeInputTool === 'pdf' ? 'theme-bg text-white border-transparent shadow-sm' : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200 border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-slate-600'}`}
+                            className={`flex-none flex items-center justify-center gap-1.5 px-4 py-3 rounded-full text-[10px] md:text-sm font-black uppercase tracking-widest transition-all border-2 ${activeInputTool === 'pdf' ? 'theme-bg text-white border-transparent shadow-sm' : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200 border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-slate-600'}`}
                             aria-label="Upload PDF document"
                           >
-                            {!(isInstantHelp || isFocusedPrep || isStudyPro) && <Lock size={14} />} <FileText size={16} /> Upload Docs
+                            {!(isInstantHelp || isFocusedPrep || isStudyPro) && <Lock size={14} />} <Upload size={16} /> Upload files
                           </button>
                           <div className="w-px h-6 bg-gray-200 dark:bg-white/10 mx-1 flex-none ml-auto"></div>
                           <button onClick={handleResetCurrentTab} className="flex-none p-3 text-gray-300 dark:text-slate-500 hover:text-red-500 transition-colors active:scale-90" aria-label="Clear current input"><Trash2 size={20} /></button>

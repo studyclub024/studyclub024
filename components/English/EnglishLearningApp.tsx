@@ -12,7 +12,7 @@ import { generateEnglishLesson, generateSpeech, transcribeAudio, evaluateSpeech,
 import { EnglishLesson, SpeechEvaluation, GrammarChallenge } from '../../types';
 import { FootballIcon } from '../../App';
 
-const NATIVE_LANGUAGES = ['Hindi', 'Marathi', 'Tamil', 'Telugu', 'Gujarati', 'Bengali', 'Urdu', 'Punjabi'];
+const NATIVE_LANGUAGES = ['Spanish', 'French', 'German', 'Japanese', 'Chinese', 'Italian', 'Korean', 'Arabic', 'Latin'];
 
 const TENSES = {
     Present: ['Simple Present', 'Present Continuous', 'Present Perfect', 'Present Perfect Continuous'],
