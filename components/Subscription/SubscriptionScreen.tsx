@@ -206,7 +206,7 @@ const SubscriptionScreen: React.FC<Props> = ({ onSelect, onClose, isLoggedIn = f
         }
       }
     };
-
+ 
     fetchUserPhone();
   }, [isLoggedIn]);
 
