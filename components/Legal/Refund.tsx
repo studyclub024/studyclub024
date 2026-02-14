@@ -153,7 +153,7 @@ const Refund: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <div className="flex items-center gap-4">
                                         <div className="p-3 bg-white dark:bg-slate-900 rounded-2xl shadow-sm"><Mail className="theme-text" size={20} /></div>
-                                        <div className="text-sm font-black text-slate-600 dark:text-slate-400 truncate">payments@studyclub24.in</div>
+                                        <div className="text-sm font-black text-slate-600 dark:text-slate-400 truncate">info@studyclub24.com</div>
                                     </div>
                                     <div className="flex items-center gap-4">
                                         <div className="p-3 bg-white dark:bg-slate-900 rounded-2xl shadow-sm"><MapPin className="theme-text" size={20} /></div>

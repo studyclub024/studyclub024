@@ -472,7 +472,14 @@ const SubscriptionScreen: React.FC<Props> = ({ onSelect, onClose, isLoggedIn = f
                     onClick={() => handleUSSelect(selectedUSPlan)}
                     className="text-sm font-bold text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
                   >
-                    Or, skip trial & pay ${US_PLANS.find(p => p.id === selectedUSPlan)?.price} now
+                    Or, skip trial & pay {
+                      (() => {
+                        const plan = US_PLANS.find(p => p.id === selectedUSPlan);
+                        if (plan?.id === 'us-ultra-unlimited-annual') return '$69.99';
+                        if (plan?.id === 'us-instant-help-annual') return '$36.99';
+                        return plan?.price;
+                      })()
+                    } now
                   </button>
                 </div>
 

@@ -7,6 +7,7 @@ import 'firebase/compat/firestore';
 import { auth, db } from './firebaseConfig';
 import AuthScreen from './components/Auth/AuthScreen';
 import Header from './components/Layout/Header';
+import PublicHeader from './components/Layout/PublicHeader';
 import Leaderboard from './components/Layout/Leaderboard';
 import ModeSelector from './components/Input/ModeSelector';
 import MainDisplay from './components/Layout/MainDisplay';
@@ -33,6 +34,7 @@ import Privacy from './components/Legal/Privacy';
 import Terms from './components/Legal/Terms';
 import Refund from './components/Legal/Refund';
 import Contact from './components/Legal/Contact';
+import Coppa from './components/Legal/Coppa';
 import Footer from './components/Layout/Footer';
 import { isNativePlatform } from './services/platform';
 import AdminDashboard from './components/Admin/AdminDashboard';
@@ -47,9 +49,9 @@ const EXAM_OPTIONS = [
 const TABS = [
   { id: 'students', label: 'Students', mobileLabel: 'Students', icon: Users, premium: false },
   { id: 'crash-courses', label: 'Crash Courses', mobileLabel: 'Courses', icon: Rocket, premium: false },
-  { id: 'exams', label: 'Exams', mobileLabel: 'Exams', icon: GraduationCap, premium: false },
-  { id: 'equations', label: 'Equations', mobileLabel: 'Math', icon: Calculator, premium: false },
-  { id: 'english', label: 'Language Learning', mobileLabel: 'Lang', icon: Languages, premium: true },
+  // { id: 'exams', label: 'Exams', mobileLabel: 'Exams', icon: GraduationCap, premium: false },
+  // { id: 'equations', label: 'Equations', mobileLabel: 'Math', icon: Calculator, premium: false },
+  { id: 'english', label: 'Language Learning', mobileLabel: 'Lang', icon: Languages, premium: false },
 ];
 
 type InputToolType = 'text' | 'image' | 'pdf' | 'url' | 'voice';
@@ -152,7 +154,7 @@ const App: React.FC = () => {
   const [error, setError] = useState<React.ReactNode | null>(null);
   const [activeInputTool, setActiveInputTool] = useState<InputToolType>('text');
   // Legal pages state (privacy/terms/contact)
-  const [legalPage, setLegalPage] = useState<'privacy' | 'terms' | 'contact' | 'refund' | null>(null);
+  const [legalPage, setLegalPage] = useState<'privacy' | 'terms' | 'contact' | 'refund' | 'coppa' | null>(null);
 
   // Admin page state (accessed via ?admin=true in URL)
   const [showAdmin, setShowAdmin] = useState(false);
@@ -200,6 +202,11 @@ const App: React.FC = () => {
         setAdminAccessChecked(true);
       });
   }, [showAdmin, currentUser]);
+
+  // Scroll to top when legal page changes
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [legalPage]);
 
   // Notification modal state
   const [notification, setNotification] = useState<{ type: 'success' | 'error' | 'warning'; title: string; message: string } | null>(null);
@@ -1032,92 +1039,80 @@ const App: React.FC = () => {
       // If a legal page is requested, render it instead of the homepage
       if (legalPage === 'privacy') return (
         <div className="min-h-screen bg-[#F8F9FC] dark:bg-slate-950 transition-colors framework-context flex flex-col">
-          <Header
+          <PublicHeader
             isDarkMode={isDarkMode}
             onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
-            onProfileClick={() => setShowAuthModal(true)}
-            onCoursesClick={() => setActiveTab('courses')}
+            isLoggedIn={false}
+            onLogin={() => setShowAuthModal(true)}
+            onGetStarted={() => setShowAuthModal(true)}
             onLogoClick={() => { setLegalPage(null); setActiveTab('students'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-            isActiveProfile={activeTab === 'profile'}
-            isActiveCourses={activeTab === 'courses'}
-            activeFramework={userProfile?.preferences.flashcardTheme || FlashcardTheme.CLASSIC}
-            onSetFramework={(f) => handleUpdatePreferences({ flashcardTheme: f })}
-            planId={userPlan}
-            canUseThemes={canUseFeature('themes')}
-            userProfile={userProfile}
-            onLogout={handleLogout}
-            onOpenUpgrade={() => setShowUpgradeModal(true)}
+            onNavigateSection={() => { setLegalPage(null); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
           />
-          <main className="container mx-auto px-4 py-8 flex-grow"><Privacy onBack={() => setLegalPage(null)} /></main>
+          <main className="container mx-auto px-4 py-8 mt-20 flex-grow"><Privacy onBack={() => setLegalPage(null)} /></main>
           <Footer onOpenLegal={(s) => setLegalPage(s)} />
           {globalModals}
         </div>
       );
       if (legalPage === 'terms') return (
         <div className="min-h-screen bg-[#F8F9FC] dark:bg-slate-950 transition-colors framework-context flex flex-col">
-          <Header
+          <PublicHeader
             isDarkMode={isDarkMode}
             onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
-            onProfileClick={() => setShowAuthModal(true)}
-            onCoursesClick={() => setActiveTab('courses')}
+            isLoggedIn={false}
+            onLogin={() => setShowAuthModal(true)}
+            onGetStarted={() => setShowAuthModal(true)}
             onLogoClick={() => { setLegalPage(null); setActiveTab('students'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-            isActiveProfile={activeTab === 'profile'}
-            isActiveCourses={activeTab === 'courses'}
-            activeFramework={userProfile?.preferences.flashcardTheme || FlashcardTheme.CLASSIC}
-            onSetFramework={(f) => handleUpdatePreferences({ flashcardTheme: f })}
-            planId={userPlan}
-            canUseThemes={canUseFeature('themes')}
-            userProfile={userProfile}
-            onLogout={handleLogout}
-            onOpenUpgrade={() => setShowUpgradeModal(true)}
+            onNavigateSection={() => { setLegalPage(null); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
           />
-          <main className="container mx-auto px-4 py-8 flex-grow"><Terms onBack={() => setLegalPage(null)} /></main>
+          <main className="container mx-auto px-4 py-8 mt-20 flex-grow"><Terms onBack={() => setLegalPage(null)} /></main>
           <Footer onOpenLegal={(s) => setLegalPage(s)} />
           {globalModals}
         </div>
       );
       if (legalPage === 'contact') return (
         <div className="min-h-screen bg-[#F8F9FC] dark:bg-slate-950 transition-colors framework-context flex flex-col">
-          <Header
+          <PublicHeader
             isDarkMode={isDarkMode}
             onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
-            onProfileClick={() => setShowAuthModal(true)}
-            onCoursesClick={() => setActiveTab('courses')}
+            isLoggedIn={false}
+            onLogin={() => setShowAuthModal(true)}
+            onGetStarted={() => setShowAuthModal(true)}
             onLogoClick={() => { setLegalPage(null); setActiveTab('students'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-            isActiveProfile={activeTab === 'profile'}
-            isActiveCourses={activeTab === 'courses'}
-            activeFramework={userProfile?.preferences.flashcardTheme || FlashcardTheme.CLASSIC}
-            onSetFramework={(f) => handleUpdatePreferences({ flashcardTheme: f })}
-            planId={userPlan}
-            canUseThemes={canUseFeature('themes')}
-            userProfile={userProfile}
-            onLogout={handleLogout}
-            onOpenUpgrade={() => setShowUpgradeModal(true)}
+            onNavigateSection={() => { setLegalPage(null); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
           />
-          <main className="container mx-auto px-4 py-8 flex-grow"><Contact onBack={() => setLegalPage(null)} /></main>
+          <main className="container mx-auto px-4 py-8 mt-20 flex-grow"><Contact onBack={() => setLegalPage(null)} /></main>
           <Footer onOpenLegal={(s) => setLegalPage(s)} />
           {globalModals}
         </div>
       );
       if (legalPage === 'refund') return (
         <div className="min-h-screen bg-[#F8F9FC] dark:bg-slate-950 transition-colors framework-context flex flex-col">
-          <Header
+          <PublicHeader
             isDarkMode={isDarkMode}
             onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
-            onProfileClick={() => setShowAuthModal(true)}
-            onCoursesClick={() => setActiveTab('courses')}
+            isLoggedIn={false}
+            onLogin={() => setShowAuthModal(true)}
+            onGetStarted={() => setShowAuthModal(true)}
             onLogoClick={() => { setLegalPage(null); setActiveTab('students'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-            isActiveProfile={activeTab === 'profile'}
-            isActiveCourses={activeTab === 'courses'}
-            activeFramework={userProfile?.preferences.flashcardTheme || FlashcardTheme.CLASSIC}
-            onSetFramework={(f) => handleUpdatePreferences({ flashcardTheme: f })}
-            planId={userPlan}
-            canUseThemes={canUseFeature('themes')}
-            userProfile={userProfile}
-            onLogout={handleLogout}
-            onOpenUpgrade={() => setShowUpgradeModal(true)}
+            onNavigateSection={() => { setLegalPage(null); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
           />
-          <main className="container mx-auto px-4 py-8 flex-grow"><Refund onBack={() => setLegalPage(null)} /></main>
+          <main className="container mx-auto px-4 py-8 mt-20 flex-grow"><Refund onBack={() => setLegalPage(null)} /></main>
+          <Footer onOpenLegal={(s) => setLegalPage(s)} />
+          {globalModals}
+        </div>
+      );
+      if (legalPage === 'coppa') return (
+        <div className="min-h-screen bg-[#F8F9FC] dark:bg-slate-950 transition-colors framework-context flex flex-col">
+          <PublicHeader
+            isDarkMode={isDarkMode}
+            onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
+            isLoggedIn={false}
+            onLogin={() => setShowAuthModal(true)}
+            onGetStarted={() => setShowAuthModal(true)}
+            onLogoClick={() => { setLegalPage(null); setActiveTab('students'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            onNavigateSection={() => { setLegalPage(null); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+          />
+          <main className="container mx-auto px-4 py-8 mt-20 flex-grow"><Coppa onBack={() => setLegalPage(null)} /></main>
           <Footer onOpenLegal={(s) => setLegalPage(s)} />
           {globalModals}
         </div>
@@ -1222,6 +1217,28 @@ const App: React.FC = () => {
         canUseThemes={canUseFeature('themes')}
       />
       <main className="container mx-auto px-4 py-8 flex-grow"><Refund onBack={() => setLegalPage(null)} /></main>
+      <Footer onOpenLegal={(s) => setLegalPage(s)} />
+      {globalModals}
+    </div>
+  );
+  if (legalPage === 'coppa') return (
+    <div className="min-h-screen bg-[#F8F9FC] dark:bg-slate-950 transition-colors framework-context flex flex-col">
+      <Header
+        isDarkMode={isDarkMode}
+        onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
+        onProfileClick={() => setActiveTab('profile')}
+        onCoursesClick={() => setActiveTab('courses')}
+        onLogoClick={() => { setLegalPage(null); setActiveTab('students'); setError(null); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+        isActiveProfile={activeTab === 'profile'}
+        isActiveCourses={activeTab === 'courses'}
+        activeFramework={userProfile?.preferences.flashcardTheme || FlashcardTheme.CLASSIC}
+        onSetFramework={(f) => {
+          if (canUseFeature('themes')) handleUpdatePreferences({ flashcardTheme: f }); else setShowUpgradeModal(true);
+        }}
+        planId={userPlan}
+        canUseThemes={canUseFeature('themes')}
+      />
+      <main className="container mx-auto px-4 py-8 flex-grow"><Coppa onBack={() => setLegalPage(null)} /></main>
       <Footer onOpenLegal={(s) => setLegalPage(s)} />
       {globalModals}
     </div>
@@ -1560,59 +1577,41 @@ const App: React.FC = () => {
                             <Clipboard size={16} /> Copied text
                           </button>
                           <button
-                            onClick={() => {
-                              if (isInstantHelp || isFocusedPrep || isStudyPro) setActiveInputTool('url');
-                              else setShowUpgradeModal(true);
-                            }}
+                            onClick={() => setActiveInputTool('url')}
                             className={`flex-none flex items-center justify-center gap-1.5 px-4 py-3 rounded-full text-[10px] md:text-sm font-black uppercase tracking-widest transition-all border-2 ${activeInputTool === 'url' ? 'theme-bg text-white border-transparent shadow-sm' : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200 border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-slate-600'}`}
                             aria-label="Switch to link input mode"
                           >
-                            {!(isInstantHelp || isFocusedPrep || isStudyPro) && <Lock size={14} />} <LinkIcon size={16} /> <Youtube size={16} className="text-red-600" /> Websites
+                            <LinkIcon size={16} /> <Youtube size={16} className="text-red-600" /> Websites
                           </button>
                           <button
                             onClick={() => {
-                              const totalGen = userProfile?.stats.totalGenerations || 0;
-                              const isTrialPodcast = isFree && totalGen < 1 && !hasUsedVoiceTrial;
-                              if (hasVoiceAccess || isTrialPodcast) {
-                                setActiveInputTool('voice');
-                                toggleVoiceRecording();
-                              } else {
-                                setShowUpgradeModal(true);
-                              }
+                              setActiveInputTool('voice');
+                              toggleVoiceRecording();
                             }}
-                            disabled={extractingSource === 'voice'}
                             className={`flex-none flex items-center justify-center gap-1.5 px-4 py-3 rounded-full text-[10px] md:text-sm font-black uppercase tracking-widest transition-all border-2 ${isRecording ? 'bg-red-500 text-white border-transparent shadow-xl shadow-red-200 scale-105' : (activeInputTool === 'voice' ? 'theme-bg text-white border-transparent shadow-sm' : (extractingSource === 'voice' ? 'bg-white dark:bg-slate-700 text-gray-400 border-gray-100 dark:border-white/5 opacity-70 cursor-not-allowed' : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200 border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-slate-600'))}`}
                             aria-label={isRecording ? "Stop podcast recording" : "Start podcast recording"}
                           >
-                            {isRecording ? <StopCircle size={16} /> : (hasVoiceAccess ? <Mic size={16} /> : <Lock size={14} />)} {isRecording ? 'Stop' : 'Podcast'}
+                            {isRecording ? <StopCircle size={16} /> : <Mic size={16} />} {isRecording ? 'Stop' : 'Podcast'}
                           </button>
                           <button
                             onClick={() => {
-                              if (isInstantHelp || isFocusedPrep || isStudyPro) {
-                                setActiveInputTool('image');
-                                imageInputRef.current?.click();
-                              } else {
-                                setShowUpgradeModal(true);
-                              }
+                              setActiveInputTool('image');
+                              imageInputRef.current?.click();
                             }}
                             className={`flex-none flex items-center justify-center gap-1.5 px-4 py-3 rounded-full text-[10px] md:text-sm font-black uppercase tracking-widest transition-all border-2 ${activeInputTool === 'image' ? 'theme-bg text-white border-transparent shadow-sm' : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200 border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-slate-600'}`}
                             aria-label="Scan image for text"
                           >
-                            {!(isInstantHelp || isFocusedPrep || isStudyPro) && <Lock size={14} />} <Camera size={16} /> Scan
+                            <Camera size={16} /> Scan
                           </button>
                           <button
                             onClick={() => {
-                              if (isInstantHelp || isFocusedPrep || isStudyPro) {
-                                setActiveInputTool('pdf');
-                                pdfInputRef.current?.click();
-                              } else {
-                                setShowUpgradeModal(true);
-                              }
+                              setActiveInputTool('pdf');
+                              pdfInputRef.current?.click();
                             }}
                             className={`flex-none flex items-center justify-center gap-1.5 px-4 py-3 rounded-full text-[10px] md:text-sm font-black uppercase tracking-widest transition-all border-2 ${activeInputTool === 'pdf' ? 'theme-bg text-white border-transparent shadow-sm' : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200 border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-slate-600'}`}
                             aria-label="Upload PDF document"
                           >
-                            {!(isInstantHelp || isFocusedPrep || isStudyPro) && <Lock size={14} />} <Upload size={16} /> Upload files
+                            <Upload size={16} /> Upload files
                           </button>
                           <div className="w-px h-6 bg-gray-200 dark:bg-white/10 mx-1 flex-none ml-auto"></div>
                           <button onClick={handleResetCurrentTab} className="flex-none p-3 text-gray-300 dark:text-slate-500 hover:text-red-500 transition-colors active:scale-90" aria-label="Clear current input"><Trash2 size={20} /></button>
@@ -1723,8 +1722,8 @@ const App: React.FC = () => {
               </div>
             )}
           </div>
-        </div>
-      </main>
+        </div >
+      </main >
 
       {showLibrary && (
         <div className="fixed inset-0 z-[500] bg-black/60 backdrop-blur-xl flex items-center justify-center p-4 animate-fade-in overflow-y-auto">
@@ -1782,34 +1781,38 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {!showResultView && activeTab !== 'profile' && activeTab !== 'english' && activeTab !== 'courses' && (
-        <button
-          onClick={() => setShowLibrary(true)}
-          className="fixed bottom-24 right-6 md:bottom-10 md:right-10 w-16 h-16 bg-white dark:bg-slate-900 theme-text rounded-2xl shadow-2xl border-4 theme-border flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-40 group theme-glow"
-          title="Open Library"
-          aria-label="Open study material library"
-        >
-          <FolderOpen size={28} className="group-hover:rotate-6 transition-transform" />
-          {savedMaterials.length > 0 && (
-            <span className="absolute -top-2 -right-2 theme-bg w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black border-2 border-white shadow-lg animate-bounce">
-              {savedMaterials.length}
-            </span>
-          )}
-        </button>
-      )}
+      {
+        !showResultView && activeTab !== 'profile' && activeTab !== 'english' && activeTab !== 'courses' && (
+          <button
+            onClick={() => setShowLibrary(true)}
+            className="fixed bottom-24 right-6 md:bottom-10 md:right-10 w-16 h-16 bg-white dark:bg-slate-900 theme-text rounded-2xl shadow-2xl border-4 theme-border flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-40 group theme-glow"
+            title="Open Library"
+            aria-label="Open study material library"
+          >
+            <FolderOpen size={28} className="group-hover:rotate-6 transition-transform" />
+            {savedMaterials.length > 0 && (
+              <span className="absolute -top-2 -right-2 theme-bg w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black border-2 border-white shadow-lg animate-bounce">
+                {savedMaterials.length}
+              </span>
+            )}
+          </button>
+        )
+      }
 
-      {currentAchievement && showShareModal && (
-        <ShareAchievementModal
-          achievement={currentAchievement}
-          onClose={() => setShowShareModal(false)}
-        />
-      )}
+      {
+        currentAchievement && showShareModal && (
+          <ShareAchievementModal
+            achievement={currentAchievement}
+            onClose={() => setShowShareModal(false)}
+          />
+        )
+      }
 
       {/* Replaced manual modal rendering with globalModals */}
       {globalModals}
 
       <Footer onOpenLegal={(s) => setLegalPage(s)} />
-    </div>
+    </div >
   );
 };
 

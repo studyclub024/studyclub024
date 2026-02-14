@@ -219,7 +219,14 @@ class RazorpayService {
         prefill: {
           name: userDetails.name || '',
           email: userDetails.email || '',
-          contact: userDetails.phone || '',
+          contact: (() => {
+            let phone = userDetails.phone || '';
+            // If currency is USD and phone doesn't have a country code, prefix with +1
+            if (currency === 'USD' && phone && !phone.startsWith('+')) {
+              phone = `+1${phone}`;
+            }
+            return phone;
+          })(),
         },
         theme: {
           color: '#6366f1', // Indigo color

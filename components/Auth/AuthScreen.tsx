@@ -190,13 +190,13 @@ const AuthScreen: React.FC<{ onClose?: () => void; isModal?: boolean }> = ({ onC
         await syncUserToFirestore(result.user);
         if (onClose) onClose();
       } else {
-        // Check uniqueness
-        const exists = await checkPhoneNumberExists(phoneNumber.trim());
-        if (exists) {
-          setError("This phone number is already registered.");
-          setLoading(false);
-          return;
-        }
+        // Check uniqueness - DISABLED due to Firestore permission issues (requires unauthenticated list access)
+        // const exists = await checkPhoneNumberExists(phoneNumber.trim());
+        // if (exists) {
+        //   setError("This phone number is already registered.");
+        //   setLoading(false);
+        //   return;
+        // }
 
         const fullName = `${firstName.trim()} ${lastName.trim()}`;
         // Replaced modular createUserWithEmailAndPassword with compat instance method

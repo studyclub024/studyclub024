@@ -65,7 +65,7 @@ service cloud.firestore {
     // Written by backend/admin processes; users can read their own.
     match /subscriptions/{userId} {
       allow read: if isOwner(userId) || isAdmin();
-      allow create, update, delete: if isAdmin();
+      allow create, update, delete: if isOwner(userId) || isAdmin();
     }
 
     // ==================== USERS ====================
@@ -74,7 +74,7 @@ service cloud.firestore {
       allow get: if isOwner(userId) || isAdmin();
       allow list: if isSignedIn();
       allow create: if isOwner(userId);
-      allow update: if isOwner(userId) && request.resource.data.role == resource.data.role;
+      allow update: if isOwner(userId) && request.resource.data.get('role', null) == resource.data.get('role', null);
       allow delete: if isAdmin();
     }
 
