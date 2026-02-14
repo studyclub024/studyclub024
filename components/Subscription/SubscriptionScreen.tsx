@@ -188,7 +188,7 @@ const SubscriptionScreen: React.FC<Props> = ({ onSelect, onClose, isLoggedIn = f
   const [country, setCountry] = useState<'IN' | 'US'>('US');
 
   const plansToDisplay = country === 'IN' ? PLANS : US_PLANS;
-
+ 
   // Fetch user phone from Firestore
   useEffect(() => {
     const fetchUserPhone = async () => {
@@ -206,7 +206,7 @@ const SubscriptionScreen: React.FC<Props> = ({ onSelect, onClose, isLoggedIn = f
         }
       }
     };
-
+ 
     fetchUserPhone();
   }, [isLoggedIn]);
 
