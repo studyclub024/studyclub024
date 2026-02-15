@@ -290,7 +290,7 @@ const App: React.FC = () => {
       )}
 
       {/* Blocking Plan Selection for New Users */}
-      {currentUser && !authLoading && isHydrated && userProfile && !userProfile.subscriptionPlanId && (
+      {currentUser && !authLoading && isHydrated && (!userProfile || !userProfile.subscriptionPlanId) && (
         <SubscriptionScreen
           isLoggedIn={true}
           cancellable={false}

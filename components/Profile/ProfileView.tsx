@@ -230,8 +230,8 @@ const ProfileView: React.FC<Props> = ({ profile, history, onUpdatePreferences, o
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        <StatsCard icon={Flame} label="Study Streak" value={`${profile.stats.streakDays} Days`} color="text-orange-600" bg="bg-orange-50 dark:bg-orange-500/10" />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+
         <StatsCard icon={Brain} label="Total Generations" value={profile.stats.totalGenerations} color="text-violet-600" bg="bg-violet-50 dark:bg-violet-500/10" />
         <StatsCard icon={Target} label="Concepts Mastered" value={profile.stats.masteredConcepts} color="text-emerald-600" bg="bg-emerald-50 dark:bg-emerald-500/10" />
         <StatsCard icon={PieChart} label="IQ Mastery" value="84%" color="text-indigo-600" bg="bg-indigo-50 dark:bg-indigo-500/10" />
@@ -312,12 +312,7 @@ const ProfileView: React.FC<Props> = ({ profile, history, onUpdatePreferences, o
                 </div>
               </div>
               <div className="grid md:grid-cols-2 gap-8">
-                <div>
-                  <label className="text-xs font-black text-gray-400 dark:text-slate-400 uppercase tracking-widest block mb-4 ml-1">Native Language (Tutor)</label>
-                  <select value={profile.preferences.nativeLanguage} onChange={(e) => onUpdatePreferences({ nativeLanguage: e.target.value })} className="w-full p-4 bg-gray-50 dark:bg-slate-800 border-2 border-gray-100 dark:border-white/5 rounded-2xl outline-none focus:border-indigo-500 font-bold text-gray-700 dark:text-slate-300 appearance-none">
-                    <option value="Hindi">Hindi</option><option value="Marathi">Marathi</option><option value="Tamil">Tamil</option><option value="Telugu">Telugu</option><option value="Urdu">Urdu</option><option value="Bengali">Bengali</option>
-                  </select>
-                </div>
+
                 <div>
                   <label className="text-xs font-black text-gray-400 dark:text-slate-400 uppercase tracking-widest block mb-4 ml-1">Difficulty Baseline</label>
                   <div className="flex bg-gray-100 dark:bg-slate-800 p-1 rounded-2xl">

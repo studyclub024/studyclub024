@@ -186,9 +186,10 @@ const SubscriptionScreen: React.FC<Props> = ({ onSelect, onClose, isLoggedIn = f
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [userPhone, setUserPhone] = useState<string | undefined>(undefined);
   const [country, setCountry] = useState<'IN' | 'US'>('US');
+  const [isFreeTrialEnabled, setIsFreeTrialEnabled] = useState(true);
 
   const plansToDisplay = country === 'IN' ? PLANS : US_PLANS;
- 
+
   // Fetch user phone from Firestore
   useEffect(() => {
     const fetchUserPhone = async () => {
@@ -206,12 +207,12 @@ const SubscriptionScreen: React.FC<Props> = ({ onSelect, onClose, isLoggedIn = f
         }
       }
     };
- 
+
     fetchUserPhone();
   }, [isLoggedIn]);
 
-  const handleSelectPlan = async (plan: SubscriptionPlan) => {
-    console.log('🔴 UPGRADE NOW CLICKED! Plan:', plan.id);
+  const handleSelectPlan = async (plan: SubscriptionPlan, isTrial: boolean = false) => {
+    console.log('🔴 UPGRADE NOW CLICKED! Plan:', plan.id, 'Trial:', isTrial);
     console.log('🔴 User logged in?', isLoggedIn);
 
     if (!isLoggedIn) {
@@ -238,7 +239,7 @@ const SubscriptionScreen: React.FC<Props> = ({ onSelect, onClose, isLoggedIn = f
       // Initiate Razorpay payment
       await razorpayService.initiatePayment(plan, userDetails, (successfulPlan) => {
         onSelect(successfulPlan);
-      });
+      }, isTrial);
     } catch (error) {
       console.error('Payment error:', error);
       alert('Something went wrong. Please try again.');
@@ -292,14 +293,15 @@ const SubscriptionScreen: React.FC<Props> = ({ onSelect, onClose, isLoggedIn = f
   const [selectedUSPlan, setSelectedUSPlan] = useState<string>('us-ultra-unlimited-annual');
 
   const handleUSSelect = (planId: string) => {
-    // If 'trial', activate free trial
+    // If 'trial', activate free trial with mandate on selected plan
     if (planId === 'trial') {
-      handleSelectPlan(US_FREE_TRIAL);
+      const plan = US_PLANS.find(p => p.id === selectedUSPlan);
+      if (plan) handleSelectPlan(plan, true);
       return;
     }
     // If specific plan, pay now
     const plan = US_PLANS.find(p => p.id === planId);
-    if (plan) handleSelectPlan(plan);
+    if (plan) handleSelectPlan(plan, false);
   };
 
   return (
@@ -460,32 +462,45 @@ const SubscriptionScreen: React.FC<Props> = ({ onSelect, onClose, isLoggedIn = f
               </div>
 
               <div className="space-y-4">
-                <button
-                  onClick={() => handleUSSelect('trial')}
-                  className="w-full py-5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-2xl font-black text-lg uppercase tracking-widest shadow-xl hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-3"
-                >
-                  Start 3-Day Free Trial <ArrowRight size={20} />
-                </button>
-
-                <div className="text-center">
-                  <button
-                    onClick={() => handleUSSelect(selectedUSPlan)}
-                    className="text-sm font-bold text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
-                  >
-                    Or, skip trial & pay {
-                      (() => {
-                        const plan = US_PLANS.find(p => p.id === selectedUSPlan);
-                        if (plan?.id === 'us-ultra-unlimited-annual') return '$69.99';
-                        if (plan?.id === 'us-instant-help-annual') return '$36.99';
-                        return plan?.price;
-                      })()
-                    } now
-                  </button>
+                <div className="flex items-center justify-between bg-white dark:bg-slate-900 p-4 rounded-xl border border-gray-100 dark:border-white/5 mb-6 shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                      <Clock size={20} />
+                    </div>
+                    <span className="font-bold text-gray-700 dark:text-gray-200">Get a 3-day free trial</span>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" checked={isFreeTrialEnabled} onChange={(e) => setIsFreeTrialEnabled(e.target.checked)} className="sr-only peer" />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+                  </label>
                 </div>
 
-                <p className="text-xs text-gray-400 text-center font-medium max-w-lg mx-auto leading-relaxed">
-                  Free access for 3 days. If you continue, you'll be charged designated amount for the {US_PLANS.find(p => p.id === selectedUSPlan)?.period === 'Month' ? 'Monthly' : 'Yearly'} plan. Cancel anytime before the trial ends.
-                </p>
+                <div className="space-y-4">
+                  <button
+                    onClick={() => {
+                      if (isFreeTrialEnabled) {
+                        handleUSSelect('trial');
+                      } else {
+                        handleUSSelect(selectedUSPlan);
+                      }
+                    }}
+                    className="w-full py-5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-2xl font-black text-lg uppercase tracking-widest shadow-xl hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-3"
+                  >
+                    {isFreeTrialEnabled ? 'Start 3-Day Free Trial' : `Pay ${(() => {
+                      const plan = US_PLANS.find(p => p.id === selectedUSPlan);
+                      if (plan?.id === 'us-ultra-unlimited-annual') return '$69.99';
+                      if (plan?.id === 'us-instant-help-annual') return '$36.99';
+                      return plan?.price;
+                    })()} Now`} <ArrowRight size={20} />
+                  </button>
+
+                  <p className="text-xs text-gray-400 text-center font-medium max-w-lg mx-auto leading-relaxed">
+                    {isFreeTrialEnabled
+                      ? `Free access for 3 days. If you continue, you'll be charged designated amount for the ${US_PLANS.find(p => p.id === selectedUSPlan)?.period === 'Month' ? 'Monthly' : 'Yearly'} plan. Cancel anytime before the trial ends.`
+                      : "You will be charged immediately. No trial period applied."
+                    }
+                  </p>
+                </div>
 
                 {/* Dynamic Feature List - Moved to Right Side */}
                 <div className="mt-8 pt-8 border-t border-gray-100 dark:border-white/5 animate-fade-in-up text-left">

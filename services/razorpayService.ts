@@ -123,9 +123,10 @@ class RazorpayService {
   async initiatePayment(
     plan: SubscriptionPlan,
     userDetails: { name?: string; email?: string; phone?: string } = {},
-    onSuccess?: (plan: SubscriptionPlan) => void
+    onSuccess?: (plan: SubscriptionPlan) => void,
+    isTrial: boolean = false
   ): Promise<void> {
-    console.log('🔵 Initiating payment for plan:', plan.id);
+    console.log('🔵 Initiating payment for plan:', plan.id, 'Trial:', isTrial);
 
     // Reset payment processing flag and order ID for new payment
     this.isProcessingPayment = false;
@@ -142,8 +143,8 @@ class RazorpayService {
     }
     console.log('✅ Razorpay script loaded successfully');
 
-    // Skip payment for free plan
-    if (plan.id === 'free' || plan.billingAmount === 0) {
+    // Skip payment for free plan (only if NOT a trial flow that requires mandate)
+    if (!isTrial && (plan.id === 'free' || plan.billingAmount === 0)) {
       console.log('🔵 Free plan selected, skipping payment');
       this.handlePaymentSuccess(
         {
@@ -181,7 +182,8 @@ class RazorpayService {
         amount,
         planId: plan.id,
         userId: currentUser.uid,
-        currency
+        currency,
+        isTrial // Pass trial flag to backend
       };
 
       console.log('🔵 Payload:', payload);
@@ -207,15 +209,14 @@ class RazorpayService {
       // alert('DEBUG: Order Response: ' + JSON.stringify(orderData)); // Enable for debugging if needed
 
       // Store current order ID to track this payment instance
-      this.currentOrderId = orderData.orderId;
+      this.currentOrderId = orderData.orderId || orderData.subscriptionId; // Support both
 
-      const options: RazorpayOptions = {
+      const options: any = {
         key: this.key,
-        amount: orderData.amount,
+        amount: orderData.amount, // For subscriptions, amount might be ignored by SDK but good to have
         currency: orderData.currency,
         name: 'StudyClub24',
-        description: `${plan.name} - ${plan.period}`,
-        order_id: orderData.orderId,
+        description: isTrial ? `3-Day Free Trial then ${plan.name}` : `${plan.name} - ${plan.period}`,
         prefill: {
           name: userDetails.name || '',
           email: userDetails.email || '',
@@ -232,18 +233,28 @@ class RazorpayService {
           color: '#6366f1', // Indigo color
         },
         handler: async (response: RazorpayResponse) => {
-          // Only process if we have a valid response and it's for the current order
-          if (response.razorpay_payment_id && response.razorpay_order_id === this.currentOrderId) {
+          // Check for subscription_id (for recurring) or order_id (for one-time)
+          const responseId = (response as any).razorpay_subscription_id || response.razorpay_order_id;
+
+          // Only process if we have a valid response and it's for the current order/subscription
+          if (response.razorpay_payment_id && responseId === this.currentOrderId) {
             this.handlePaymentSuccess(response, plan, onSuccess);
           }
         },
       };
 
+      // If backend returned a subscriptionId, use it. Otherwise use order_id.
+      if (orderData.subscriptionId) {
+        options.subscription_id = orderData.subscriptionId;
+      } else {
+        options.order_id = orderData.orderId;
+      }
+
       const razorpay = new window.Razorpay(options);
 
       razorpay.on('payment.failed', (response: any) => {
-        // Only process failure if it's for the current order
-        if (response.error?.metadata?.order_id === this.currentOrderId) {
+        // Handle failure
+        if (response.error?.metadata?.order_id === this.currentOrderId || response.error?.metadata?.subscription_id === this.currentOrderId) {
           this.handlePaymentFailure(response);
         }
       });
