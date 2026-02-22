@@ -34,7 +34,7 @@ const PublicHeader: React.FC<PublicHeaderProps> = ({
         <nav className="fixed top-0 w-full z-[1000] bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-gray-100 dark:border-white/5 py-4 transition-colors duration-300">
             <div className="container mx-auto px-6 flex items-center justify-between">
                 <div className="flex items-center gap-3 cursor-pointer" onClick={onLogoClick}>
-                    <img src="/studyclub-logo.jpg" alt="StudyClub24" className="h-12 w-auto object-contain" />
+                    <img src="/studyclub-logo.png" alt="StudyClub24" className="h-12 w-auto object-contain" />
                 </div>
 
                 <div className="hidden md:flex items-center gap-10">

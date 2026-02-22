@@ -80,7 +80,7 @@ const Header: React.FC<Props> = ({ isDarkMode, onToggleDarkMode, onProfileClick,
     >
       <div className="container mx-auto px-4 flex items-center justify-between">
         <button onClick={() => onLogoClick?.()} aria-label="Go to homepage" className="flex items-center gap-3 rounded-lg hover:bg-gray-50 p-1 transition-all">
-          <img src="/studyclub-logo.jpg" alt="StudyClub24" className="h-10 w-auto object-contain" />
+          <img src="/studyclub-logo.png" alt="StudyClub24" className="h-10 w-auto object-contain" />
           <div className="hidden xs:block min-w-0 text-left">
             <div className="flex items-center gap-1.5 overflow-hidden">
               <span className="text-[10px] theme-text font-black uppercase tracking-widest truncate">{frameworkConfig.label}</span>

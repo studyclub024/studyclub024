@@ -1,5 +1,5 @@
 import React from 'react';
-import { GraduationCap, Shield, Check, Zap } from 'lucide-react';
+import { Shield, Check, Zap } from 'lucide-react';
 
 type FooterProps = {
   onOpenLegal?: (section: 'privacy' | 'terms' | 'contact' | 'refund' | 'coppa') => void;
@@ -10,8 +10,7 @@ const Footer: React.FC<FooterProps> = ({ onOpenLegal }) => {
     <footer className="bg-white dark:bg-slate-900 py-8 border-t border-gray-100 dark:border-slate-800 mt-auto">
       <div className="container mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="flex items-center gap-3">
-          <div className="bg-gray-100 dark:bg-slate-800 p-2 rounded-lg text-gray-400 dark:text-slate-400"><GraduationCap size={18} /></div>
-          <span className="font-black text-gray-900 dark:text-white">StudyClub24</span>
+          <img src="/studyclub-logo.png" alt="StudyClub24 Logo" className="h-10 w-auto object-contain" />
         </div>
 
         <div className="flex flex-wrap gap-4 md:gap-6 text-sm text-gray-500 dark:text-slate-400 justify-center">
